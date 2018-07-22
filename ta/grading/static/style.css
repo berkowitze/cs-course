@@ -1,0 +1,167 @@
+.hidden {
+    visibility: hidden !important;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+nav {
+    margin-bottom: 2em;
+}
+
+.row { margin-top:20px; }
+
+div#handin-options button {
+    margin-right: 1em;
+}
+
+.handin-list-item.complete.unflagged {
+    background-color: #4BB543;
+}
+
+.handin-list-item.complete.flagged  {
+    background-color: pink;
+}
+
+.handin-list-item.error, .handin-list-item.action-required {
+    background-color: red;
+}
+
+.handin-list-item.incomplete {
+    background-color: orange;
+}
+
+main {
+    padding-left: 300px;
+}
+
+div#login-info {
+    float: right;
+}
+
+li.handin-list-item {
+    padding: 0.4em;
+}
+
+li.handin-list-item:hover {
+    cursor: pointer;
+}
+
+.nodisp {
+    display: none !important;
+}
+
+.nav-wrapper > div.row {
+    margin-top: 0;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+footer {
+    margin-left: 300px;
+    padding-left: 2em;
+}
+
+h4 {
+    margin-top: 0.4em;
+}
+
+main > .container {
+    width: 85%;
+}
+
+main .category-div {
+    display: grid;
+    grid-column-gap: 0.5em;
+    grid-row-gap: 0.5em;
+    grid-template-columns: 2fr 2fr;
+    border-bottom: 1px solid #eee;
+}
+
+main .category-name {
+    text-align: center;
+    grid-column: 1/3;
+    font-size: 1.5em;
+}
+
+/* add a border and spacing between sections */
+main .category-div {
+    padding-bottom: 1em;
+}
+
+main .rubric-desc {
+    grid-column: 1/2;
+}
+
+main .rubric-opts {
+    grid-column: 2/4;
+}
+
+
+.active-li {
+    border-left: 3px solid blue;
+    border-right: 3px solid blue;
+}
+
+#status-slider {
+    height: 30px;
+}
+
+.progressbar-text {
+    color: black !important;
+    opacity: 0.55;
+}
+
+.handin-list-item:nth-child(4) {
+    margin-top: 1em !important;
+    border-top: 3px solid #eee;
+}
+
+.secondary-content {
+    color: black;
+}
+
+.col .row {
+    margin-right: 0em;
+}
+
+.modal.open {
+    min-height: 5em;
+    width: 75%;
+}
+
+button.modal-trigger {
+    margin-bottom: 2em;
+}
+
+.modal-header {
+    padding: 0.5em;
+}
+
+.dropdown-content.select-dropdown.multiple-select-dropdown li {
+    display: inline-table;
+}
+
+@media only screen and (min-width: 993px) {
+    .container {
+        width: 96% !important;
+    }
+}
+
+#confetti {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    z-index: -999;
+}
