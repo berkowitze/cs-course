@@ -73,6 +73,20 @@
                     "col": "H"
                 }
             ]
+        },
+        "Python Introduction":
+        {
+            "available": "07/23/2018 11:00AM",
+            "due": "07/25/2018 09:00AM",
+            "grading_started": false,
+            "grading_completed": false,
+            "questions":
+            [
+                {
+                    "filename": "votes.py",
+                    "col": "I"
+                }
+            ]
         }
     }
 }

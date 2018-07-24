@@ -1,27 +1,29 @@
 import os
 import csv
+import json
+
 hw1_scores = [
-        ['abdirahim_mohamed',9],
-        ['abdullah_alshammari',0],
-        ['ayenna_cagaanan',10],
-        ['boyu_chen',9],
-        ['chengxuan_he',8],
-        ['david_fu',9],
-        ['dingyue_zhang',10],
-        ['haoyuan_ma',8],
-        ['jee_won_park',9],
-        ['jesus_contreras',10],
-        ['keying_huang',10],
-        ['chemtai_langat',10],
-        ['mingyi_wang',9],
-        ['ridha_alkhabaz',9],
-        ['sara_ahmed_y_alrabiah',10],
-        ['siyu_chen2',10],
-        ['wanning_su',9],
-        ['will_jaekle',10],
-        ['william_ward1',9],
-        ['xiaojun_lin',8],
-        ['xinyan_he1',10]]
+    ['abdirahim_mohamed',9],
+    ['abdullah_alshammari',0],
+    ['ayenna_cagaanan',10],
+    ['boyu_chen',9],
+    ['chengxuan_he',8],
+    ['david_fu',9],
+    ['dingyue_zhang',10],
+    ['haoyuan_ma',8],
+    ['jee_won_park',9],
+    ['jesus_contreras',10],
+    ['keying_huang',10],
+    ['chemtai_langat',10],
+    ['mingyi_wang',9],
+    ['ridha_alkhabaz',9],
+    ['sara_ahmed_y_alrabiah',10],
+    ['siyu_chen2',10],
+    ['wanning_su',9],
+    ['will_jaekle',10],
+    ['william_ward1',9],
+    ['xiaojun_lin',8],
+    ['xinyan_he1',10]]
 
 base = '/course/cs0050'
 grades = {}
@@ -94,6 +96,34 @@ for student in students:
     if 'homework1' not in grades[student]:
         grades[student]['homework1'] = 'No handin'
     
+# homeworks 4 on
+data_path = os.path.join(base, 'ta', 'assignments.json')
+with open(data_path) as f:
+    data = json.load(f)
+
+asgns = data['assignments']
+for asgn in asgns:
+    # TODO get rid of this for A
+    if asgn == 'Homework 2' or asgn == 'Homework 1' or asgn == 'Homework 3':
+        continue
+
+    if not asgns[asgn]['grading_completed']:
+        continue
+
+    mini_name = asgn.replace(' ', '').lower()
+    grade_path = os.path.join(base, 'hta', 'grades')
+    walker = os.walk(grade_path)
+    _, students, _ = walker.next()
+    for student in students:
+        full_path = os.path.join(grade_path, student, mini_name, 'grade.json')
+        if not os.path.exists(full_path):
+            continue
+
+        with open(full_path) as f:
+            cgrade = json.load(f)
+
+        for key in cgrade:
+            grades[student]['%s %s' % (asgn, key)] = cgrade[key]
 
 columns = []
 for key in grades['william_ward1']:
@@ -121,4 +151,8 @@ with open('grade-summary.tsv', 'a') as f:
     f.write(coljoin(columns))
     for row in rows:
         f.write(coljoin(map(str,row)))
+
+
+    # print asgn, asgns[asgn]['grading_completed']
+
 

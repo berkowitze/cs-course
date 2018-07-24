@@ -1,4 +1,7 @@
-import json, csv, os
+# written by Eli Berkowitz (eberkowi) 2018
+import json
+import csv
+import os
 import numpy as np
 import random
 import shutil
@@ -6,37 +9,17 @@ from functools import wraps
 from textwrap import wrap, fill
 import sys
 from filelock import Timeout, FileLock
+from contextlib import contextmanager
 
 # do NOT use the builtin open function; instead use the
-# LockedFile class defined below.
+# LockedFile function defined below.
+# https://github.com/benediktschmitt/py-filelock/issues/34
 
-class LockedFile(object):
-    ''' use this when opening files to make sure only any given file
-    is only open in one python instance at a time
-    example:
-      script1:
-        with LockedFile('hello.txt', 'w') as f:
-            raw_input()
-      script2:
-        with LockedFile('hello.txt') as f:
-            print f.read()
-
-      script2 will not execute until the user of script1 has completed
-      or cancelled the raw_input
-    '''
-    def __init__(self, filename, mode='r'):
-        self._fn = filename
-        self._mode = mode
-
-    def __enter__(self):
-        self._lock = FileLock('%s.lock' % self._fn)
-        self._lock.acquire()
-        self._f = open(self._fn, self._mode)
-        return self._f
-
-    def __exit__(self, a, b, c):
-        self._lock.release()
-        self._f.close()
+@contextmanager
+def LockedFile(filename, mode='r'):
+        lock = FileLock(filename + ".lock")
+        with lock, open(filename, mode) as f:
+            yield f
 
 
 BASE_PATH = '/course/cs0050'
@@ -49,10 +32,11 @@ rubric_base_path  = os.path.join(DATA_PATH, 'rubrics')
 grade_base_path   = os.path.join(DATA_PATH, 'grades')
 s_files_base_path = os.path.join(DATA_PATH, 'sfiles')
 blocklist_path    = os.path.join(DATA_PATH, 'blocklists')
+if not os.path.exists(asgn_data_path):
+    raise OSError('No data file "%s"' % asgn_data_path)
+
 with LockedFile(asgn_data_path) as f:
     data = json.load(f)
-
-assert os.path.exists(data['base_path'])
 
 def started_asgns():
     assignments = []
@@ -78,7 +62,7 @@ def is_started(f):
             raise Exception(e % asgn.full_name)
         else:
             ''' run as normal if grading has started '''
-            is_started.__doc__ = f.__doc__ # todo i dont think this does anything
+            is_started.__doc__ = f.__doc__  # todo probably can delete
             return f(*args, **kwargs)
 
     return magic
@@ -109,17 +93,24 @@ class User:
 class Assignment(object):
     '''
     Assignment class
-    Provides interface with logs, grades, and rubrics
+    Provides interface with logs, grades, and rubrics, files, etc.
+    Takes in a key like "Homework 4" which must match a key in the
+    /course/course/ta/assignments.json file.
     '''
     def __init__(self, key):
         # ex "Homework 2"
         self.full_name = key
 
-        # ex "homework2"
+        # ex "homework2"; lowercase, no spaces
         self.mini_name = key.strip().lower().replace(' ', '')
 
         # gives due date, questions, expected filenames, etc.
-        self.json = data['assignments'][self.full_name]
+        try:
+            self.json = data['assignments'][self.full_name]
+            self.started = self.json['grading_started']
+        except KeyError:
+            base = 'No assignment key "%s" in assignments.json'
+            raise KeyError(base % self.full_name)
 
         # directory with all grading logs
         self.log_path = os.path.join(log_base_path, self.mini_name)
@@ -135,29 +126,26 @@ class Assignment(object):
         self.blocklist_path = os.path.join(blocklist_path,
                                            '%s.csv' % self.mini_name)
 
-        with LockedFile(asgn_data_path) as f:
-            asgn_data = json.load(f)['assignments']
-            self.started = asgn_data[self.full_name]['grading_started']
-            if not self.started:
-                return
+        if not self.started:
+            return
 
         assert os.path.exists(self.log_path), \
             'started assignment %s with no log directory' % key
 
         assert os.path.exists(self.rubric_path), \
             'started assignment %s with no rubric directory' % key
-        
+
         assert os.path.exists(self.grade_path), \
             'started assignment %s with no grade directory' % key
 
         self.load_questions()
-    
+
     @is_started
     def load_questions(self):
         ''' load all log files, creating Question instances stored into
-            self.logs '''
-        logs = []
-        for i, q in enumerate(self['questions']):
+            self.questions '''
+        questions = []
+        for i, q in enumerate(self.json['questions']):
             qlog_path = self.qnumb_to_log_path(i + 1)
             qrub_path = self.qnumb_to_rubric_path(i + 1)
             qgrade_path = self.qnumb_to_grade_path(i + 1)
@@ -166,13 +154,10 @@ class Assignment(object):
                                 grades_path=qgrade_path,
                                 parent_asgn=self,
                                 filename=q['filename'])
-            logs.append(question)
+            
+            questions.append(question)
 
-        self.logs = logs
-
-    @is_started
-    def set_status(self):
-        pass
+        self.questions = questions
 
     def qnumb_to_log_path(self, qnumb):
         ''' given the question number, get the log path for that question '''
@@ -182,23 +167,18 @@ class Assignment(object):
         ''' given the question number, get the rubric path
             for that question '''
         return os.path.join(self.rubric_path, 'q%s.json' % qnumb)
-    
+
     def qnumb_to_grade_path(self, qnumb):
         ''' given the question number, get the grade path for that question '''
         return os.path.join(self.grade_path, 'q%s' % qnumb)
 
     @is_started
     def get_question(self, ndx):
-        ''' get a question by index '''
-        return self.logs[ndx]
-
-    def __getitem__(self, ndx):
-        ''' makes assignment indexable 
-        assignment['available'] returns available date from json file '''
-        return self.json[ndx]
+        ''' get a question by index, won't work if grading isn't started '''
+        return self.questions[ndx]
 
     def __repr__(self):
-        ''' representation of instance (i.e. when printing) '''
+        ''' representation of instance (i.e. for printing) '''
         return 'Assignment(name=%s)' % self.full_name
 
 class Question:
@@ -219,6 +199,7 @@ class Question:
 
         # if a TA has extracted a homework, grading has started
         # (perhaps slightly arbitrary but easy)
+        # yeah improve this TODO
         if lines == []:
             self.grading_started = False
             self.handins = []
@@ -290,17 +271,21 @@ class Question:
         with LockedFile(self.rubric_path, 'w') as f:
             json.dump(rubric, f, indent=2)
 
-    def add_comment(self, comment):
+    def add_comment(self, category, comment):
         for handin in self.handins:
             if handin.extracted:
-                handin.add_comment(comment)
+                handin.add_comment(category, comment)
 
         # todo combine this with add_comment method of Handin class
         with LockedFile(self.rubric_path) as f:
             rubric = json.load(f)
 
         comment_data = {'comment': comment, 'value': False}
-        rubric['_COMMENTS'].append(comment_data)
+        if category == 'General':
+            rubric['_COMMENTS'].append(comment_data)
+        else:
+            rubric[category]['comments'].append(comment_data)
+
         with LockedFile(self.rubric_path, 'w') as f:
             json.dump(rubric, f, indent=2)
 
@@ -364,7 +349,7 @@ class Handin:
                                        'student-%s.json' % self.id)
         e = 'extracted handin for student %s missing grade file'
         e += ' or incorrectly has grade file'
-        assert self.extracted == os.path.exists(self.grade_path), e
+        assert self.extracted == os.path.exists(self.grade_path), e % self.id
 
     def get_rubric(self):
         if os.path.exists(self.grade_path):
@@ -406,10 +391,11 @@ class Handin:
         if flagged is not None:
             cline[3] = flagged
         if msg is not None:
-            # get rid of commas so reading csv in future isn't messed up (todo this necessary?)
+            # get rid of commas so reading csv in future isn't messed up 
+            # (todo this necessary?)
             cline[4] = msg.replace(',', '_')
 
-        with LockedFile(self.question.log_path) as f: #TODO fix
+        with LockedFile(self.question.log_path) as f:  # TODO fix
             lines = list(csv.reader(f))
             newlines = []
             found = False
@@ -471,42 +457,47 @@ class Handin:
         with LockedFile(self.grade_path, 'w') as f:
             json.dump(json_data, f, indent=2)
 
-    def save_data(self, data, comments, force_complete=False):
+    def save_data(self, data, new_comments, force_complete=False):
+        rubric = self.get_rubric()
         def check_data():
             for key in data:
-                if data[key][0] == None or data[key][0] == 'None':
+                if data[key][0] is None or data[key][0] == 'None':
                     return False
 
             return True
 
-        def update_comments(rubric):
-            for comment in rubric['_COMMENTS']:
-                comment['value'] = comment['comment'] in comments
-                if comment['value']:
-                    comments.pop(comments.index(comment['comment']))
+        def update_comments(old_comments, new_comment_texts):
+            old_names = map(lambda c: c['comment'], old_comments)
+            final_comments = []
+            for i, comment in enumerate(old_comments):
+                if comment['comment'] in new_comment_texts:
+                    new_comment_texts.remove(comment['comment'])
+                    old_comments[i]['value'] = True
+                else:
+                    old_comments[i]['value'] = False
 
-            print comments # remaining comments
-            # todo deal with remaining comments (new comments)
-            return rubric
+            assert new_comment_texts == [], \
+                'c not empty (%s)' % new_comment_texts
+
+        update_comments(rubric['_COMMENTS'], new_comments['General'])
+        for key in new_comments:
+            if key == 'General':
+                continue
+            else:
+                update_comments(rubric[key]['comments'], new_comments[key])
 
         if force_complete and not check_data():
             return False
 
-        rubric = self.get_rubric()
         for description in data:
             value = data[description][0]
             category = data[description][1]
-            for k in rubric:
-                if k != category:
+            for rubric_item in rubric[category]['rubric_items']:
+                if description == rubric_item['name']:
+                    rubric_item['value'] = value
+                else:
                     continue
 
-                for rubric_item in rubric[k]:
-                    if description != rubric_item['name']:
-                        continue
-
-                    rubric_item['value'] = value
-
-        rubric = update_comments(rubric)
         self.write_grade(rubric)
         return True
 
@@ -526,67 +517,69 @@ class Handin:
 
         return False
 
-    def add_comment(self, comment):
+    def add_comment(self, category, comment):
         assert self.extracted, 'cannot add comment to unextracted handin'
         with LockedFile(self.grade_path) as f:
             rubric = json.load(f)
 
+        print 'GP: %s' % self.grade_path
+
         comment_data = {'comment': comment, 'value': False}
-        rubric['_COMMENTS'].append(comment_data)
+        if category == 'General':
+            rubric['_COMMENTS'].append(comment_data)
+        else:
+            print category, rubric[category]
+            rubric[category]['comments'].append(comment_data)
         with LockedFile(self.grade_path, 'w') as f:
             json.dump(rubric, f, indent=2)
 
     def generate_grade_report(self):
+        def get_comments(comments):
+            ''' simple helper that gets the comment text from comments that
+            were assigned to this student's handin '''
+            return map(lambda c: c['comment'],
+                       filter(lambda c: c['value'], comments))
+
         rubric = self.get_rubric()
-        # grade part
         grade = {}
+        comments = {}
         for key in rubric:
             if key == '_COMMENTS':
-                continue
+                comments['GENERAL'] = get_comments(rubric['_COMMENTS'])
+            else:
+                comments[key] = get_comments(rubric[key]['comments'])
 
-            grade[key] = 0
-            for rubric_item in rubric[key]:
-                ndx = rubric_item['options'].index(rubric_item['value'])
-                grade[key] += rubric_item['point-val'][ndx]
-
-        # comments part
-        comments = dict([(key, []) for key in grade.keys()])
-        comments['OTHER'] = []
-        for comment in [c for c in rubric['_COMMENTS'] if c['value']]:
-            c = comment['comment']
-            found = False
-            for key in comments:
-                if c.startswith(key):
-                    comments[key].append(c)
-                    found = True
-                    break
-
-            if not found:
-                comments['OTHER'].append(c)
+                # set grade for this category
+                grade[key] = 0
+                for rubric_item in rubric[key]['rubric_items']:
+                    ndx = rubric_item['options'].index(rubric_item['value'])
+                    grade[key] += rubric_item['point-val'][ndx]
 
         report_str = '%s\n' % self.question.filename
-        pre_string = '  ' # two spaces because this will be nested in a problem
+        pre_string = '  '  # each problem is nested by pre_string in email
         for key in comments:
-            if key == 'OTHER' or comments[key] == []:
+            # if GENERAL comments or if there are no comments for that section,
+            # do nothing...
+            if key == 'GENERAL' or comments[key] == []:
                 continue
 
             report_str += '%s%s:\n' % (pre_string, key)
-            for comment in comments[key]:
+            # have longest comment at the top
+            for comment in sorted(comments[key], key=lambda s: -len(s)):
                 comment = comment.replace('%s: ' % key, '')
                 comment_lines = fill('%s' % comment, 74,
                                      initial_indent=(pre_string * 2 + '- '),
                                      subsequent_indent=(pre_string * 3))
                 report_str += '%s\n\n' % comment_lines
 
-        if comments['OTHER'] != []:
-            for comment in comments['OTHER']:
-                comment_lines = fill(comment, 74,
-                                     initial_indent=(pre_string + '- '))
-                report_str += '%s\n\n' % comment_lines
+        for comment in comments['GENERAL']:
+            comment_lines = fill(comment, 74,
+                                 initial_indent=(pre_string + '- '))
+            report_str += '%s\n\n' % comment_lines
 
         report_str += '%s\n' % ('-' * 74)
         return report_str, grade
 
     def __repr__(self):
-        return 'Handin(extracted=%s, completed=%s)' % (self.extracted, self.complete)
-
+        base = 'Handin(id=%s, extracted=%s, completed=%s)'
+        return base % (self.id, self.extracted, self.complete)

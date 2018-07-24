@@ -16,3 +16,5 @@ hta/grading/anonymization/*
 hta/handin/venv
 hta/handin/students/*
 hta/grade-summary.tsv
+hta/gradesbackup
+ta/grading/data-backup2
