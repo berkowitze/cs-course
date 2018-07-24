@@ -137,7 +137,6 @@ function loadHandin(x) {
 function resetContainer() {
     $('main .container').html(''); // get rid of container data
     $('#code-content').html(''); // get rid of code viewer content
-    $('select#comment-select option').not('#comment-select-template').remove();
     $('.active-li').removeClass('active-li'); // deselect selected sidebar items
 }
 
@@ -178,112 +177,143 @@ function sidebarById(id) {
 }
 
 function rubricToForm(rubric) {
-    a = rubric;
-    var container = $('<div class="container">');
+    var container = $('<div class="container">'); // container with entire rubric for student
     var keys = Object.keys(rubric);
     keys.sort();
-    for (var i = 0; i < keys.length; i++) {
+    for (var i = 0; i < keys.length; i++) {          // **for each category...
         var key = keys[i];
+        console.log(key);
         if (key == '_COMMENTS') {
             continue;
         }
-        var cat_div = $('<div class="category-div">');
-        var cat_name = $('<div class="category-name">');
-        cat_name.text(key)
-        cat_div.append(cat_name);
-        var category = rubric[key]
-        for (var j = 0; j < category.length; j++) {
+        var catDiv = $('<div class="category-div">'); // div for this category
+        var catName = $('<div class="category-name">'); // category div headre
+        catName.text(key)
+        catDiv.append(catName);
+        a = rubric[key];
+        var category = rubric[key]['rubric_items']; // list of rubric items
+        for (var j = 0; j < category.length; j++) {   // **for each rubric item...
             rubric_item = category[j];
-
-            var rubric_desc = $('<div class="rubric-desc">')
+            // generate description of rubric item (left side of HTML)
+            var rubric_desc = $('<div class="rubric-desc">');
             rubric_desc.text(rubric_item['name']);
             // just in case text is somehow modified, add the name as data too
             rubric_desc.data('json_key', rubric_item['name']);
             rubric_desc.data('cat_id', i);
             rubric_desc.data('item_id', j);
-            cat_div.append(rubric_desc)
+            catDiv.append(rubric_desc);
 
-            rubric_select = $('<select class="rubric-sel browser-default">');
-            for (var k = 0; k < rubric_item['options'].length; k++) {
-                opt = $('<option>');
+            // generate select dropdown for the rubric item options
+            var rubric_select = $('<select class="rubric-sel browser-default">');
+            for (var k = 0; k < rubric_item['options'].length; k++) { // for each option of each rubric item
+                var opt = $('<option>');
                 opt.val(rubric_item['options'][k]);
                 opt.text(rubric_item['options'][k]);
                 opt.data('index', k);
                 rubric_select.append(opt);
             }
             if ('value' in rubric_item && rubric_item['value'] != null) {
-                rubric_select.val(rubric_item['value']);
+                rubric_select.val(rubric_item['value']); // set value if it's set
             }
             else if (rubric_item['default'] != null) {
-                rubric_select.val(rubric_item['default']);
+                rubric_select.val(rubric_item['default']); // set default if value not set
             }
             else {
-                rubric_select.val('');
+                rubric_select.val(''); // set no value if null default & no value
             }
             rubric_select.data('cat_id', i);
             rubric_select.data('item_id', j);
-            cat_div.append(rubric_select);
+            catDiv.append(rubric_select);
         }
-        container.append(cat_div);
-    }
-    comment_sel = $('#comment-select-template').clone();
-    comment_sel.prop('id', '');
-    comment_sel.removeClass('nodisp');
+        // add comment row for this category...
+        var commentDivDescription = $('<div class="rubric-desc-column">');
+        commentDivDescription.text('Enter comments for ' + key + ': ');
 
-    overall = false;
-    for (var i = 0; i < rubric['_COMMENTS'].length; i++) {
-        comment = rubric['_COMMENTS'][i];
-        opt = addCommentOpt(comment['comment'], comment['value']);
-        overall = overall || comment['value'];
-        comment_sel.find('select').append(opt);
-    }
+        var commentDiv = generateCommentSection(key, rubric[key]['comments']);
+        commentDiv.addClass('rubric-sel-column');
 
-    if (!overall) {
-        comment_sel.find('#no-comments-opt').prop('selected', true);
-    }
-    
-    comment_add = $('#comment-add-template').clone();
-    comment_add.prop('id', '');
-    comment_add.removeClass('nodisp');
-    
-    comment_div = $('<div>');
-    comment_div.append(comment_sel);
-    comment_div.append(comment_add);
-    container.append(comment_div);
-    $(document).ready(function(){$('select#comment-select').formSelect()});
+        catDiv.append(commentDivDescription);
+        catDiv.append(commentDiv);
 
+        catDiv.append(commentDiv);
+        container.append(catDiv);
+
+    }
+    a = rubric;
+    genCommentSel  = generateCommentSection('General', rubric['_COMMENTS']);
+    genCommentHead = $('<div class="general-name">');
+    genCommentHead.text('General Comments');
+    container.append(genCommentHead);
+    container.append(genCommentSel);
+    $(document).ready(function(){
+        $('select.comment-select').select2({'tags': true, 
+                    createTag: function (tag) {
+                    return {
+                        id: tag.term,
+                        text: tag.term,
+                        isNew: true
+                    }
+                 }});
+    });
     return container;
 }
 
-function addCommentOpt(comment, selected) {
-    var opt = $('<option>');
-    opt.data('comment', comment);
-    opt.val(comment);
-    if (selected) {
-        opt.prop('selected', true);
+function generateCommentSection(category, comments) {
+    var sel = $('<select multiple="multiple" class="form-control">');
+    sel.addClass('comment-select');
+    var data = [];
+    for (var i = 0; i < comments.length; i++) {
+        var comment = comments[i];
+        var new_comment = {'id': comment['comment'],
+                           'text': comment['comment'],
+                           'selected': comment['value']};
+        data.push(new_comment);
     }
-    opt.text(comment);
-    return opt;
+    sel.prop('id', category);
+    sel.select2({data: data,
+                 tags: true
+                 }).on('select2:select',
+                        function(e) {
+                            console.log(e);
+                            if (e.params.data.isNew) {
+                                term = e.params.data.text;
+                                CommentDialog("Make comment useable by all TA's?", category, term);
+                            }
+                        });
+    return sel;
 }
 
-function newComment(x) {
-    button = $(x);
-    commentToAdd = $('#new-comment-inp').val();
-    opt = addCommentOpt(commentToAdd, true);
-    if (commentToAdd == '') {
-        M.toast({'html': 'Cannot add empty comment', 'displayLength': 1500});
-        return;
-    }
-    $('#comment-select').append(opt);
-    $(document).ready(function(){$('select#comment-select').formSelect()});
-    
+function CommentDialog(message, category, comment) {
+    $('<div></div>').appendTo('body')
+    .html('<div><h6>'+message+'?</h6></div>')
+    .dialog({
+        modal: true, title: 'Delete message', zIndex: 10000, autoOpen: true,
+        width: 'auto', resizable: false,
+        buttons: {
+            Yes: function () {
+                addGlobalComment(category, comment, false);
+                $(this).dialog("close");
+            },
+            No: function () {
+                addGlobalComment(category, comment, true);
+                $(this).dialog("close");
+            }
+        },
+        close: function (event, ui) {
+            $(this).remove();
+        }
+    });
+};
+
+function addGlobalComment(category, comment, global) {
     $.ajax({
         url: '/add_comment',
         data:
         {
             'id': $('main').data('active-id'),
-            'comment': commentToAdd,
-            'student-only': button.prop('id') == 'add-comment-student',
+            'category': category,
+            'comment': comment,
+            'student-only': global,
         },
         success: function() {
             M.toast({'html': 'Comment added; save handin',
@@ -386,7 +416,13 @@ function fetchFormInfo() {
 }
 
 function getComments() {
-    return $('select#comment-select').val();
+    data = {};
+    commentDivs = $('.category-div .comment-select, #General');
+    for (i = 0; i < commentDivs.length; i++) {
+        commentDiv = commentDivs.eq(i);
+        data[commentDiv.prop('id')] = commentDiv.val();
+    }
+    return data;
 }
 
 function saveHandin(x, complete=false) {
@@ -488,4 +524,7 @@ $(document).ready(function(){
 
     // initialize code viewer
     $('#code-modal').modal();
+
+    // initialize all selects
+    $('.select2-multiple').select2()
 });

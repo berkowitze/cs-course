@@ -106,7 +106,7 @@ class HTA_Assignment(Assignment):
                 shutil.copytree(path, dest)
 
         for _, id, _ in sub_paths:
-            for question in self.logs:
+            for question in self.questions:
                 question.add_handin(id)
 
     def setup_blocklist(self):
@@ -156,6 +156,7 @@ class HTA_Assignment(Assignment):
 
         full_string += '\n%s\n' % grade_string
         
+        print full_string
         if soft:
             return student_id, final_grades, grade
         # write appropriate files
@@ -258,7 +259,7 @@ class HTA_Assignment(Assignment):
     def status(self):
         gradign_started = self.started
         if started:
-            for q in self.logs:
+            for q in self.questions:
                 print q.has_incomplete
 
         return grading_started
