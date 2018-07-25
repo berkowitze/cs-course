@@ -1,92 +1,93 @@
 {
-    "_README1": "under assignments, all keys must be the same as the Google Form option, case insensitive.",
-    "_README2": "dates are mm/dd/yyyy HH:MM_M format",
-    "email_from": "elias_berkowitz@brown.edu",
-    "email_errors_to": "elias_berkowitz@brown.edu",
-    "handin_log_path": "/course/cs0050/hta/handin/submission_log.txt",
-    "base_path": "/course/cs0050/hta/handin/students",
-    "sheet_id": "1U728-SM9_Rj6A64tj9iIhsNUkfy7x9SCiZubEMn_b64",
-    "sheet_name": "handins",
-    "start_col": "A",
-    "end_col": "L",
-    "start_row": 2,
-    "email_col": "B",
-    "submit_col": "C",
-    "assignments":
-    {
-        "Homework 2":
-        {
-            "available": "06/03/2018 03:00PM",
-            "due": "07/02/2018 09:00AM",
-            "grading_started": true,
-            "grading_completed": true,
-            "questions":
-            [
+    "submit_col": "C", 
+    "end_col": "L", 
+    "start_row": 2, 
+    "start_col": "A", 
+    "base_path": "/course/cs0050/hta/handin/students", 
+    "sheet_name": "handins", 
+    "assignments": {
+        "Python Introduction": {
+            "available": "07/23/2018 11:00AM", 
+            "grading_completed": false, 
+            "grading_started": true, 
+            "questions": [
                 {
-                    "filename": "funcs-hwk.arr",
-                    "col": "D"
+                    "col": "I", 
+                    "filename": "votes.py"
                 }
-            ]
-        },
-        "Homework 3":
-        {
-            "available": "07/02/2018 03:00PM",
-            "due": "07/10/2018 06:00PM",
-            "grading_started": true,
-            "grading_completed": true,
-            "questions":
-            [
+            ], 
+            "due": "07/25/2018 09:00AM"
+        }, 
+        "Homework 4": {
+            "available": "07/11/2018 01:00PM", 
+            "grading_completed": true, 
+            "grading_started": true, 
+            "questions": [
                 {
-                    "filename": "icecream.arr",
-                    "col": "E"
-                },
-                {
-                    "filename": "gradebook-hwk.arr",
-                    "col": "F"
+                    "col": "G", 
+                    "filename": "schools.arr"
                 }
-            ]
-        },
-        "Homework 4":
-        {
-            "available": "07/11/2018 01:00PM",
-            "due": "07/16/2018 11:59PM",
-            "grading_started": true,
-            "grading_completed": true,
-            "questions":
-            [
+            ], 
+            "due": "07/16/2018 11:59PM"
+        }, 
+        "Homework 5": {
+            "available": "07/16/2018 01:00PM", 
+            "grading_completed": false, 
+            "grading_started": false, 
+            "questions": [
                 {
-                    "filename": "schools.arr",
-                    "col": "G"
+                    "col": "H", 
+                    "filename": "votes.arr"
                 }
-            ]
-        },
-        "Homework 5":
-        {
-            "available": "07/16/2018 01:00PM",
-            "due": "07/20/2018 06:00PM",
-            "grading_started": false,
-            "grading_completed": false,
-            "questions":
-            [
+            ], 
+            "due": "07/20/2018 06:00PM"
+        }, 
+        "Homework 1": {
+            "available": "06701/2018 03:00PM", 
+            "grading_completed": true, 
+            "grading_started": true, 
+            "questions": [
                 {
-                    "filename": "votes.arr",
-                    "col": "H"
+                    "col": "C", 
+                    "filename": "flags.arr"
                 }
-            ]
-        },
-        "Python Introduction":
-        {
-            "available": "07/23/2018 11:00AM",
-            "due": "07/25/2018 09:00AM",
-            "grading_started": false,
-            "grading_completed": false,
-            "questions":
-            [
+            ], 
+            "due": "07/02/2018 09:00AM"
+        }, 
+        "Homework 2": {
+            "available": "06/03/2018 03:00PM", 
+            "grading_completed": true, 
+            "grading_started": true, 
+            "questions": [
                 {
-                    "filename": "votes.py",
-                    "col": "I"
+                    "col": "D", 
+                    "filename": "funcs-hwk.arr"
                 }
-            ]
+            ], 
+            "due": "07/02/2018 09:00AM"
+        }, 
+        "Homework 3": {
+            "available": "07/02/2018 03:00PM", 
+            "grading_completed": true, 
+            "grading_started": true, 
+            "questions": [
+                {
+                    "col": "E", 
+                    "filename": "icecream.arr"
+                }, 
+                {
+                    "col": "F", 
+                    "filename": "gradebook-hwk.arr"
+                }
+            ], 
+            "due": "07/10/2018 06:00PM"
         }
-    }
+    }, 
+    "email_col": "B", 
+    "_README2": "dates are mm/dd/yyyy HH:MM_M format", 
+    "_README1": "under assignments, all keys must be the same as the Google Form option, case insensitive.", 
+    "email_from": "elias_berkowitz@brown.edu", 
+    "handin_log_path": "/course/cs0050/hta/handin/submission_log.txt", 
+    "sheet_id": "1U728-SM9_Rj6A64tj9iIhsNUkfy7x9SCiZubEMn_b64", 
+    "email_errors_to": "elias_berkowitz@brown.edu"
 }

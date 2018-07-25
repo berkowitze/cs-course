@@ -111,7 +111,7 @@ def flag_handin():
     if flag:
         workflow['handin'].flag(msg=request.args['msg'])
     else:
-        workflow['handin'].unflag(msg='')
+        workflow['handin'].unflag()
 
     return json.dumps({'flagged': flag,
                        'id': ident,
@@ -154,7 +154,6 @@ def add_comment():
         'trying to unextract inactive handin'
 
     student_only = json.loads(request.args['student-only'])
-    print student_only
     category     = request.args['category']
     comment      = request.args['comment']
     if student_only:
@@ -172,7 +171,7 @@ def complete_handin():
     assert workflow['handin'].id == int(ident), \
         'trying to unextract inactive handin'
 
-    workflow['handin'].completed()
+    workflow['handin'].set_complete()
     return 'good'
 
 # handle authentication

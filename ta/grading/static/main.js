@@ -98,11 +98,22 @@ function generateSidebarItem(li, handin) {
 }
 
 function populateSidebar(userHandins) {
+    sidebarItems = [];
     for (i = 0; i < userHandins.length; i++) {
         var handin = userHandins[i];
         var template = $('#handin-list-item-template');
-        $('#handin-ul').append(generateSidebarItem(template.clone(), handin));
+        sidebarItems.push(generateSidebarItem(template.clone(), handin));
+        
     }
+    sidebarItems = sidebarItems.sort(function(a, b) {
+        if ($(a).data('studentId') < $(b).data('studentId')) {
+            return -1;
+        }
+        else {
+            return 1;
+        }
+    });
+    $('#handin-ul div#sidenav-content').append(sidebarItems);
 }
 
 function extract(x) {
@@ -182,7 +193,6 @@ function rubricToForm(rubric) {
     keys.sort();
     for (var i = 0; i < keys.length; i++) {          // **for each category...
         var key = keys[i];
-        console.log(key);
         if (key == '_COMMENTS') {
             continue;
         }
@@ -291,16 +301,18 @@ function CommentDialog(message, category, comment) {
         width: 'auto', resizable: false,
         buttons: {
             Yes: function () {
+                console.log('Global Comment');
                 addGlobalComment(category, comment, false);
                 $(this).dialog("close");
             },
             No: function () {
+                console.log('Local comment');
                 addGlobalComment(category, comment, true);
                 $(this).dialog("close");
             }
         },
         close: function (event, ui) {
-            $(this).remove();
+            // $(this).remove();
         }
     });
 };
@@ -476,7 +488,13 @@ function handinCompleted(data) {
         'html': 'Handin completed',
         'displayLength': 2500
     });
+    clearMain();
     loadProb($('select#prob-list'));
+}
+
+function clearMain() {
+    $('#rubric-div').empty();
+    $('.handin-button').not('#extract-handin').prop('disabled', true);
 }
 
 $(document).ready(function(){
