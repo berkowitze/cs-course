@@ -66,12 +66,13 @@
 </header>
 <main>
   <div class='modal' id='code-modal'>
-    <h5 class='modal-header'>Double-click to select all. Open <a target="_blank" href="https://code.pyret.org/editor">CPO</a>.</h5>
+    <h5 class='modal-header'>Double-click to select all. Open <a target="_blank" href="https://code.pyret.org/editor">CPO</a>. <input id='code-link' type='text'/><button onclick='copyCodeLink(this)' class='browser-default waves-effect waves-teal btn-flat'>Copy Link to Code Directory</button></h5>
     <pre><code id="code-content" class='python'></code></pre>
   </div>
-  <div id='rubric-div' class='container'>
-
+  <div class='modal' id='report-modal'>
+    <pre id='report-contents'></pre>
   </div>
+  <div id='rubric-div' class='container'></div>
 </main>
 <footer class='page-footer col s8 white nodisp'>
   <div class='row' id='handin-options'>
@@ -80,6 +81,7 @@
     <button class='btn green handin-button darken-1 waves-light col s2' id='handin-save' onclick='saveHandin(this)' disabled>Save</button>
     <button class='btn green handin-button darken-1 waves-light col s2' id='handin-flag' onclick='flagToggle(this)' disabled>Flag</button>
     <button class='btn green handin-button darken-1 waves-light col s2' id='handin-unextract' onclick='unextractHandin(this)' disabled>Unextract</button>
+    <button class='btn green handin-button darken-1 waves-light col s2' id='handin-report-view' data-target='report-modal' onclick='viewReport(this)' disabled>View Report</button
   </div>
 </footer>
 </body>

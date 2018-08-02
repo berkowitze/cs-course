@@ -2,12 +2,12 @@
 import json
 import csv
 import os
-import numpy as np
 import random
 import shutil
 from textwrap import wrap, fill
 import sys
-from helpers import locked_file, require_resource
+from helpers import locked_file, require_resource, bracket_check, \
+    rubric_check
 from datetime import datetime as dt
 
 ## READ BEFORE EDITING THIS FILE ##
@@ -27,6 +27,7 @@ log_base_path     = os.path.join(DATA_PATH, 'logs')
 rubric_base_path  = os.path.join(DATA_PATH, 'rubrics')
 grade_base_path   = os.path.join(DATA_PATH, 'grades')
 s_files_base_path = os.path.join(DATA_PATH, 'sfiles')
+anon_base_path    = os.path.join(DATA_PATH, 'anonymization')
 blocklist_path    = os.path.join(DATA_PATH, 'blocklists')
 if not os.path.exists(asgn_data_path):
     raise OSError('No data file "%s"' % asgn_data_path)
@@ -73,8 +74,10 @@ class User(object):
         rendering; routes that require ta/hta permission should use a
         hashed password authentication and session cookies '''
         self.uname = uname
-        tas = np.loadtxt(ta_path, dtype=str)
-        htas = np.loadtxt(hta_path, dtype=str)
+        with locked_file(ta_path) as t, locked_file(hta_path) as h:
+            tas = t.read().strip().split('\n')
+            htas = h.read().strip().split('\n')
+
         self.ta  = self.uname in tas
         self.hta = self.uname in htas
 
@@ -103,7 +106,7 @@ class Assignment(object):
         # ex "Homework 2"
         self.full_name = key
 
-        # ex "homework2"; lowercase, no spaces
+        # ex "homework2"; lowercase, no spaces; used for folders files etc
         self.mini_name = key.strip().lower().replace(' ', '')
 
         # gives due date, questions, expected filenames, etc.
@@ -116,6 +119,14 @@ class Assignment(object):
             self.due_date = dt.strptime(self.json['due'], '%m/%d/%Y %I:%M%p')
             self.due = self.due_date < current_time
             self.started = self.json['grading_started']
+            try:
+                self.anonymous = self.json['anonymous']
+                if not self.anonymous:
+                    self.ta_anon_path = os.path.join(anon_base_path,
+                                                     '%s.csv' % self.mini_name)
+            except KeyError:
+                print '%s should have anonymous key' % self.full_name
+                raise
 
         # directory with all grading logs
         self.log_path = os.path.join(log_base_path, self.mini_name)
@@ -145,6 +156,15 @@ class Assignment(object):
 
         self.load_questions()
 
+    def check_rubric(self):
+        passed, msg = rubric_check(self.rubric_path)
+        if not passed:
+            print '%s has invalid rubric:' % self.mini_name
+            print '\t%s' % msg
+            return False
+        else:
+            return True
+
     @is_started
     def load_questions(self):
         ''' load all log files, creating Question instances stored into
@@ -161,6 +181,30 @@ class Assignment(object):
     def get_question(self, ndx):
         ''' get a question by index, won't work if grading isn't started '''
         return self.questions[ndx]
+
+    def login_to_id(self, login):
+        if self.anonymous:
+            raise ValueError('Cannot get login on anonymous assignment')
+
+        lines = list(csv.reader(open(self.ta_anon_path)))
+        for line in lines:
+            if line[0] == login:
+                return line[1]
+
+        e = 'login %s does not exist in map for %s'
+        raise ValueError(e % (login, self))
+
+    def id_to_login(self, id):
+        if self.anonymous:
+            raise ValueError('Cannot get login on anonymous assignment')
+
+        lines = list(csv.reader(open(self.ta_anon_path)))
+        for line in lines:
+            if line[1] == str(id):
+                return line[0]
+
+        e = 'id %s does not exist in map for %s'
+        raise ValueError(e % (id, self))
 
     def __repr__(self):
         ''' representation of instance (i.e. for printing) '''
@@ -242,6 +286,7 @@ class Question(object):
         self.has_flagged = has_flagged()
         # how many handins for this question have been completed
         self.completed_count = len([x for x in self.handins if x.complete])
+        self.flagged_count = len([x for x in self.handins if x.flagged])
 
     def ta_handins(self, user):
         ''' return all handins for the given user (User class) '''
@@ -298,10 +343,10 @@ class Question(object):
         the handin if the user is the grader of that handin or the
         user is an HTA '''
         for handin in self.handins:
-            if handin.id == anon_id:
+            if int(handin.id) == int(anon_id):
                 if not (handin.grader == user.uname or user.hta):
                     base = 'Handin only viewable by HTA or %s'
-                    raise PermissionError(base % handin.grader)
+                    raise IOError(base % handin.grader)
                 else:
                     return handin
 
@@ -424,11 +469,26 @@ class Handin(object):
         rdata = {}
         rdata['functionality'] = 3
         rdata['id'] = self.id
+        asgn = self.question.assignment
+        if not asgn.anonymous:
+            try:
+                self.student_name = asgn.id_to_login(self.id)
+            except ValueError:
+                self.student_name = 'Not found'
+
+            rdata['student-name'] = self.student_name
+        else:
+            rdata['student-name'] = None
+        # if self.question.assignment.anonymous:
+        #     rdata['student-name'] = None
+        # else:
+        #     rdata['student-name'] = self.student_name
         rdata['flagged'] = self.flagged
         rdata['complete'] = self.complete
         rdata['rubric'] = self.get_rubric()
         rdata['filename'] = self.question.code_filename
         rdata['student-code'] = self.get_code()
+        rdata['sfile-link'] = 'file:///%s' % self.handin_path
         return rdata
 
     def get_code(self):
@@ -441,6 +501,9 @@ class Handin(object):
         if not os.path.exists(filepath):
             msg = 'No submission (or code issue). Check %s to make sure'
             return msg % self.handin_path
+        elif os.path.splitext(filepath)[1] == '.zip':
+            msg = 'Submission is a zip file; open in file viewer'
+            return msg
         else:
             # only ever reading this file, no need for lock
             with open(filepath) as f:
@@ -619,7 +682,9 @@ class Handin(object):
     def generate_grade_report(self):
         ''' return a report_str (all comments collected and formatted nicely)
         and a dictionary with one key per theme, values being the numeric score
-        the student received in that category for this question only '''
+        the student received in that category for this question only 
+        NOTE: no grades can below a 0; as such, any negative grades will
+        be rounded up to 0'''
         def get_comments(comments):
             ''' simple helper that gets the comment text from comments that
             were assigned to this student's handin '''
@@ -641,6 +706,10 @@ class Handin(object):
                     ndx = rubric_item['options'].index(rubric_item['value'])
                     grade[key] += rubric_item['point-val'][ndx]
 
+        for key in grade:
+            if grade[key] < 0:
+                grade[key] = 0
+
         report_str = '%s\n' % self.question.code_filename
         pre_string = '  '  # each problem is nested by pre_string in email
         for key in comments:
@@ -658,7 +727,7 @@ class Handin(object):
                                      subsequent_indent=(pre_string * 3))
                 report_str += '%s\n\n' % comment_lines
 
-        for comment in comments['GENERAL']:
+        for comment in sorted(comments['GENERAL'], key=lambda s: -len(s)):
             comment_lines = fill(comment, 74,
                                  initial_indent=(pre_string + '- '))
             report_str += '%s\n\n' % comment_lines

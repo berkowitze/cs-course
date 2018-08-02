@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import json
+
+if len(sys.argv) != 2:
+    print "Script must be run with filepath as argument"
+    sys.exit(0)
+
+fp = sys.argv[1]
+if not os.path.exists(fp):
+    raise OSError('File not found.')
+
+with open(fp) as f:
+    data = json.load(f)
+
+for key in data:
+    if key == '_COMMENTS':
+        data[key] = []
+    else:
+        data[key]['comments'] = []
+
+with open(fp, 'w') as f:
+    json.dump(data, f, indent=2)
+
+

@@ -3,20 +3,19 @@ Scripts for HTA's!
 - cs50-asgn-hub; no options
     run this script to get easy access to simple features:
         - Generate gradebook to tsv (tab-separated-values)
-        - For each assignment: (notimplemented will be very quick to implement,
-                                just a matter of hooking things up)
-            - Begin grading assignment (notimplemented)
-            - Generate grade reports (notimplemented)
-            - Email grade reports (notimplemented)
+        - For each assignment:
+            - Begin grading assignment
+            - Generate grade reports
+            - Email grade reports
             - Handle regrades (notimplemented)
             - Verify rubric validity (notimplemented)
             - Reset grading (notimplemented)
         - For each assignment during grading:
             - View flagged handins (notimplemented)
             - Track TA progress? (notimplemented)
-            - Track overall progress (notimplemented)
+            - Track overall progress 
 
 For an explanation of the grading system filesystem (including regrades),
-see /course/cs0050/hta/README
+see /course/cs0050/hta/INFRASTRUCTURE_README
         
         

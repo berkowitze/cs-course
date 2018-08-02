@@ -21,3 +21,6 @@ ta/grading/data-backup2
 backups
 hta/gradebook.tsv
 *.tsv
+hta/permission_errors.log
+hta/grading/archive
+ta/grading/testing.py

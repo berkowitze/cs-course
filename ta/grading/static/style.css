@@ -6,6 +6,10 @@
     display: inline-block;
 }
 
+#report-modal pre {
+    padding: 1em;
+}
+
 nav {
     margin-bottom: 2em;
 }
@@ -42,6 +46,10 @@ div#login-info {
 
 li.handin-list-item {
     padding: 0.4em;
+}
+
+#code-link {
+    width: 2em;
 }
 
 li.handin-list-item:hover {
@@ -81,12 +89,12 @@ h4 {
 }
 div#sidenav-content
 {
-    position:absolute;
+    /*position:absolute;*/
     top: 130px;
     left:0px;
     right:0px;
     bottom:0px;
-    overflow-y: auto;
+    /*overflow-y: auto;*/
     border-top: 2px solid #eee;
 }​
 
@@ -194,4 +202,8 @@ ul.select2-selection__rendered {
 
 .comment-select {
     width: 40%;
+}
+
+button.ui-button.ui-corner-all.ui-widget:focus {
+    border: 1px solid black;
 }

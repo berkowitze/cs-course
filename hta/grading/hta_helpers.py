@@ -8,16 +8,11 @@ def determine_grade(possibilities, ranges, score):
     - above the top number of ranges is the last element of possibilities
     - anything else is determined by checking which range the score is between
     using [inclusive, exclusive) ranges. '''
-
-    # assert len(ranges) == len(possibilities) - 2, \
-    #     " key %s doesn't have enough options" % (self.mini_name, key)
-
-    # the ranges needs to have the grade required to get the third item in
-    # possibilities, the grade required for the fourth, ... (so first two
-    # are not important)
-    assert isinstance(score, (int, float))
-    if score == None: # no grade
+    if score is None: # no grade
         return possibilities[0]
+
+    assert isinstance(score, (int, float)), \
+            'nonscore %s in determine_grade' % score
     
     if score < ranges[0]:
         return possibilities[1]
@@ -32,6 +27,42 @@ def determine_grade(possibilities, ranges, score):
                 return possibilities[i + 2]
 
         raise Exception('Error that shouldn\'t happen damn')
+
+# TODO this really needs to get cleaned up
+def get_student_list():
+    import os
+    base = '/course/cs0050/hta/grades'
+    logins = os.listdir(base)
+    grade_paths = map(lambda f: os.path.join(base, f), logins)
+    return logins, grade_paths
+
+def load_students(path='students.txt'):
+    students = []
+    with open(path, 'r') as f:
+        lines = f.read().strip().split('\n')
+        for line in lines:
+            row      = line.split(' ')
+            email    = row[0]
+            username = row[1]
+            students.append((email, username))
+
+    return students
+
+def email_to_login(email):
+    students = load_students()
+    for student in students:
+        if student[0] == email:
+            return student[1]
+
+    raise Exception('Student %s not found.' % email)
+
+def login_to_email(login):
+    students = load_students()
+    for student in students:
+        if student[1] == login:
+            return student[0]
+
+    raise Exception('Student %s not found.' % login)
 
 if __name__ == '__main__':
     # run some tests if on __main__ (not being imported)

@@ -18,9 +18,9 @@ import getpass
 # set up the web app
 app = Flask(__name__)
 
-# super secure password
+# i have no idea what this is for but i just button mashed
 # (not sure if/how this can be used to hack the program)
-app.secret_key = 'random key'
+app.secret_key = '815tu28g78h8934tgju2893t0j83u2tfjt'
 
 # this dictionary will be used to track what the user is doing;
 # which assignment, question, and handin they are working on.
@@ -173,6 +173,15 @@ def complete_handin():
 
     workflow['handin'].set_complete()
     return 'good'
+
+@app.route('/preview_report')
+@is_logged_in
+def preview_report():
+    ident = request.args['id']
+    assert workflow['handin'].id == int(ident), \
+        'trying to preview report of inactive handin'
+
+    return json.dumps(workflow['handin'].generate_grade_report()[0])
 
 # handle authentication
 @app.route('/login', methods=['GET', 'POST'])
