@@ -1,8 +1,19 @@
+import cProfile, pstats, StringIO
+# pr = cProfile.Profile()
+# pr.enable()
 import json
 import os
-from hta_classes import get_full_asgn_list, asgn_data_path, BASE_PATH
+from hta_classes import get_full_asgn_list, asgn_data_path, \
+                        BASE_PATH, get_student_list, User, login_to_email
 import sys
 import tabulate
+
+# pr.disable()
+# s = StringIO.StringIO()
+# sortby = 'cumulative'
+# ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+# ps.print_stats()
+# print s.getvalue()
 
 def get_opt(prompt, options, first=True):
     ''' given a prompt (to display to the user), and a list of options,
@@ -25,6 +36,7 @@ def get_opt(prompt, options, first=True):
         return get_opt(prompt, options, first=False)
 
 opt = get_opt('> ', ['Generate gradebook', 'Work with assignment'])
+# opt = 1
 asgns = get_full_asgn_list()
 if opt == 0:
     path = os.path.join(BASE_PATH, 'hta', 'gradebook.tsv')
@@ -45,6 +57,7 @@ if opt == 0:
 
     print 'Collecting grades for:'
     # i hope there's a better way to do this...
+    # there is! todo
     students = os.listdir(os.path.join(BASE_PATH, 'hta', 'grades'))
     header = ['Student']
     for asgn in asgns:
@@ -98,10 +111,13 @@ if opt == 0:
 
         rows.append(row)
 
+    with open(path, 'w') as f:
+        f.truncate()
+
     with open(path, 'a') as f:
-        f.write('\t'.join(map(str, header)))
+        f.write('\t'.join(map(str, header)) + '\n')
         for row in rows:
-            f.write('\t'.join(map(str, row)))
+            f.write('\t'.join(map(str, row)) + '\n')
 
     print 'Gradebook outputted to %s' % path
     sys.exit(0)
@@ -123,8 +139,13 @@ else:
     print tabulate.tabulate(rows, header)
     print ''
     print 'Which assignment # would you like to work on?'
+    # ndx = 5
     ndx = get_opt('> ', range(1, len(asgns) + 1), False)
     asgn = asgns[ndx]
+    x = (80 - len(asgn.full_name) - 2) / 2
+    print ''
+    print ('-' * x) + ' ' + asgn.full_name + ' ' + ('-' * x)
+    print ''
     if not asgn.started:
         print '%s grading unstarted. Start it?' % asgn.full_name
         if get_opt('> ', ['Yes', 'No']) == 0:
@@ -141,10 +162,72 @@ else:
         else:
             print 'Cancelling...'
     else:
-        new_header = ["Problem", "# Handins", "# Graded", "# Flagged"]
+        new_header = ["Problem #", "# Handins", "# Graded", "# Flagged"]
+        opts = []
         rows = []
         for question in asgn.questions:
-            print question
+            row = ['%s (%s)' % (question.qnumb, question.code_filename),
+                   question.handin_count,
+                   question.completed_count,
+                   question.flagged_count]
 
+            rows.append(row)
 
-    # raise NotImplementedError
+        print tabulate.tabulate(rows, new_header)
+        print ''
+
+        print 'What would you like to do?'
+        opt = get_opt('> ', ['Reset Assignment Grading', 'Generate Grade Reports',
+                             'Email Grade Report(s)', 'View flagged handins'])
+        if opt == 0:
+            print 'Resetting the assignment will delete any grades given.'
+            if raw_input('Confirm [y/n]: ').lower() != 'y':
+                print 'Exiting...'
+                sys.exit(0)
+
+            asgn.reset_grading(True)
+
+        elif opt == 1:
+            if asgn.grading_completed:
+                print 'Grading already complete. Generate override reports? [y/n]'
+                if raw_input('> ').lower() != 'y':
+                    print 'Exiting...'
+                    sys.exit(0)
+
+            import getpass
+            username = getpass.getuser()
+            user = User(username)
+            print 'Generating grade reports...'
+            logins, paths = get_student_list()
+            handins = asgn.get_handin_dict(logins, user)
+            for student in handins.keys():
+                asgn.generate_report(handins[student],
+                                     student_id=student,
+                                     soft=False,
+                                     overrides=asgn.grading_completed)
+            print 'Assignments generated...\n'
+            print 'Send report emails? [yes/n]'
+            if raw_input('> ').lower() != 'yes':
+                print 'Exiting...'
+                sys.exit(0)
+            else:
+                import yagmail
+                yag = yagmail.SMTP('elias_berkowitz@brown.edu')
+                for student in handins.keys():
+                    em = login_to_email(student)
+                    asgn.send_email(student, em, yag)
+        elif opt == 2:
+            import getpass
+            username = getpass.getuser()
+            user = User(username)
+            logins, paths = get_student_list()
+            handins = asgn.get_handin_dict(logins, user)
+            import yagmail
+            yag = yagmail.SMTP('elias_berkowitz@brown.edu')
+            for student in handins.keys():
+                em = login_to_email(student)
+                asgn.send_email(student, em, yag)
+            #aise NotImplementedError('Email sending Not implemented')
+
+        elif opt == 3:
+            raise NotImplementedError('Flag viewing Not implemented')

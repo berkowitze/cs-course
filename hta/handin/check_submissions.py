@@ -55,6 +55,12 @@ class Question:
             actual_ext = os.path.splitext(self.gf.name)[1]
             # student uploaded incorrect filetype (name irrelevant)
             if expect_ext != actual_ext:
+                if expect_ext == '.zip':
+                    # this is a hack to make things not break
+                    # but it will make other things break. FIX IT.
+                    fpath += actual_ext 
+                    self.fname += actual_ext
+
                 e = 'Student %s uploaded a %s file, expected %s'
                 print e % (login, actual_ext, self.fname)
                 with open('filename_error_template.html', 'r') as f:

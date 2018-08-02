@@ -73,6 +73,7 @@ function clearSidebar() {
 }
 
 function generateSidebarItem(li, handin) {
+    h = handin;
     li.prop('id', '');
     li.find('.handin-student-id').text(handin['id']);
     li.addClass('nontemp');
@@ -94,6 +95,11 @@ function generateSidebarItem(li, handin) {
     li.data('student-id', handin['id']);
     li.find('.handin-status').text(secondary);
     li.removeClass('nodisp');
+    if (handin['student-name'] != null) {
+        span = $("<span>");
+        span.text('(' + handin['student-name'] + ')');
+        li.append(span);
+    }
     return li;
 }
 
@@ -103,7 +109,6 @@ function populateSidebar(userHandins) {
         var handin = userHandins[i];
         var template = $('#handin-list-item-template');
         sidebarItems.push(generateSidebarItem(template.clone(), handin));
-        
     }
     sidebarItems = sidebarItems.sort(function(a, b) {
         if ($(a).data('studentId') < $(b).data('studentId')) {
@@ -151,10 +156,19 @@ function resetContainer() {
     $('.active-li').removeClass('active-li'); // deselect selected sidebar items
 }
 
+function copyCodeLink(x) {
+    button = $(x);
+    $('#code-link').select();
+    document.execCommand('copy');
+    M.toast({html: 'Copied'});
+    open();
+}
+
 function handinLoaded(problemData) {
     problemData = JSON.parse(problemData);
     resetContainer();
     $('#code-content').html(problemData['student-code']); // set code viewer content
+    $('#code-link').val(problemData['sfile-link']);
     $('main').data('active-id', problemData['id']); // set main data to the student's id
     var x = sidebarById(problemData['id']); // get sidebar item for this handin
     $(x).addClass('active-li'); // select current sidebar item
@@ -168,7 +182,7 @@ function handinLoaded(problemData) {
         $('#handin-flag').data('flag', true);
     }
     var gradingForm = rubricToForm(problemData['rubric']);
-    var codeButton = $('<button data-target="code-modal" class="btn modal-trigger">')
+    var codeButton = $('<button data-target="code-modal" class="btn modal-trigger">');
     codeButton.text('View student code (' + problemData['filename'] + ')');
     gradingForm.prepend(codeButton);
     $('main .container').html(gradingForm);
@@ -297,17 +311,18 @@ function CommentDialog(message, category, comment) {
     $('<div></div>').appendTo('body')
     .html('<div><h6>'+message+'?</h6></div>')
     .dialog({
-        modal: true, title: 'Delete message', zIndex: 10000, autoOpen: true,
+        modal: true, title: 'Make comment global?', zIndex: 10000, autoOpen: true,
         width: 'auto', resizable: false,
+        open: function() {
+              $(this).parents('.ui-dialog-buttonpane button:eq(1)').focus(); 
+            },
         buttons: {
-            Yes: function () {
-                console.log('Global Comment');
-                addGlobalComment(category, comment, false);
+            No: function () {
+                addGlobalComment(category, comment, true);
                 $(this).dialog("close");
             },
-            No: function () {
-                console.log('Local comment');
-                addGlobalComment(category, comment, true);
+            Yes: function () {
+                addGlobalComment(category, comment, false);
                 $(this).dialog("close");
             }
         },
@@ -328,9 +343,11 @@ function addGlobalComment(category, comment, global) {
             'student-only': global,
         },
         success: function() {
-            M.toast({'html': 'Comment added; save handin',
-                     'displayLength': 2000});
-            $('#new-comment-inp').val('');
+            if (global) {
+                M.toast({'html': 'Global comment added.',
+                         'displayLength': 2000});
+            }
+            $('#handin-save').click();
         }
     });
 }
@@ -497,6 +514,22 @@ function clearMain() {
     $('.handin-button').not('#extract-handin').prop('disabled', true);
 }
 
+function viewReport(x) {
+    $('#report-modal').modal('open');
+    cid = $('main').data('active-id');
+    button = $(x);
+    // reportLoaded("Hello");
+    $.ajax({
+        url: '/preview_report',
+        data: {'id': cid},
+        success: reportLoaded
+    })
+}
+
+function reportLoaded(data) {
+    $('#report-contents').html(JSON.parse(data));
+}
+
 $(document).ready(function(){
     $('select#asgn-list').focus();
     x = 3;
@@ -542,6 +575,7 @@ $(document).ready(function(){
 
     // initialize code viewer
     $('#code-modal').modal();
+    $('#report-modal').modal();
 
     // initialize all selects
     $('.select2-multiple').select2()

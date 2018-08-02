@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# run this every once in a while to remove lingering .pyc files
+# .pyc files are a way Python saves time running a script multiple
+# times (it's kind of like a compiled version of the program)
+# however, if you ever change your scripts, the .pyc's may be
+# run instead of the new .py files when you import that script.
+# so if you're making changes to, say, grading scripts, it may be
+# a good idea to run this before using grading scripts
+
+find /course/cs0050/hta -maxdepth 3 -name "*.pyc" -delete
+find /course/cs0050/ta -maxdepth 3 -name "*.pyc" -delete
+

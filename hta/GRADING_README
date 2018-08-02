@@ -24,3 +24,7 @@ Grades:
             <edit the new files>
             <send update to student somehow>
 
+    Brackets and rubrics:
+        Do not use negative point values; shift everything to be positive if you
+        need some notion of negativity. That is because all grades are 0 by default,
+        even for student's who did not hand in a problem or the entire assignment.
