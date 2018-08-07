@@ -31,3 +31,7 @@ ta/htas.txt
 ta/students.txt
 old-archive
 client_secret.json
+hta/handin/ref_tok.txt
+hta/handin/client_secret.json
+hta/handin/credentials.json
+
