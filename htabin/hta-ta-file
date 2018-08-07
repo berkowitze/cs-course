@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# makes a file that HTAs have full access to and TAs
+# have customizable access to.
+# takes two arguments: filepath, and permissions for
+# TA's to get on that filepath. second argument should
+# be alphabetic permissions: rwx, rx, etc., not numeric
+
+BASE_GROUP="cs-0111"
+
+if [ "$1" == "-h" ]; then # help command supplied
+    echo "gives HTAs full access, TAs custom access, and others no access"
+    echo "usage: hta-ta-file {filename} {permissions}"
+    exit 0
+fi
+
+if [ $# -ne 2 ]; then # two arguments not supplied
+    echo "usage: hta-ta-file {filename} {permissions}"
+    exit 1
+fi
+
+
+# give HTAs full access
+chgrp $BASE_GROUP"hta" $1
+chmod 770 $1
+
+# give TAs argument-2 access
+setfacl -m g:$BASE_GROUP"ta":$2 $1

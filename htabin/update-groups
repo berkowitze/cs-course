@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# run this file to rewrite students.txt, tas.txt, and htas.txt
+# run when a student drops the course, for example. I'd recommend
+# a crontab running this once a minute in the first few weeks of the
+# semester so grading and handin scripts don't get messed up.
+
+BASE_PATH="/course/cs0050"
+BASE_GROUP="cs-0111"
+
+
+# rewrite students.txt file
+members $BASE_GROUP"student" > $BASE_PATH/ta/students.txt
+# give TAs read-write access, HTAs full access
+hta-ta-file $BASE_PATH/ta/students.txt rx
+
+
+# rewrite tas.txt file
+members $BASE_GROUP"ta" > $BASE_PATH/ta/tas.txt
+# give TAs read-write access, HTAs full access
+hta-ta-file $BASE_PATH/ta/tas.txt rx
+
+
+# rewrite htas.txt file
+members $BASE_GROUP"hta" > $BASE_PATH/ta/tas.txt
+# give TAs read-write access, HTAs full access
+hta-ta-file $BASE_PATH/ta/htas.txt rx
