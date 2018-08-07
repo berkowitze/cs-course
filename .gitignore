@@ -29,3 +29,5 @@ ta/grading/data/tests/*
 ta/tas.txt
 ta/htas.txt
 ta/students.txt
+old-archive
+client_secret.json
