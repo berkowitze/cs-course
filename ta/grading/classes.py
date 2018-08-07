@@ -373,7 +373,7 @@ class Question(object):
             raise ValueError('Attempting to rewrite rubric without override.')
 
         with locked_file(self.rubric_filepath, 'w') as f:
-            json.dump(rubric, f, indent=2)
+            json.dump(rubric, f, indent=2, sort_keys=True)
     
     @require_resource() # using this here is definitely important
     def add_comment(self, category, comment):
@@ -402,7 +402,7 @@ class Question(object):
                 raise
 
         with locked_file(self.rubric_filepath, 'w') as f:
-            json.dump(rubric, f, indent=2)
+            json.dump(rubric, f, indent=2, sort_keys=True)
 
     def __repr__(self):
         return 'Question(file=[%s])' % self.code_filename
@@ -593,7 +593,7 @@ class Handin(object):
     def write_grade(self, json_data):
         ''' write the grade rubric '''
         with locked_file(self.grade_path, 'w') as f:
-            json.dump(json_data, f, indent=2)
+            json.dump(json_data, f, indent=2, sort_keys=True)
 
     def save_data(self, data, new_comments, force_complete=False):
         rubric = self.get_rubric()
@@ -678,7 +678,7 @@ class Handin(object):
         else:
             rubric[category]['comments'].append(comment_data)
         with locked_file(self.grade_path, 'w') as f:
-            json.dump(rubric, f, indent=2)
+            json.dump(rubric, f, indent=2, sort_keys=True)
 
     def generate_grade_report(self):
         ''' return a report_str (all comments collected and formatted nicely)
