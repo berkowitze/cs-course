@@ -96,7 +96,7 @@ class HTA_Assignment(Assignment):
                 return line[1]
 
         e = 'login %s does not exist in map for %s'
-        raise ValueError(e % (login, self.question.assignment))
+        raise ValueError(e % (login, self)) 
 
     def id_to_login(self, id):
         lines = list(csv.reader(open(self.anon_path)))
@@ -105,7 +105,7 @@ class HTA_Assignment(Assignment):
                 return line[0]
 
         e = 'id %s does not exist in map for %s'
-        raise ValueError(e % (login, self.question.assignment))
+        raise ValueError(e % (login, self))
 
     def transfer_handins(self):
         ''' takes handins from the handin folder, anonymizes them,

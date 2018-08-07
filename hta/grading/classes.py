@@ -457,7 +457,8 @@ class Handin(object):
         ''' get the rubric for this handin only; must be extracted '''
         if os.path.exists(self.grade_path):
             with locked_file(self.grade_path) as f:
-                return json.load(f)
+                d = json.load(f)
+                return d
         else:
             base = 'Attempting to get rubric of unextracted handin %s'
             raise ValueError(base % self)
@@ -703,7 +704,13 @@ class Handin(object):
                 # set grade for this category
                 grade[key] = 0
                 for rubric_item in rubric[key]['rubric_items']:
-                    ndx = rubric_item['options'].index(rubric_item['value'])
+                    try:
+                        ndx = rubric_item['options'].index(rubric_item['value'])
+                    except KeyError:
+                        print('PROBABLY REPEATED ITEM NAME: LOOKING AT ')
+                        print(key)
+                        print(rubric[key].keys())
+                        raise
                     grade[key] += rubric_item['point-val'][ndx]
 
         for key in grade:
