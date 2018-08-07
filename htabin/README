@@ -1,6 +1,6 @@
 Scripts for HTA's!
 
-- cs50-asgn-hub; no options
+- cs111-asgn-hub; no options
     run this script to get easy access to simple features:
         - Generate gradebook to tsv (tab-separated-values)
         - For each assignment:
@@ -16,6 +16,6 @@ Scripts for HTA's!
             - Track overall progress 
 
 For an explanation of the grading system filesystem (including regrades),
-see /course/cs0050/hta/INFRASTRUCTURE_README
+see /course/cs0111/hta/INFRASTRUCTURE_README
         
         

@@ -1,6 +1,6 @@
 TA Filesystem readme
 
-/course/cs0050/ta
+/course/cs0111/ta
 
     Terminology:
         - HTA+ : An HTA or the prof for brevity
@@ -33,7 +33,7 @@ TA Filesystem readme
       same file at the same time. They are harmless to remove when it's not a 
       grading session.
 
-  /course/cs0050/ta
+  /course/cs0111/ta
     - assignments.json: this json file contains a summary of the important
       information of each assignment (when it is released, when it's due,
       information for handin downloads, and grading information). This
@@ -66,14 +66,14 @@ TA Filesystem readme
         anyone who knows the password to log into the website can grade
         for the course if they're on the machine.
         TA Access: r-x
-        venv: /course/cs0050/ta/grading/venv/bin/python2.7
+        venv: /course/cs0111/ta/grading/venv/bin/python2.7
 
       - classes.py: this file has all object definitions for assignments,
         individual questions on assignments, and individual handins on
         those individual questions. It contains all the backend logic of the
         grading app.
         TA Access: r-x
-        venv: /course/cs0050/ta/grading/venv/bin/python2.7
+        venv: /course/cs0111/ta/grading/venv/bin/python2.7
 
       - helpers.py: this file contains the functions required to lock files
         when grading to avoid simultaneous read/write.
@@ -83,7 +83,7 @@ TA Filesystem readme
         valid (right keys, values are correct types, etc).
         TODO : move this to bin
         TA Access: rwx
-        venv: /course/cs0050/<TODO>
+        venv: /course/cs0111/<TODO>
 
       /static : all the static files for the grading web server (CSS, JS, images)
         TA Access: r-x

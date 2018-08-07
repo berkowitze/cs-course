@@ -8,6 +8,6 @@
 # so if you're making changes to, say, grading scripts, it may be
 # a good idea to run this before using grading scripts
 
-find /course/cs0050/hta -maxdepth 3 -name "*.pyc" -delete
-find /course/cs0050/ta -maxdepth 3 -name "*.pyc" -delete
+find /course/cs0111/hta -maxdepth 3 -name "*.pyc" -delete
+find /course/cs0111/ta -maxdepth 3 -name "*.pyc" -delete
 

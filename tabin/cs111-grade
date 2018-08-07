@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+cd /course/cs0111/ta/grading
+
+/course/cs0111/ta/grading/venv/bin/python2.7 /course/cs0111/ta/grading/grading_app.py
+
+

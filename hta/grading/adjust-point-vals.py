@@ -1,9 +1,10 @@
 import json
 import os
 from hta_classes import HTA_Assignment, Handin
-
+print('This needs to be built in to the assignment hub')
 def get_choice(prompt, choices):
-    ''' get a numeric choice, valid choices are integers in the choices input '''
+    ''' get a numeric choice, valid choices are integers
+    in the choices input '''
     try:
         choice = int(raw_input(prompt))
         if choice not in choices:
@@ -16,7 +17,7 @@ def get_choice(prompt, choices):
         print 'Input must be an integer...'
         return get_choice(prompt, choices)
 
-base = '/course/cs0050'
+base = '/course/cs0111'
 grade_base = os.path.join(base, 'ta/grading/data/grades')
 #asgn_name = raw_input("Which assignment are you generating grades for?\n> ")
 asgn_name = 'Homework 4' # TODO fix this

@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-cd /course/cs0050/ta/grading
-
-/course/cs0050/ta/grading/venv/bin/python2.7 /course/cs0050/ta/grading/grading_app.py
-
-

@@ -18,7 +18,7 @@ from datetime import datetime as dt
 # with locked_file(filename, mode) as f:
 #     ...
 current_time = dt.now()
-BASE_PATH = '/course/cs0050'
+BASE_PATH = '/course/cs0111'
 DATA_PATH = os.path.join(BASE_PATH, 'ta', 'grading', 'data')
 asgn_data_path    = os.path.join(BASE_PATH, 'ta', 'assignments.json')
 ta_path           = os.path.join(BASE_PATH, 'ta', 'tas.txt')

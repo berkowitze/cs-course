@@ -17,7 +17,7 @@ from helpers import *
 # - change confirmation email to be from brown email/brown cs email
 # - need to figure out yagmail with different accnt
 
-data_file = '/course/cs0050/ta/assignments.json'
+data_file = '/course/cs0111/ta/assignments.json'
 data = load_data(data_file)
 log_path = os.path.join(data['handin_log_path'])
 
