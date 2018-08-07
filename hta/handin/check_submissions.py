@@ -27,7 +27,7 @@ class Question:
         self.q_data = question
         col = self.q_data['col']
         ind = col_str_to_num(col) - 1
-        
+
         self.link = row[ind] if ind < len(row) and row[ind] != '' else None
         self.completed = self.link != None
         self.fname = self.q_data['filename']

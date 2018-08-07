@@ -36,7 +36,7 @@ def get_student_list():
     grade_paths = map(lambda f: os.path.join(base, f), logins)
     return logins, grade_paths
 
-def load_students(path='students.txt'):
+def load_students(path='/course/cs0050/hta/grading/students.txt'):
     students = []
     with open(path, 'r') as f:
         lines = f.read().strip().split('\n')

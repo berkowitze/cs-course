@@ -96,7 +96,8 @@ function generateSidebarItem(li, handin) {
     li.find('.handin-status').text(secondary);
     li.removeClass('nodisp');
     if (handin['student-name'] != null) {
-        span = $("<span>");
+        li.find('span.sname').remove();
+        span = $("<span class='sname'>");
         span.text('(' + handin['student-name'] + ')');
         li.append(span);
     }
@@ -161,7 +162,6 @@ function copyCodeLink(x) {
     $('#code-link').select();
     document.execCommand('copy');
     M.toast({html: 'Copied'});
-    open();
 }
 
 function handinLoaded(problemData) {
@@ -332,7 +332,7 @@ function CommentDialog(message, category, comment) {
     });
 };
 
-function addGlobalComment(category, comment, global) {
+function addGlobalComment(category, comment, studentOnly) {
     $.ajax({
         url: '/add_comment',
         data:
@@ -340,10 +340,10 @@ function addGlobalComment(category, comment, global) {
             'id': $('main').data('active-id'),
             'category': category,
             'comment': comment,
-            'student-only': global,
+            'student-only': studentOnly,
         },
         success: function() {
-            if (global) {
+            if (!studentOnly) {
                 M.toast({'html': 'Global comment added.',
                          'displayLength': 2000});
             }
