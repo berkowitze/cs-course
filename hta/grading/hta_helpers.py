@@ -1,3 +1,6 @@
+import os
+base = '/course/cs0111'
+
 def determine_grade(possibilities, ranges, score):
     ''' given a list of grade possibilities (strings), a list of grade
     ranges (with length two less than `possibilities`), and a
@@ -30,13 +33,15 @@ def determine_grade(possibilities, ranges, score):
 
 # TODO this really needs to get cleaned up
 def get_student_list():
-    import os
-    base = '/course/cs0050/hta/grades'
-    logins = os.listdir(base)
+    spath = os.path.join(base, 'ta', 'students.txt')
+    with open(spath) as f:
+        logins = map(str.strip, f.read().strip().split('\n'))
+
     grade_paths = map(lambda f: os.path.join(base, f), logins)
     return logins, grade_paths
 
-def load_students(path='/course/cs0050/hta/grading/students.txt'):
+def load_students(path=os.path.join(base, 'hta', 'grading', 'students.txt')):
+    ''' todo this needs to be cleaned up as well '''
     students = []
     with open(path, 'r') as f:
         lines = f.read().strip().split('\n')

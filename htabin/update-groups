@@ -5,7 +5,7 @@
 # a crontab running this once a minute in the first few weeks of the
 # semester so grading and handin scripts don't get messed up.
 
-BASE_PATH="/course/cs0050"
+BASE_PATH="/course/cs0111"
 BASE_GROUP="cs-0111"
 
 

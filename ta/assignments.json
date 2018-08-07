@@ -3,7 +3,7 @@
     "end_col": "Z", 
     "start_row": 2, 
     "_README1": "under assignments, all keys must be the same as the Google Form option, case insensitive.", 
-    "base_path": "/course/cs0050/hta/handin/students", 
+    "base_path": "/course/cs0111/hta/handin/students", 
     "sheet_name": "handins", 
     "email_errors_to": "elias_berkowitz@brown.edu", 
     "assignments": {
@@ -127,7 +127,7 @@
     "email_col": "B", 
     "_README2": "dates are mm/dd/yyyy HH:MM_M format", 
     "start_col": "A", 
-    "handin_log_path": "/course/cs0050/hta/handin/submission_log.txt", 
+    "handin_log_path": "/course/cs0111/hta/handin/submission_log.txt", 
     "sheet_id": "1U728-SM9_Rj6A64tj9iIhsNUkfy7x9SCiZubEMn_b64", 
     "email_from": "elias_berkowitz@brown.edu"
 }

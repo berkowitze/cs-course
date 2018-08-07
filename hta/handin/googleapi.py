@@ -3,7 +3,7 @@ from apiclient.discovery import build
 import json
 from helpers import load_data
 
-data_file = '/course/cs0050/ta/assignments.json'
+data_file = '/course/cs0111/ta/assignments.json'
 data = load_data(data_file)
 
 secret_path = 'client_secret.json'
