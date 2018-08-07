@@ -22,10 +22,20 @@ def locked_file(filename, mode='r'):
     if not (mode == 'r' or mode == 'a' or mode == 'w'):
         base = 'Can only open locked file in r, w, or a mode (just in case)'
         raise ValueError(base)
-
-    lock = FileLock(filename + ".lock", timeout=5) # throw error after 5 seconds
+    
+    lock_path = filename + '.lock'
+    lock = FileLock(lock_path, timeout=5) # throw error after 5 seconds
     with lock, open(filename, mode) as f:
         yield f
+        # after file is closed, attempt to remove the .lock
+        # file; the file is only clutter, it won't have an impact
+        # on anything, so don't try too hard.
+        try:
+            os.unlink(lock_path)
+        except NameError:
+            raise
+        except:
+            pass
 
 def require_resource(resource=default_resource_path):
     ''' use require_resource as a decorator when writing a function that you
