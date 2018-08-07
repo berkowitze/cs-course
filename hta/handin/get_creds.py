@@ -1,5 +1,7 @@
 from oauth2client import file, client, tools
 import os
+# this script gets a refresh token using credentials.json
+# you will need to copy the refresh token into ref_tok.txt
 
 if os.path.exists('credentials.json'):
     import sys
