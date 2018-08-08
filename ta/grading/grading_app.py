@@ -205,8 +205,12 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    port = 6127 # use an obscure port
+    import socket
+    public_ip = socket.gethostbyname(socket.gethostname())
+    port = 6924 # use an obscure port
     runtime_dir = os.path.dirname(os.path.abspath(__file__))
-
-    app.run(port=port, debug=True)
+    
+    print "You can get to the grading app on Brown wifi by going to:"
+    print "http://{ip}:{port}".format(ip=public_ip, port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
 

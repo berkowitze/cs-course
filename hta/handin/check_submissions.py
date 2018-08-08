@@ -1,4 +1,5 @@
 import json
+import sys
 import zipfile
 import traceback
 import io
@@ -6,7 +7,7 @@ import os
 import yagmail
 from google.oauth2.credentials import Credentials
 from apiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.http import MediaIoBaseDownload, HttpError
 from googlefile import GoogleFile
 from googleapi import sheets_api
 import datetime
@@ -167,8 +168,7 @@ class Response:
             c = 'Student %s submitted %s after grading had started.'
             yag.send(to=data['email_errors_to'],
                      subject='Submission after grading started',
-                     contents=c % (self.login, self.asgn_name))
-        # print map(lambda q: q.q_data, self.qs)
+                     contents='<pre>%s</pre>' % (c % (self.login, self.asgn_name)))
         yag.send(to=self.email,
                  subject=subject,
                  contents=[html, zip_path])
@@ -279,12 +279,24 @@ def fetch_submissions():
 def try_fetch():
     try:
         fetch_submissions()
+        success = True
+    except HttpError as e:
+        tb = str(traceback.format_exc())
+        estr = str(e)
+        cstr = str(e.content)
+        success = False
     except Exception as e:
-        tb = traceback.format_exc()
+        tb = str(traceback.format_exc())
+        estr = str(e)
+        cstr = ''
+        success = False
+
+    if not success:
         yag = yagmail.SMTP(data['email_from'])
         yag.send(to=data['email_errors_to'],
                  subject='SUBMISSION ERROR',
-                 contents=str(tb) + str(e))
+                 contents='<pre>%s%s%s</pre>' % (tb, estr, cstr))
+        sys.exit(1)
 
 if __name__ == '__main__':
     try_fetch()
