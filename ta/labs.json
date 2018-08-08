@@ -1,0 +1,13 @@
+{
+    "grade_ssid": "1mwWD0cWWdtS2voMpfQDpnSxurJQTqvmhuB6vnsLNGXM",
+    "labs": [
+        {
+            "name": "lab1",
+            "grading_complete": true
+        },
+        {
+            "name": "lab2",
+            "grading_complete": false
+        }
+    ]
+}

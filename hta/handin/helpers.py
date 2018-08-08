@@ -1,3 +1,5 @@
+from datetime import datetime
+
 def col_num_to_str(n):
     ''' convert a column number to the letter corresponding to that
     column in a spreadsheet
@@ -76,3 +78,7 @@ def confirmed_responses(filename='submission_log.txt'):
         else:
             return map(int, lines)
 
+def timestamp_to_datetime(timestamp):
+    ''' given a timestamp from a Google Form submission sheet, turn it
+    into a datetime object and return the datetime '''
+    return datetime.strptime(timestamp, '%m/%d/%Y %H:%M:%S')
