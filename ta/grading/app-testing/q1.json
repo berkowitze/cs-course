@@ -1,0 +1,518 @@
+{
+  "Tracing Exercise": {
+    "comments": [
+      {
+        "comment": "Nice.", 
+        "value": false
+      }, 
+      {
+        "comment": "At memory point 1, there's actually a list with [\"a\", \"list\", \"has\", \"words\"] in memory, but with nothing in the program dictionary referencing it. That's something we talked about on Wednesday so we didn't expect you to have it for this homework.", 
+        "value": false
+      }, 
+      {
+        "comment": "You need to discuss how \"word\" changes as the for loop runs (especially as that is the entire point of this function).", 
+        "value": false
+      }, 
+      {
+        "comment": "At MP2, concat_short is in the program dictionary (say, to loc 999) and loc 999 is in memory referencing a <function>", 
+        "value": false
+      }, 
+      {
+        "comment": "Memory point 2 isn't reached in all the iterations, so elem will never be \"list\" or \"words\" @ MP2", 
+        "value": false
+      }, 
+      {
+        "comment": "len(elem) isn't stored in the program dictionary; only variables are stored in the program dictionaries (i.e. x = 3 or def f(x) ...); len(elem) is an expression that evaluates to a number, which is never given a name.", 
+        "value": false
+      }, 
+      {
+        "comment": "When you do \"word = word + elem\", this does not use the same memory location that word was assigned to originally (perhaps now word -> (loc 1010). This is why we've been saying that string values are only in the program dictionary; string appending is very different than list appending.", 
+        "value": false
+      }, 
+      {
+        "comment": "At memory point 1, word is no longer in the dictionary: it was temporarily constructed during the execution of concat_short, but then was removed once the function finished.", 
+        "value": false
+      }, 
+      {
+        "comment": "The way you have tracked \"word\" changing over the course of the for loop is incorrect; the previous string is used to build the new one (\"\" -> \"a\" -> \"ahas\")", 
+        "value": false
+      }, 
+      {
+        "comment": "After concat_short is done executing, all of the variables that were made during its execution are removed (including word_list, word and elem).", 
+        "value": false
+      }
+    ], 
+    "rubric_items": [
+      {
+        "default": null, 
+        "point-val": [
+          6, 
+          4, 
+          2, 
+          0
+        ], 
+        "name": "Response on data design exercise", 
+        "options": [
+          "All good", 
+          "One or two small mistakes", 
+          "Many small mistakes or a big conceptual misunderstanding", 
+          "No attempt or very far off"
+        ]
+      }
+    ]
+  }, 
+  "Testing": {
+    "comments": [
+      {
+        "comment": "The proper way to test a function that changes a list but returns nothing is to create a list on one line, run the function on the list on line 2, then use test on the now-changed list. See the solutions for more concrete examples.", 
+        "value": false
+      }, 
+      {
+        "comment": "Defining test functions is not enough; you need to run them so you can be sure that your functions actually work!", 
+        "value": false
+      }, 
+      {
+        "comment": "All functions need test cases (except print_alerts)", 
+        "value": false
+      }, 
+      {
+        "comment": "convert_data should have a test for the empty input list", 
+        "value": false
+      }, 
+      {
+        "comment": "For readings_after, you should have at *least* one case where a reading is kept, and to be thorough, a case where one reading is kept and a case where more than one reading is kept.", 
+        "value": false
+      }, 
+      {
+        "comment": "You should test register_data with the empty list", 
+        "value": false
+      }
+    ], 
+    "rubric_items": [
+      {
+        "default": "Yes", 
+        "point-val": [
+          5, 
+          3, 
+          1, 
+          0
+        ], 
+        "name": "Valid and thorough tests for all functions", 
+        "options": [
+          "Yes", 
+          "Missing or invalid tests for some functions", 
+          "Missing or invalid tests for most functions", 
+          "Missing or invalid tests for all functions"
+        ]
+      }, 
+      {
+        "default": null, 
+        "point-val": [
+          2, 
+          1, 
+          0
+        ], 
+        "name": "Question 8 (vote-record with different winner)", 
+        "options": [
+          "Provides valid table", 
+          "Provides invalid table", 
+          "Provides no table"
+        ]
+      }
+    ]
+  }, 
+  "Code Clarity": {
+    "comments": [
+      {
+        "comment": "Instead of using key=lambda r: (r['when'].year, ...), you could have just used key=lambda r: r['when']. There's no effective difference. No big deal though.", 
+        "value": false
+      }, 
+      {
+        "comment": "All functions need docstrings.", 
+        "value": false
+      }, 
+      {
+        "comment": "Keep lines under 80 characters.", 
+        "value": false
+      }
+    ], 
+    "rubric_items": [
+      {
+        "default": null, 
+        "point-val": [
+          6, 
+          4, 
+          2, 
+          0
+        ], 
+        "name": "Code Clarity (good naming, readable code, docstrings, etc.)", 
+        "options": [
+          "Check Plus", 
+          "Check", 
+          "Check Minus", 
+          "Fail"
+        ]
+      }
+    ]
+  }, 
+  "Functionality": {
+    "comments": [
+      {
+        "comment": "Code does not run without errors", 
+        "value": false
+      }, 
+      {
+        "comment": "For readings_after, since the input list is sorted, you could have returned as soon as the date of the current reading was before the cutoff date (using return), and saved a lot of computational cost. This is a deduction since we explicitly said to take advantage of the sorted nature of the list in the assignment.", 
+        "value": false
+      }, 
+      {
+        "comment": "convert_data should be converting the level to a float since raw_data may have string values as the level.", 
+        "value": false
+      }, 
+      {
+        "comment": "I could not easily get your code to run; this makes it really difficult to grade. Please comment out code if you can't get it running before submission, and make a note that you'd like me to look at it for partial credit.", 
+        "value": false
+      }
+    ], 
+    "rubric_items": [
+      {
+        "default": null, 
+        "point-val": [
+          1, 
+          0
+        ], 
+        "name": "Question 1", 
+        "options": [
+          "Makes two empty lists, so2_data and ozone_data", 
+          "Some issue"
+        ]
+      }, 
+      {
+        "default": null, 
+        "point-val": [
+          3, 
+          2, 
+          1, 
+          0
+        ], 
+        "name": "Question 2: Appending", 
+        "options": [
+          "Correctly appends to global lists", 
+          "Appends to local list", 
+          "Appends to incorrect list or does not append all items", 
+          "Some issue"
+        ]
+      }, 
+      {
+        "default": null, 
+        "point-val": [
+          3, 
+          2, 
+          1, 
+          0
+        ], 
+        "name": "Question 2: Sorting", 
+        "options": [
+          "Sorts correct", 
+          "Sorts in reverse", 
+          "Sorts incorrectly", 
+          "Does not sort"
+        ]
+      }, 
+      {
+        "default": null, 
+        "point-val": [
+          3, 
+          2, 
+          0
+        ], 
+        "name": "Question 3: Functionality", 
+        "options": [
+          "Gets correct items (after cutoff)", 
+          "Gets only incorrect items (before cutoff)", 
+          "Gets some mixture or no decent attempt"
+        ]
+      }, 
+      {
+        "default": null, 
+        "point-val": [
+          3, 
+          2, 
+          0
+        ], 
+        "name": "Question 3: Design", 
+        "options": [
+          "Returns correctly after reaching cutoff", 
+          "Continues through entire list, but got sorting incorrect above", 
+          "Continues through entire list"
+        ]
+      }, 
+      {
+        "default": null, 
+        "point-val": [
+          5, 
+          4, 
+          3, 
+          2, 
+          0
+        ], 
+        "name": "Question 4", 
+        "options": [
+          "All correct", 
+          "Warning messages are more than a little wrong", 
+          "Prints in incorrect circumstances (wrong thresholds)", 
+          "Does not print, but returns", 
+          "Gets some mixture or no decent attempt"
+        ]
+      }, 
+      {
+        "default": null, 
+        "point-val": [
+          3, 
+          1, 
+          1, 
+          0
+        ], 
+        "name": "Question 5: Iteration", 
+        "options": [
+          "Properly iterates", 
+          "Does not keep track of readings", 
+          "Iterates through flat list and keeps track of readings", 
+          "Does not iterate at all"
+        ]
+      }, 
+      {
+        "default": null, 
+        "point-val": [
+          4, 
+          3, 
+          2, 
+          3, 
+          1, 
+          0
+        ], 
+        "name": "Question 5: Reading generation", 
+        "options": [
+          "All correct", 
+          "All correct exception location", 
+          "All correct except date", 
+          "Level not converted to float, all else correct", 
+          "Close to incorrect", 
+          "Effectively all incorrect/not functional"
+        ]
+      }, 
+      {
+        "default": "Not correct/no attempt", 
+        "point-val": [
+          2, 
+          1, 
+          0
+        ], 
+        "name": "Extra Question 1", 
+        "options": [
+          "Both correct", 
+          "One of two correct", 
+          "Not correct/no attempt"
+        ]
+      }, 
+      {
+        "default": "Does not sum all files in current directory", 
+        "point-val": [
+          2, 
+          0
+        ], 
+        "name": "Extra Question 2: Base case/toplevel", 
+        "options": [
+          "Sums size of all files in current directory", 
+          "Does not sum all files in current directory"
+        ]
+      }, 
+      {
+        "default": "Does not descend", 
+        "point-val": [
+          4, 
+          2, 
+          1, 
+          0
+        ], 
+        "name": "Extra Question 2: Recursion", 
+        "options": [
+          "Finds total_size of all subdirectories", 
+          "Finds total_size of some/one subdirectories", 
+          "Does not recur but descends one level", 
+          "Does not descend"
+        ]
+      }, 
+      {
+        "default": "Incorrect combination", 
+        "point-val": [
+          1, 
+          0
+        ], 
+        "name": "Extra Question 2: Combines it all", 
+        "options": [
+          "Correct combination", 
+          "Incorrect combination"
+        ]
+      }, 
+      {
+        "default": "Not functional", 
+        "point-val": [
+          4, 
+          2, 
+          0
+        ], 
+        "name": "Extra Question 3", 
+        "options": [
+          "All correct", 
+          "Only gets one file", 
+          "Not functional"
+        ]
+      }, 
+      {
+        "default": "Not functional", 
+        "point-val": [
+          3, 
+          1, 
+          1, 
+          0
+        ], 
+        "name": "Extra Question 4", 
+        "options": [
+          "All correct", 
+          "Does not go through all folders", 
+          "Does not mutate folder/big conceptual issue", 
+          "Not functional"
+        ]
+      }, 
+      {
+        "default": "Does not have base case", 
+        "point-val": [
+          2, 
+          1, 
+          0
+        ], 
+        "name": "Extra Question 5: Successful Base Case", 
+        "options": [
+          "Returns list with filename in it if it's in the current folder", 
+          "Returns correct list but continues recurring or descending", 
+          "Does not have base case"
+        ]
+      }, 
+      {
+        "default": "Does not have base case", 
+        "point-val": [
+          2, 
+          1, 
+          0
+        ], 
+        "name": "Extra Question 5: Unsuccessful Base Case", 
+        "options": [
+          "Returns None (or something similar) if no subfolders/no successful files", 
+          "Returns correct list but continues recurring or descending", 
+          "Does not have base case"
+        ]
+      }, 
+      {
+        "default": "Does not recur at all (serious issues)", 
+        "point-val": [
+          5, 
+          3, 
+          2, 
+          1, 
+          0
+        ], 
+        "name": "Extra Question 5: Recursive case", 
+        "options": [
+          "All correct", 
+          "Inelegant solution for determining if recursive call will succeed (some small issues)", 
+          "Uses base case correctly in recursive case, but does not insert (one moderate issue)", 
+          "Does not insert current folder into path or use base case (several moderate issues)", 
+          "Does not recur at all (serious issues)"
+        ]
+      }
+    ]
+  }, 
+  "Code Design": {
+    "comments": [
+      {
+        "comment": "We're not giving check pluses for code design on this homework because there wasn't much code design required (helpers etc.). This won't have an impact on your grade.", 
+        "value": false
+      }, 
+      {
+        "comment": "Sorting the list at every iteration of your for loop in register_data becomes extremely expensive (sorting is not a cheap operation). We don't expect you to know that sorting is expensive, however we do expect that where it's easily possible you make your code efficient; here, it's as simple as sorting once, after the for loop is complete.", 
+        "value": false
+      }
+    ], 
+    "rubric_items": [
+      {
+        "default": null, 
+        "point-val": [
+          6, 
+          4, 
+          2, 
+          0
+        ], 
+        "name": "Code Design (abstraction with helpers, making constants, maintainability, etc.)", 
+        "options": [
+          "Check Plus", 
+          "Check", 
+          "Check Minus", 
+          "Fail"
+        ]
+      }
+    ]
+  }, 
+  "Data Design Exercise": {
+    "comments": [
+      {
+        "comment": "Your design doesn't deal with the issue that each user should have their own control over whether or not a message is read/unread to them; it would be bad if User A read an email, and the same email was marked as read for User B. Similarly, if User A removes an email, User B should still have that same email.", 
+        "value": false
+      }, 
+      {
+        "comment": "You need some way of storing email messages (content, subject, recipients, etc.)", 
+        "value": false
+      }, 
+      {
+        "comment": "A big issue with using a list of \"files\" (or emails) is that it is very hard to find an email in that list; how do you identify which email you want to read or remove, for example?", 
+        "value": false
+      }, 
+      {
+        "comment": "You need some way of storing users (passwords, usernames, etc.)", 
+        "value": false
+      }, 
+      {
+        "comment": "Be careful about having \"too many features\" - the problem specified that what we were looking for was reading, sending, deleting, and viewing - having so many extra features makes it hard to track what the original purpose of the application was: a way for multiple users to use a system that shares emails with other users.", 
+        "value": false
+      }, 
+      {
+        "comment": "Since there are multiple recipients for each email, the recipients cannot be a single string but must be some other way of having multiple strings (list is the easiest way).", 
+        "value": false
+      }
+    ], 
+    "rubric_items": [
+      {
+        "default": null, 
+        "point-val": [
+          6, 
+          4, 
+          2, 
+          0
+        ], 
+        "name": "Responses on tracing exercise", 
+        "options": [
+          "All good", 
+          "A few small misconceptions or inefficiencies", 
+          "Large misconceptions or inefficiencies", 
+          "No attempt or very far off"
+        ]
+      }
+    ]
+  }, 
+  "_COMMENTS": [
+    {
+      "comment": "Please submit .txt files, not .rtf files; it screws up some things on our end.", 
+      "value": false
+    }
+  ]
+}

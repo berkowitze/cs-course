@@ -1,0 +1,8 @@
+{
+    "Functionality": [12, 19, 23],
+    "Code Design": [1, 3, 5],
+    "Code Clarity": [1, 3, 5],
+    "Testing": [3, 5, 7],
+    "Data Design Exercise": [2, 4, 6],
+    "Tracing Exercise": [2, 4, 6]
+}

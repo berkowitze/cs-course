@@ -1,0 +1,63 @@
+#!/course/cs0050/ta/grading/venv/bin/python2.7
+
+import os
+import subprocess
+import getpass
+import sys
+import tabulate
+import re
+
+BASE_PATH = '/course/cs0111'
+anon_path = os.path.join(BASE_PATH, 'ta', 't-s-blocklist.txt')
+students_path = os.path.join(BASE_PATH, 'ta', 'groups', 'students.txt')
+
+assert os.path.exists(anon_path), \
+    'anon_path %s does not exist' % anon_path
+
+ta_uname = getpass.getuser()
+print 'Confirm your username is %s [y/n]' % ta_uname
+inp = raw_input('> ').lower()
+if inp == 'y' or inp == 'yes':
+    pass
+elif inp == 'n' or inp == 'no':
+    print 'Email an HTA plz'
+    sys.exit(1)
+else:
+    print 'Invalid input'
+    sys.exit(1)
+
+with open(students_path) as f:
+    lines = map(str.strip, f.read().strip().split('\n'))
+
+ls = []
+for i, user in enumerate(lines):
+    txt = subprocess.check_output(["ldapsearch", "-Q", "cn=%s" % user])
+    res = re.search('gecos:(.*)', txt, re.MULTILINE)
+    if res:
+        full_name = res.group(1).strip().split(', ')[0]
+    else:
+        full_name = 'Not found'
+
+    ls.append([i + 1, user, full_name])
+
+print tabulate.tabulate(ls, headers=('#', 'Login', 'Name'))
+
+print ''
+print 'Which user would you like to blacklist?'
+print 'Type the number next to their login'
+while True:
+    inp = raw_input('Enter a number: ')
+    try:
+        student = lines[int(inp) - 1]
+        print 'Confirm you want to blacklist %s [y/n]' % student
+        i = raw_input('> ').lower()
+        if i == 'y' or i == 'yes':
+            break
+
+    except ValueError:
+        print 'Enter a number only...'
+
+with open(anon_path, 'a') as f:
+    f.write('%s,%s' % (ta_uname, student))
+
+print '%s blacklisted.' % student

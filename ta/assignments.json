@@ -1,43 +1,43 @@
 {
-  "_README1": "under assignments, all keys must be the same as the Google Form option, case insensitive.", 
-  "_README2": "dates are mm/dd/yyyy HH:MM_M format", 
-  "assignments": {
-    "Homework 1": {
-      "anonymous": false, 
-      "available": "06/01/2018 03:00PM", 
-      "due": "07/02/2018 09:00AM", 
-      "grading_completed": true, 
-      "grading_started": true, 
-      "questions": [
-        {
-          "col": "C", 
-          "filename": "flags.arr"
+    "submit_col": "C", 
+    "end_col": "G", 
+    "start_row": 2, 
+    "_README1": "under assignments, all keys must be the same as the Google Form option, case insensitive.", 
+    "base_path": "/course/cs0111/hta/handin/students", 
+    "sheet_name": "handins", 
+    "email_errors_to": "elias_berkowitz@brown.edu", 
+    "assignments": {
+        "Homework 1": {
+            "available": "06/01/2018 03:00PM", 
+            "anonymous": false, 
+            "due": "07/02/2018 09:00AM", 
+            "grading_completed": false, 
+            "questions": [
+                {
+                    "col": "D", 
+                    "filename": "flags.arr"
+                }
+            ], 
+            "grading_started": true
+        }, 
+        "Homework 2": {
+            "available": "06/03/2018 03:00PM", 
+            "anonymous": true, 
+            "due": "07/02/2018 09:00AM", 
+            "grading_completed": false, 
+            "questions": [
+                {
+                    "col": "F", 
+                    "filename": "um.arr"
+                }
+            ], 
+            "grading_started": false
         }
-      ]
     }, 
-    "Homework 2": {
-      "anonymous": true, 
-      "available": "06/03/2018 03:00PM", 
-      "due": "07/02/2018 09:00AM", 
-      "grading_completed": true, 
-      "grading_started": true, 
-      "questions": [
-        {
-          "col": "F", 
-          "filename": "um.arr"
-        }
-      ]
-    }
-  }, 
-  "base_path": "/course/cs0111/hta/handin/students", 
-  "email_col": "B", 
-  "email_errors_to": "elias_berkowitz@brown.edu", 
-  "email_from": "csci0111@brown.edu", 
-  "end_col": "G", 
-  "handin_log_path": "/course/cs0111/hta/handin/submission_log.txt", 
-  "sheet_id": "1vpVCHktF4FCSujpmH-Vfi7YMVSHopHKDh_2Bey3FTOs", 
-  "sheet_name": "handins", 
-  "start_col": "A", 
-  "start_row": 2, 
-  "submit_col": "C"
+    "email_col": "B", 
+    "_README2": "dates are mm/dd/yyyy HH:MM_M format", 
+    "start_col": "A", 
+    "handin_log_path": "/course/cs0111/hta/handin/submission_log.txt", 
+    "sheet_id": "1vpVCHktF4FCSujpmH-Vfi7YMVSHopHKDh_2Bey3FTOs", 
+    "email_from": "csci0111@brown.edu"
 }

@@ -116,7 +116,7 @@ class Assignment(object):
         except KeyError:
             base = 'No assignment key "%s" in assignments.json'
             raise KeyError(base % self.full_name)
-        else:
+        else: # no exceptions raised
             self.due_date = dt.strptime(self.json['due'], '%m/%d/%Y %I:%M%p')
             self.due = self.due_date < current_time
             self.started = self.json['grading_started']
@@ -299,7 +299,7 @@ class Question(object):
 
     def html_data(self, user):
         ''' given a user, return a dictionary with the data that will be used
-        to populate that TA's view of handins to grade '''
+        to populate that TA's view of already extracted handins to grade '''
         if not isinstance(user, User):
             raise TypeError('html_data user must be a User instance')
 
@@ -313,8 +313,17 @@ class Question(object):
             # todo rename these keys
             "handin_data": map(lambda h: h.get_rubric_data(), user_handins),
             "handins": len(self.handins),
-            "completed": self.completed_count
+            "completed": self.completed_count,
+            "anonymous": self.assignment.anonymous
         }
+        if not self.assignment.anonymous:
+            ss = []
+            for h in self.handins:
+                if not (h.extracted or h.blocklisted_by(user.uname)):
+                    ss.append(self.assignment.id_to_login(h.id))
+
+            hdata['students'] = ss
+
         return hdata
 
     @require_resource()
@@ -339,17 +348,31 @@ class Question(object):
             handin.start_grading(ta=user.uname)
             return handin
 
+    @require_resource()
+    def start_ident_handin(self, anon_id, user):
+        self.load_handins()
+
+        handin = self.get_handin_by_sid(anon_id, user)
+        if not handin.gradeable_by(user.uname):
+            return "student blacklisted"
+
+        if handin.extracted:
+            return "already extracted"
+
+        handin.start_grading(ta=user.uname)
+        return handin
+
     def get_handin_by_sid(self, anon_id, user):
         ''' given a anonymous identity (i.e. 23) and the user, return
         the handin if the user is the grader of that handin or the
         user is an HTA '''
         for handin in self.handins:
             if int(handin.id) == int(anon_id):
-                if not (handin.grader == user.uname or user.hta):
-                    base = 'Handin only viewable by HTA or %s'
-                    raise IOError(base % handin.grader)
-                else:
+                if user.hta or handin.grader == user.uname or not self.assignment.anonymous:
                     return handin
+                else:
+                    base = 'Handin on anonymous assignment only viewable by HTA or %s'
+                    raise IOError(base % handin.grader)
 
         raise ValueError('No handin with id %s' % anon_id)
 

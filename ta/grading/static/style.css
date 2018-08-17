@@ -18,6 +18,7 @@ nav {
 
 div#handin-options button {
     margin-right: 1em;
+    margin-bottom: 0.5em;
 }
 
 .handin-list-item.complete.unflagged {
@@ -207,3 +208,12 @@ ul.select2-selection__rendered {
 button.ui-button.ui-corner-all.ui-widget:focus {
     border: 1px solid black;
 }
+
+#student-list-modal {
+    padding: 0.5em;
+}
+
+.handin-button {
+    width: 20%;
+}
+

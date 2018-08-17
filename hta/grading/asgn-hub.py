@@ -4,7 +4,7 @@ import cProfile, pstats, StringIO
 import json
 import os
 from hta_classes import get_full_asgn_list, asgn_data_path, \
-                        BASE_PATH, get_student_list, User, login_to_email
+                        BASE_PATH, login_gradepath_list, User, login_to_email
 import sys
 import tabulate
 
@@ -36,7 +36,6 @@ def get_opt(prompt, options, first=True):
         return get_opt(prompt, options, first=False)
 
 opt = get_opt('> ', ['Generate gradebook', 'Work with assignment'])
-# opt = 1
 asgns = get_full_asgn_list()
 if opt == 0:
     path = os.path.join(BASE_PATH, 'hta', 'gradebook.tsv')
@@ -156,8 +155,12 @@ else:
                 if choice != 0:
                     print 'Exiting...'
                     sys.exit(0)
-
-            asgn.init_grading()
+            try:
+                asgn.init_grading()
+            except:
+                asgn.reset_grading(True)
+                print 'Error starting assignment:'
+                raise
             print 'Grading started...'
         else:
             print 'Cancelling...'
@@ -178,7 +181,8 @@ else:
 
         print 'What would you like to do?'
         opt = get_opt('> ', ['Reset Assignment Grading', 'Generate Grade Reports',
-                             'Email Grade Report(s)', 'View flagged handins'])
+                             'Email Grade Report(s)', 'View flagged handins',
+                             'Add handin'])
         if opt == 0:
             print 'Resetting the assignment will delete any grades given.'
             if raw_input('Confirm [y/n]: ').lower() != 'y':
@@ -198,7 +202,7 @@ else:
             username = getpass.getuser()
             user = User(username)
             print 'Generating grade reports...'
-            logins, paths = get_student_list()
+            logins, paths = login_gradepath_list()
             handins = asgn.get_handin_dict(logins, user)
             for student in handins.keys():
                 asgn.generate_report(handins[student],
@@ -220,7 +224,7 @@ else:
             import getpass
             username = getpass.getuser()
             user = User(username)
-            logins, paths = get_student_list()
+            logins, paths = login_gradepath_list()
             handins = asgn.get_handin_dict(logins, user)
             import yagmail
             yag = yagmail.SMTP('elias_berkowitz@brown.edu')
@@ -231,3 +235,15 @@ else:
 
         elif opt == 3:
             raise NotImplementedError('Flag viewing Not implemented')
+        elif opt == 4:
+            login = raw_input('Enter student login: ')
+            late = raw_input('Mark as late? [y/n] ')
+            if late.lower() == 'y' or late.lower() == 'yes':
+                late = True
+            elif late.lower() == 'n' or late.lower() == 'no':
+                late = False
+            else:
+                print 'Invalid input...'
+                sys.exit(1)
+            
+            print dir(asgn)
