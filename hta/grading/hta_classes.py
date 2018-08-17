@@ -70,13 +70,17 @@ class HTA_Assignment(Assignment):
         # dictionary with [] as default for students blacklisted by each TA
         mapping = dict((ta, []) for ta in all_tas)
         with locked_file(blocklist_path_1) as f:
-            bl1 = f.read().strip().split('\n')
+            lines = f.read().strip().split('\n')
+            bl1 = map(lambda l: map(str.strip, l),
+                      map(lambda a: a.split(','), lines))
 
         with locked_file(blocklist_path_2) as f:
-            bl2 = f.read().strip().split('\n')
+            lines = f.read().strip().split('\n')
+            bl2 = map(lambda l: map(str.strip, l),
+                      map(lambda a: a.split(','), lines))
         
         # combine the two blocklists, get rid of empty rows
-        bl = filter(lambda i: i != '', bl1 + bl2)
+        bl = [l for l in bl1 + bl2 if len(l) == 2]
         for row in bl:
             mapping[row[0]].append(row[1]) # add student to TA's list
 
@@ -84,10 +88,19 @@ class HTA_Assignment(Assignment):
 
     def setup_blocklist(self):
         mapping = self.get_blocklists()
+        print mapping
+        students = student_list()
+        print students
         with open(self.blocklist_path, 'a') as f:
-            for key in mapping:
-                for student in mapping[key]:
-                    f.write('%s,%s\n' % (key, int(self.login_to_id(student))))
+            for ta in mapping:
+                for student in mapping[ta]:
+                    if student in students:
+                        line = '%s,%s\n'
+                        try:
+                            ident = int(self.login_to_id(student))
+                            f.write('%s,%s\n' % (ta, ident))
+                        except ValueError:
+                            pass
 
     def login_to_id(self, login):
         lines = list(csv.reader(open(self.anon_path)))
@@ -141,7 +154,13 @@ class HTA_Assignment(Assignment):
                 writer.writerow([student, id])
         
         if not self.anonymous: # make a link in the HTA folder as well
-            os.symlink(base_anon_path, self.anon_path)
+            try:
+                os.symlink(base_anon_path, self.anon_path)
+            except OSError:
+                if not os.path.isdir(self.anon_path):
+                    print '/hta/anonymization probably doesn\'t exist'
+
+                raise
 
         for student, id, path in sub_paths:
             dest = os.path.join(self.s_files_path, 'student-%s' % id)

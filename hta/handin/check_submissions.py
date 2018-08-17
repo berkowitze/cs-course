@@ -10,8 +10,8 @@ from apiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, HttpError
 from googlefile import GoogleFile
 from googleapi import sheets_api
-import datetime
-from datetime import datetime as dt
+import datetime as dt
+from datetime import datetime
 from helpers import *
 
 # TODO :
@@ -109,7 +109,7 @@ class Question:
 class Response:
     def __init__(self, row, ident):
         # submission time
-        self.sub_time  = dt.strptime(row[0], '%m/%d/%Y %H:%M:%S')
+        self.sub_time  = datetime.strptime(row[0], '%m/%d/%Y %H:%M:%S')
         self.sub_timestr = self.sub_time.strftime('%m/%d/%y %I:%M:%S%p')
         # submission email (must be Brown account)
         self.email = row[col_str_to_num(data['email_col']) - 1]
@@ -126,7 +126,7 @@ class Response:
             raise 'Response has already been downloaded & confirmed.'
 
         self.asgn      = data['assignments'][self.asgn_name.lower()]
-        self.due       = dt.strptime(self.asgn['due'], '%m/%d/%Y %I:%M%p')
+        self.due       = datetime.strptime(self.asgn['due'], '%m/%d/%Y %I:%M%p')
         self.qs = []
         for i in range(len(self.asgn['questions'])):
             question = Question(self.asgn['questions'][i], self.row)
@@ -164,7 +164,7 @@ class Response:
             subject += ' (late)'
 
         zip_path = self.get_zip()
-        if self.asgn['grading_completed']:
+        if self.asgn['grading_started']:
             c = 'Student %s submitted %s after grading had started.'
             yag.send(to=data['email_errors_to'],
                      subject='Submission after grading started',
@@ -209,12 +209,12 @@ class Response:
 
         # if submitted more than a minute late
         # just say "late" in email, dont mark late
-        if self.sub_time > self.due + datetime.timedelta(0, 60):
+        if self.sub_time > self.due + dt.timedelta(0, 60):
             self.email_late = True
         else:
             self.email_late = False
         # if submitted more than 5 minutes after deadline...
-        if self.sub_time > self.due + datetime.timedelta(0, 5*60):
+        if self.sub_time > self.due + dt.timedelta(0, 5*60):
             fold_name += '-late'
             self.actual_late = True
         else:

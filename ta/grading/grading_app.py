@@ -1,19 +1,19 @@
-import os, random, flask, json
-from flask import Flask, session, redirect, url_for, \
-                  abort, request, render_template, \
-                  get_template_attribute
-import numpy as np
+import os
+import random
+import flask
+import json
+import numpy as np # todo get rid of this requirement it's heavy
+from flask import Flask, session, redirect, url_for, request, render_template
 from functools import wraps
-from classes import started_asgns, Assignment, ta_path, hta_path, User
 from passlib.hash import sha256_crypt
 import getpass
+from classes import started_asgns, Assignment, ta_path, hta_path, User
 
 # could everything be reorganized into a database? yes.
 # is it worth it? up to whoever's reading this. I didn't do it
-# because it's annoying to learn how databases work but all these
-# files arent exactly convenient
-
-# todo file locking
+# because it's annoying to learn how databases work and this is an
+# intro course (don't assume TAs/HTAs know how databases work)
+# but i also suppose that all these files arent exactly convenient
 
 # set up the web app
 app = Flask(__name__)
@@ -26,8 +26,10 @@ app.secret_key = '815tu28g78h8934tgju2893t0j83u2tfjt'
 # which assignment, question, and handin they are working on.
 # it's reset if you edit grading_app.py or classes.py while grading
 # so you need to refresh the page
+# todo: make this better. a lot better. if it's a problem.
 workflow = {}
 
+# get logged in username
 username = getpass.getuser()
 user = User(username)
 
@@ -55,16 +57,14 @@ def main():
 @app.route('/load_asgn')
 @is_logged_in
 def load_asgn():
-    # just make sure no one is making a really malformed request
-    assert isinstance(request.args['asgn'], (str, unicode))
     try:
         asgn_key = request.args['asgn']
         workflow['assignment'] = Assignment(asgn_key)
         assert workflow['assignment'].started, \
             'attempting to load unstarted assignment'
-    except KeyError:
+    except KeyError: # assignment not found
         return json.dumps("None")
-    else: # this is run if no exceptions are raised
+    else: # no exceptions raised
         return json.dumps(map(lambda q: 'Question %s' % (q+1),
                           range(len(workflow['assignment'].questions))))
 
@@ -74,12 +74,12 @@ def load_prob():
     try:
         prob_ndx = int(request.args['prob']) - 1
     except:
-        # sent something that wasnt a question index, like the
+        # received something that wasnt a question index, like the
         # default "Select Problem" option
         return json.dumps("None")
     else:
         asgn = workflow['assignment']
-        asgn.load_questions()
+        assert asgn.started, 'grading unstarted assignment %s' % asgn.full_name
         question = asgn.get_question(prob_ndx)
         workflow['question'] = question
         return json.dumps(question.html_data(user))
@@ -87,7 +87,16 @@ def load_prob():
 @app.route('/extract_handin')
 @is_logged_in
 def extract_handin():
-    handin = workflow['question'].get_random_handin(user)
+    if 'handin_login' in request.args:
+        asgn = workflow['assignment']
+        if user.hta or (not asgn.anonymous):
+            ident = asgn.login_to_id(request.args['handin_login'])
+            handin = workflow['question'].start_ident_handin(ident, user)
+        else:
+            return "permission error"
+    else:
+        handin = workflow['question'].get_random_handin(user)
+
     workflow['handin'] = handin
     if handin is None:
         return json.dumps("None")
@@ -212,5 +221,5 @@ if __name__ == '__main__':
     
     print "You can get to the grading app on Brown wifi by going to:"
     print "http://{ip}:{port}".format(ip=public_ip, port=port)
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port)
 

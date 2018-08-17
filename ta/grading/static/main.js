@@ -42,10 +42,12 @@ function probLoaded(x) {
         $('div#handin-options').addClass('hidden');
         return;
     }
-    $('div#problem-status').removeClass('hidden');
-    frac = Number(data["completed"]) / Number(data["handins"]);
-    bar.animate(frac);
-    $(bar.text).text(data['completed'] + '/' + data['handins'] + ' completed.');
+    if (Number(data['handins']) != 0) {
+        $('div#problem-status').removeClass('hidden');
+        frac = Number(data["completed"]) / Number(data["handins"]);
+        bar.animate(frac);
+        $(bar.text).text(data['completed'] + '/' + data['handins'] + ' completed.');
+    }
     try {
         if (data['completed'] == data['handins']) {
             // don't you dare delete this person reading this code
@@ -65,11 +67,27 @@ function probLoaded(x) {
     clearSidebar();
     populateSidebar(data['handin_data']);
     $('footer').removeClass('nodisp');
+    if (!data['anonymous']) {
+        populateStudentList(data['students']);
+    }
+}
+
+function populateStudentList(s) {
+    sel = $('#student-select');
+    sel.find('option').not('.nodel').remove();
+    for (var i = 0; i < s.length; i++) {
+        opt = $('<option>');
+        opt.val(s[i]);
+        opt.text(s[i]);
+        sel.append(opt);
+    }
+    sel.select2();
+    // $('#student-list-modal').modal('open');
 }
 
 function clearSidebar() {
     $('li.handin-list-item').not('#handin-list-item-template').remove();
-    $('button.handin-button').not('#extract-handin').prop('disabled', true);
+    $('button.handin-button').not('.extract-button').prop('disabled', true);
 }
 
 function generateSidebarItem(li, handin) {
@@ -136,6 +154,33 @@ function extract(x) {
             }
             populateSidebar([pdata]);
             handinLoaded(data);
+        }
+    });
+}
+
+function extractByLogin(x) {
+    s = $('#student-select').val();
+    console.log(s);
+    if (s == 'NONE') {
+        M.toast({'html': 'Select a student...',
+                 'displayLength': 2000})
+        return;
+    }
+    button = $(x);
+    button.prop('disabled', true);
+    $.ajax({
+        'url': '/extract_handin',
+        'data': {'handin_login': s},
+        success: function(data) {
+            pdata = JSON.parse(data)
+            if (pdata == "None") {
+                M.toast({'html': 'No more to grade!',
+                         'displayLength': 3000});
+                return;
+            }
+            populateSidebar([pdata]);
+            handinLoaded(data);
+            $('#student-list-modal').modal('close');
         }
     });
 }
@@ -407,7 +452,7 @@ function handinUnextracted(data) {
     ident = JSON.parse(data);
     sidebarById(ident).remove();
     $('main .container').html('');
-    $('button.handin-button:not(#extract-handin)').prop('disabled', true);
+    $('button.handin-button').not('.extract-button').prop('disabled', true);
 }
 
 function fetchFormInfo() {
@@ -511,7 +556,7 @@ function handinCompleted(data) {
 
 function clearMain() {
     $('#rubric-div').empty();
-    $('.handin-button').not('#extract-handin').prop('disabled', true);
+    $('.handin-button').not('.extract-button').prop('disabled', true);
 }
 
 function viewReport(x) {
@@ -576,7 +621,10 @@ $(document).ready(function(){
     // initialize code viewer
     $('#code-modal').modal();
     $('#report-modal').modal();
+    $('#student-list-modal').modal();
+    $('#student-list-modal').removeAttr('tabindex');
 
     // initialize all selects
-    $('.select2-multiple').select2()
+    $('.select2-multiple').select2();
+    $('#student-select').select2();
 });

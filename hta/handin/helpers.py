@@ -30,8 +30,7 @@ def url_to_gid(url):
         o = urlparse.urlparse(url)
         return urlparse.parse_qs(o.query)['id'][0]
     except Exception as e:
-        print e
-        print url
+        print 'Check columns in assignments.json'
         raise Exception('Invalid link in url_to_gid')
 
 def load_students(path='students.txt'):

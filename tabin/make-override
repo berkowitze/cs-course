@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 echo "Making override in current directory..."
-cp report.txt report-override.txt
-cp grade.json grade-override.json
-echo "Override files created (grade-override.json, report-override.txt)."
+cp report.txt report-override.txt &>/dev/null &&
+cp grade.json grade-override.json &>/dev/null &&
+echo "Override files created (grade-override.json, report-override.txt)." ||
+echo "Didn't work. Must be in directory with grade.json and report.txt"
+

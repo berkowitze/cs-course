@@ -8,7 +8,7 @@ from functools import wraps
 import os
 from threading import Thread
 
-BASE_PATH = '/course/cs111'
+BASE_PATH = '/course/cs0111'
 default_resource_path = os.path.join(BASE_PATH, 'resource-lock.lock')
 @contextmanager
 def locked_file(filename, mode='r'):
