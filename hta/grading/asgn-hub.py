@@ -234,7 +234,26 @@ else:
             #aise NotImplementedError('Email sending Not implemented')
 
         elif opt == 3:
-            raise NotImplementedError('Flag viewing Not implemented')
+            header = ['Anon ID', 'Login', 'Grader', 'Flag Reason']
+            for q in asgn.questions:
+                print q
+                full_data = []
+                for h in q.handins:
+                    if h.flagged:
+                        data = [h.id, asgn.id_to_login(h.id),
+                                h.grader, h.line[-1]]
+
+                        full_data.append(data)
+
+                table = tabulate.tabulate(full_data, header)
+                lines = table.split('\n')
+                indented = map(lambda l: '  ' + l, lines)
+                print '\n'.join(indented)
+
+            print ''
+            print 'To unflag, go to %s' % asgn.log_path
+
+
         elif opt == 4:
             login = raw_input('Enter student login: ')
             late = raw_input('Mark as late? [y/n] ')
