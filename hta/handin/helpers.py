@@ -33,14 +33,15 @@ def url_to_gid(url):
         print 'Check columns in assignments.json'
         raise Exception('Invalid link in url_to_gid')
 
-def load_students(path='students.txt'):
+def load_students():
+    path = os.path.join(BASE_PATH, 'ta', 'groups', 'students.csv')
     students = []
     with open(path, 'r') as f:
         lines = f.read().strip().split('\n')
         for line in lines:
             row      = line.split(' ')
-            email    = row[0]
-            username = row[1]
+            username = row[0]
+            email    = row[1]
             students.append((email, username))
 
     return students
@@ -59,7 +60,7 @@ def email_to_login(email):
         if student[0] == email:
             return student[1]
 
-    raise Exception('Student %s not found.' % email)
+    raise ValueError('Student %s not found.' % email)
 
 def login_to_email(login):
     students = load_students()
@@ -67,7 +68,7 @@ def login_to_email(login):
         if student[1] == login:
             return student[0]
 
-    raise Exception('Student %s not found.' % login)
+    raise ValueError(Student %s not found.' % login)
 
 def confirmed_responses(filename='submission_log.txt'):
     with open(filename, 'r') as f:

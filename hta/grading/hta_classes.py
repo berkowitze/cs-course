@@ -192,7 +192,8 @@ class HTA_Assignment(Assignment):
             os.makedirs(q.grade_path) # probably shouldnt do this here
             with open(q.log_filepath, 'w') as f:
                 writer = csv.writer(f)
-                writer.writerow(['student', 'ta', 'status', 'flagged'])
+                writer.writerow(['student', 'ta', 'status',
+                                 'flagged', 'explanation'])
                 f.flush()
 
     def get_empty_grade(self, set_to=0):
