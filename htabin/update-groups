@@ -5,6 +5,7 @@
 # a crontab running this once a minute in the first few weeks of the
 # semester so grading and handin scripts don't get messed up.
 BASE_PATH="/course/cs0111/hta/groups"
+PATH="$PATH:/course/cs0111/htabin"
 
 group_data cs-0111student txt $BASE_PATH/students.txt
 group_data cs-0111student csv $BASE_PATH/students.csv
