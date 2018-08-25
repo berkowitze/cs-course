@@ -1,27 +1,18 @@
 #!/usr/bin/env bash
 
-# run this file to rewrite students.txt, tas.txt, and htas.txt
+# run this file to rewrite students.txt, students.csv, tas.txt, and htas.txt
 # run when a student drops the course, for example. I'd recommend
 # a crontab running this once a minute in the first few weeks of the
 # semester so grading and handin scripts don't get messed up.
-BASE_PATH="/course/cs0111"
-BASE_GROUP="cs-0111"
+BASE_PATH="/course/cs0111/hta/groups"
 
-
-# write students.txt file
-members $BASE_GROUP"student" | tr " " "\n" > $BASE_PATH/hta/groups/students.txt
-
-# write tas.txt file
-members $BASE_GROUP"ta" | tr " " "\n" > $BASE_PATH/hta/groups/tas.txt
-
-# write htas.txt file
-members $BASE_GROUP"hta" | tr " " "\n" > $BASE_PATH/hta/groups/htas.txt
+group_data cs-0111student txt $BASE_PATH/students.txt
+group_data cs-0111student csv $BASE_PATH/students.csv
+group_data cs-0111ta txt $BASE_PATH/tas.txt
+group_data cs-0111hta txt $BASE_PATH/htas.txt
 
 # give TAs read-write access, HTAs full access
-hta-ta-file $BASE_PATH/hta/groups/tas.txt rx
-hta-ta-file $BASE_PATH/hta/groups/htas.txt rx
-hta-ta-file $BASE_PATH/hta/groups/students.txt rx
-
-# write the login,email student csv
-write-student-csv $BASE_GROUP"student" $BASE_PATH/hta/groups/students.txt
-hta-ta-file $BASE_PATH/hta/groups/students.txt rx
+hta-ta-file $BASE_PATH/tas.txt rx
+hta-ta-file $BASE_PATH/htas.txt rx
+hta-ta-file $BASE_PATH/students.txt rx
+hta-ta-file $BASE_PATH/students.csv rx
