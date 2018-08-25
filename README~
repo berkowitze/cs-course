@@ -139,9 +139,4 @@ TA Filesystem readme
 
         TA Access: rwx (except for sfiles, which is r-x)
 
-  /course/cs0111/.repos
-    A directory in which to create git repos for the course
 
-  /course/cs0111/materials
-    A checkout of the materials.git repo from .repos.  This is where
-    lecture notes and non-html policy documents will reside
