@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # functions to get emails and logins of a group
 #
 # Notes: 
@@ -33,7 +31,7 @@ def login_to_email(login):
             email = ldap_email.group(1).strip()
             return email, True
         else:
-            return "Who dis? Unknown login %s" % login, False
+            return "Unknown login %s (email HTAs)" % login, False
 
     except subprocess.CalledProcessError:
         return "Warning: ldap search for %s failed" % login, False

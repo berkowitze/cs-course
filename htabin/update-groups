@@ -9,7 +9,7 @@ BASE_GROUP="cs-0111"
 
 
 # write students.txt file
-members $BASE_GROUP"ta" | tr " " "\n" > $BASE_PATH/hta/groups/students.txt
+members $BASE_GROUP"student" | tr " " "\n" > $BASE_PATH/hta/groups/students.txt
 
 # write tas.txt file
 members $BASE_GROUP"ta" | tr " " "\n" > $BASE_PATH/hta/groups/tas.txt
@@ -23,4 +23,5 @@ hta-ta-file $BASE_PATH/hta/groups/htas.txt rx
 hta-ta-file $BASE_PATH/hta/groups/students.txt rx
 
 # write the login,email student csv
-./write-student-csv $BASE_GROUP"student" $BASE_PATH/hta/groups/students.txt
+write-student-csv $BASE_GROUP"student" $BASE_PATH/hta/groups/students.txt
+hta-ta-file $BASE_PATH/hta/groups/students.txt rx
