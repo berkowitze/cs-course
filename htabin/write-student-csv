@@ -5,7 +5,7 @@ from student_data import get_login_email_zip
 base = '/course/cs0111'
 csv_path = os.path.join(base, 'hta', 'groups', 'students.csv')
 
-z = get_login_email_zip('cs-0111ta')
+z = get_login_email_zip('cs-0111student')
 s = '\n'.join(map(str, map(lambda l: ','.join(l), z)))
 with open(csv_path, 'wb') as f:
     f.write(s)

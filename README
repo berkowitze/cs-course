@@ -3,7 +3,7 @@ TA Filesystem readme
 /course/cs0111/ta
 
     Terminology:
-        - HTA+ : An HTA or the prof for brevity
+        - HTA+ : An HTA or the prof (for brevity)
 
         - student_id : at the moment, the student_id is their full Brown email
           address (as collected from a Google Form that requires login), stripped
