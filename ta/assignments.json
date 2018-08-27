@@ -1,21 +1,22 @@
 {
   "_README1": "under assignments, all keys must be the same as the Google Form option, case insensitive.", 
   "_README2": "dates are mm/dd/yyyy HH:MM_M format", 
-  "_README3": "if you're getting an error, it may be because of the end_col key; check that first",
-  "_README4": "the due key is useless with the way the website's set up, but may be used in classes.py; get rid of it with care at some point",
+  "_README3": "if you're getting an error, it may be because of the end_col key; check that first", 
+  "_README4": "the due key is useless with the way the website's set up, but may be used in classes.py; get rid of it with care at some point", 
   "assignments": {
     "Homework 1": {
       "anonymous": false, 
       "available": "06/01/2018 03:00PM", 
       "due": "07/02/2018 09:00AM", 
-      "grading_completed": false, 
+      "grading_completed": true, 
       "grading_started": true, 
       "questions": [
         {
           "col": "D", 
           "filename": "flags.arr"
         }
-      ]
+      ], 
+      "sent_emails": true
     }, 
     "Homework 2": {
       "anonymous": true, 
@@ -28,7 +29,8 @@
           "col": "F", 
           "filename": "um.arr"
         }
-      ]
+      ], 
+      "sent_emails": false
     }
   }, 
   "base_path": "/course/cs0111/hta/handin/students", 

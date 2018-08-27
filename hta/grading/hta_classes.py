@@ -19,7 +19,19 @@ class HTA_Assignment(Assignment):
         # initialize TA version of Assignment class
         super(HTA_Assignment, self).__init__(*args, **kwargs)
         # then set some HTA only attributes
-        self.anon_path = os.path.join(anon_map_path, '%s.csv' % self.mini_name)
+        self.anon_path = os.path.join(anon_map_path,
+                                      '%s.csv' % self.mini_name)
+        if self.started: # load list of logins that handed in this assignment
+            with open(self.anon_path) as f:
+                lines = f.read().strip().split('\n')
+
+            login_handin_list = []
+            for line in lines:
+                s = line.split(',')[0].strip()
+                login_handin_list.append(s)
+
+            self.login_handin_list = login_handin_list
+
         self.handin_path = handin_base_path
         self.bracket_path = os.path.join(rubric_base_path,
                                          self.mini_name,
@@ -27,6 +39,7 @@ class HTA_Assignment(Assignment):
         assert os.path.exists(grade_base_path), \
             '%s directory does not exist' % grade_base_path
         self.grading_completed = self.json['grading_completed']
+        self.emails_sent = self.json['sent_emails']
         self.bracket_exists = os.path.exists(self.bracket_path)
 
     def init_grading(self):
@@ -266,6 +279,13 @@ class HTA_Assignment(Assignment):
         if overrides:
             report_path = override_r_p
             grade_path = override_g_p
+            if os.path.exists(report_path):
+                # if making overrides would overwrite an override...
+                print 'Copying existing override for %s to backup files' % student_id
+                shutil.copy(report_path,
+                            os.path.join(grade_dir, 'report-override-backup.txt'))
+                shutil.copy(grade_path,
+                            os.path.join(grade_dir, 'grade-override-backup.json'))
 
         if not (os.path.exists(override_r_p) == os.path.exists(override_g_p)):
             base = 'For %s, student %s must have both report-override.txt '
@@ -324,19 +344,30 @@ class HTA_Assignment(Assignment):
             f.write(full_string)
 
         with open(grade_path, 'w') as f:
-            json.dump(final_grades, f, indent=2)
+            json.dump(final_grades, f, indent=2, sort_keys=True)
 
         try:
             os.symlink(code_src, code_dest)
         except OSError:
             pass # already exists, no need to do anything
 
-        return student_id, grade, full_string
+        return student_id, final_grades, full_string
 
     def use_brackets(self, grade):
         ''' given a grade dictionary with numeric grades, determine the
         text grades from the possibilities list (defined in function)'''
-        possibilities = ["No Handin", "Fail", "Check Minus", "Check", "Check Plus"]
+        def use_bracket(bracket, grade):
+            bounds = map(lambda k: k['upper_bound'], bracket)
+            if not increasing(bounds):
+                raise ValueError('Bounds must increase throughout bracket')
+            for item in bracket:
+                if grade <= item['upper_bound']:
+                    return item['grade']
+
+            g = bracket[-1]['grade']
+            print 'Warning: grade above uppermost bound. Giving %s' % g
+            return g
+
         # "No Handin" ONLY comes from a None in the grade dictionary
         with open(self.bracket_path) as f:
             brackets = json.load(f)
@@ -356,11 +387,7 @@ class HTA_Assignment(Assignment):
 
         final_grade = {}
         for key in brackets:
-            ranges = brackets[key]
-            cgrade = grade[key]
-
-            # determine_grade comes from helpers file
-            final_grade[key] = determine_grade(possibilities, ranges, cgrade)
+            final_grade[key] = use_bracket(brackets[key], grade[key])
 
         return final_grade
 
@@ -427,7 +454,7 @@ class HTA_Assignment(Assignment):
 
         data['assignments'][self.full_name]['grading_started'] = False
         with locked_file(asgn_data_path, 'w') as f:
-            json.dump(data, f, indent=2)
+            json.dump(data, f, indent=2, sort_keys=True)
 
         self.started = False
         print 'Assignment records removed.'
@@ -438,10 +465,19 @@ class HTA_Assignment(Assignment):
 
         asgn_data['assignments'][self.full_name]['grading_started'] = True
         with locked_file(asgn_data_path, 'w') as f:
-            json.dump(asgn_data, f, indent=4)
+            json.dump(asgn_data, f, indent=2, sort_keys=True)
 
     def record_finish(self):
         raise NotImplementedError
+
+    def set_emails_sent(self):
+        with locked_file(asgn_data_path) as f:
+            d = json.load(f)
+
+        d['assignments'][self.full_name]['sent_emails'] = True
+
+        with locked_file(asgn_data_path, 'w') as f:
+            json.dump(d, f, indent=2, sort_keys=True)
 
     def status(self):
         raise NotImplementedError
