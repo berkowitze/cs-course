@@ -771,6 +771,7 @@ class Handin(object):
                 except KeyError:
                     print('PROBABLY REPEATED ITEM NAME: LOOKING AT ')
                     print(key)
+                    print rubric_item
                     print(rubric[key].keys())
                     raise
                 except ValueError:

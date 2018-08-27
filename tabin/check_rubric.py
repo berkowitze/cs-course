@@ -25,16 +25,19 @@ for itm in rubric['_COMMENTS']:
     assert itm['value'] == False, \
         'the value field for each item in _COMMENTS must be False by default (comment not given)'
 
+criteria = []
 for category in rubric:
     if category == '_COMMENTS':
         continue
-    for criterion in rubric[category]:
+    for criterion in rubric[category]['rubric_items']:
         crit_keys = criterion.keys()
         assert 'name' in crit_keys, \
                '%s does not have "name" key' % category
+        criteria.append(criterion['name'])
         assert 'options' in crit_keys, \
                '%s > "%s" does not have "options" key' % (category, criterion['name'])
         assert 'default' in crit_keys, \
                '%s > "%s" does not have "default" key' % (category, criterion['name'])
 
+assert sorted(list(set(criteria))) == sorted(criteria)
 print 'Rubric is valid.'

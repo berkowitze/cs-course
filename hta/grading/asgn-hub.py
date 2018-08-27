@@ -7,6 +7,7 @@ from hta_classes import get_full_asgn_list, asgn_data_path, \
                         BASE_PATH, login_gradepath_list, User, login_to_email
 import sys
 import tabulate
+import yagmail
 
 # pr.disable()
 # s = StringIO.StringIO()
@@ -33,7 +34,35 @@ def get_opt(prompt, options, first=True):
             return get_opt(prompt, options, first=False)
     except ValueError:
         print 'Enter a number...'
-        return get_opt(prompt, options, first=False)
+        return get_opt(prompt, options, first=False)\
+
+def send_asgn_emails(asgn, handins):
+    # this is convoluted logic but it's so that I can see
+    # what kind of issues come up; will make it better
+    # during semester
+    yag = yagmail.SMTP('csci0111@brown.edu')
+    tosend = asgn.login_handin_list[:] # make copy of login list
+    for student in handins.keys():
+        hpath = os.path.join(BASE_PATH, 'hta/handin/students',
+                             student, asgn.mini_name)
+        if not os.path.exists(hpath):
+            continue
+
+        try:
+            tosend.remove(student)
+            em = login_to_email(student)
+            asgn.send_email(student, em, yag)
+        except ValueError:
+            print '%s has handin but no grade. Not sending email.' % student
+            continue
+
+    if tosend:
+        print 'Graded students that will not receive email:'
+        print '\t%s' % tosend
+        print 'This is likely because they are not in student list.'
+
+    asgn.set_emails_sent()
+
 
 opt = get_opt('> ', ['Generate gradebook', 'Work with assignment'])
 asgns = get_full_asgn_list()
@@ -192,8 +221,8 @@ else:
             asgn.reset_grading(True)
 
         elif opt == 1:
-            if asgn.grading_completed:
-                print 'Grading already complete. Generate override reports? [y/n]'
+            if asgn.emails_sent:
+                print 'Emails have already been sent. Generate override reports? [y/n]'
                 if raw_input('> ').lower() != 'y':
                     print 'Exiting...'
                     sys.exit(0)
@@ -203,35 +232,28 @@ else:
             user = User(username)
             print 'Generating grade reports...'
             logins, paths = login_gradepath_list()
+
             handins = asgn.get_handin_dict(logins, user)
             for student in handins.keys():
                 asgn.generate_report(handins[student],
                                      student_id=student,
                                      soft=False,
-                                     overrides=asgn.grading_completed)
-            print 'Assignments generated...\n'
+                                     overrides=asgn.emails_sent)
+            print 'Assignments generated.\n'
             print 'Send report emails? [yes/n]'
             if raw_input('> ').lower() != 'yes':
-                print 'Exiting...'
+                print 'Exiting... Run cs111-asgn-hub again to send emails.'
                 sys.exit(0)
             else:
-                import yagmail
-                yag = yagmail.SMTP('elias_berkowitz@brown.edu')
-                for student in handins.keys():
-                    em = login_to_email(student)
-                    asgn.send_email(student, em, yag)
+                send_asgn_emails(asgn, handins)
+
         elif opt == 2:
             import getpass
             username = getpass.getuser()
             user = User(username)
             logins, paths = login_gradepath_list()
             handins = asgn.get_handin_dict(logins, user)
-            import yagmail
-            yag = yagmail.SMTP('elias_berkowitz@brown.edu')
-            for student in handins.keys():
-                em = login_to_email(student)
-                asgn.send_email(student, em, yag)
-            #aise NotImplementedError('Email sending Not implemented')
+            send_asgn_emails(asgn, handins)
 
         elif opt == 3:
             header = ['Anon ID', 'Login', 'Grader', 'Flag Reason']

@@ -3,35 +3,15 @@ import csv
 
 base = '/course/cs0111'
 
-def determine_grade(possibilities, ranges, score):
-    ''' given a list of grade possibilities (strings), a list of grade
-    ranges (with length two less than `possibilities`), and a
-    numeric score, determines the grade that the score has deserved.
-    - uses [inclusive, exclusive) ranges;
-    - if score is None, gives the first element of possibilities
-    - below the bottom number of ranges is the second element of possibilities
-    - above the top number of ranges is the last element of possibilities
-    - anything else is determined by checking which range the score is between
-    using [inclusive, exclusive) ranges. '''
-    if score is None: # no grade
-        return possibilities[0]
+def increasing(lst):
+    ''' returns true if the input list is increasing (non-decreasing)
+    (all numbers larger or equal to than previous numbers) '''
+    while lst[1:]:
+        if lst[0] > lst[1]:
+            return False
+        lst.pop(0)
 
-    assert isinstance(score, (int, float)), \
-            'nonscore %s in determine_grade' % score
-    
-    if score < ranges[0]:
-        return possibilities[1]
-    elif score >= ranges[-1]:
-        return possibilities[-1]
-    else:
-        # not gonna be second lowest grade or highest grade, with C/CP/CM
-        # there's only one other option but figure it out anyway
-        for i, lower in enumerate(ranges[:-1]):
-            upper = ranges[i + 1]
-            if score >= lower and score < upper:
-                return possibilities[i + 2]
-
-        raise Exception('Error that shouldn\'t happen damn')
+    return True
 
 def login_gradepath_list():
     '''
