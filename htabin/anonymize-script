@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+
+# usage: anonymize-script <filename> [<outfile>]
+# goes through all student logins/emails/names and removes occurences
+# of them from filename. if outfile is provided, outputs anonymized
+# file in outfile, otherwise, updates <filename> directly.
+
+import sys
+import os
+
+def replace_ci(larger, search, repwith):
+    '''
+    larger   : a string
+    sub      : a string
+    rep_with : a string
+    output   : all instances of sub in larger replaced by rep_with,
+               case insensitive
+    '''
+    count = 0
+    while search in larger.lower():
+        count += 1
+	ndx = larger.lower().index(search)
+	larger = larger[:ndx] + repwith + larger[ndx + len(search):]
+    
+    return larger, count
+
+BASE_PATH = '/course/cs0111'
+
+if len(sys.argv) != 2 and len(sys.argv) != 3:
+    print 'Usage: anonymize-file <filepath> [<outpath>]'
+    print sys.argv
+    sys.exit(1)
+
+fp = sys.argv[1]
+if not os.path.exists(fp):
+    print 'filepath %s does not exist' % fp
+    sys.exit(1)
+
+spath = os.path.join(BASE_PATH, 'ta', 'groups', 'students.csv')
+with open(spath) as f:
+    lines = f.read().strip().split('\n')
+
+replaceables = []
+for line in lines:
+    login, email, name = line.split(',')
+    replaceables.append(login)
+    replaceables.append(email)
+    replaceables.append(name)
+    replaceables.append(name.split(' ')[-1]) # last name only
+
+# cs50 for now
+sp = '/course/cs0050/hta/handin/students.txt'
+with open(sp) as f:
+    lines = f.read().strip().split('\n')
+
+for line in lines:
+    for x in line.split(' '):
+        replaceables.append(x.strip())
+
+with open(fp) as f:
+    file_text = f.read()
+
+repcount = 0
+for replaceable in replaceables:
+    if len(replaceable) < 5:
+        continue # don't replace very short words... (not sure this is optimal)
+    file_text, count = replace_ci(file_text, replaceable.lower(), '{{ANONYMIZED}}')
+    repcount += count
+
+if repcount:
+    print 'Replaced %s strings in %s' % (repcount, fp)
+
+if len(sys.argv) == 3:
+    fp = sys.argv[2]
+else:
+    fp = sys.argv[1]
+
+with open(fp, 'w') as f:
+    f.write(file_text)
+
+

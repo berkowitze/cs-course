@@ -30,11 +30,12 @@ def run_test(name, success, error, fail=None):
 
     return testwrapper
 
-if __name__ == '__main__':
-    @run_test('Test 1', 'All tests passed', 'Error raised')
-    def f(x):
-        return int(x) == 3
+@run_test('Test 1', 'All tests passed', 'Error raised')
+def f(x):
+    a = []
+    student_function()
+    return a == [1,2,3]
 
-    f(3)
-    f(4)
-    f('h')
+f(3)
+f(4)
+f('h')

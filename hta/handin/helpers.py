@@ -1,4 +1,7 @@
 from datetime import datetime
+import os
+
+BASE_PATH = '/course/cs0111'
 
 def col_num_to_str(n):
     ''' convert a column number to the letter corresponding to that
@@ -39,10 +42,12 @@ def load_students():
     with open(path, 'r') as f:
         lines = f.read().strip().split('\n')
         for line in lines:
-            row      = line.split(' ')
+            row      = line.split(',')
             username = row[0]
             email    = row[1]
             students.append((email, username))
+
+    students.append(('csci0111@brown.edu', 'csci0111', 'HTA Account'))
 
     return students
 
@@ -56,6 +61,7 @@ def load_data(path):
 
 def email_to_login(email):
     students = load_students()
+    print students
     for student in students:
         if student[0] == email:
             return student[1]
@@ -68,7 +74,7 @@ def login_to_email(login):
         if student[1] == login:
             return student[0]
 
-    raise ValueError(Student %s not found.' % login)
+    raise ValueError('Student %s not found.' % login)
 
 def confirmed_responses(filename='submission_log.txt'):
     with open(filename, 'r') as f:

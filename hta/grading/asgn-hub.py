@@ -266,3 +266,4 @@ else:
                 sys.exit(1)
             
             print dir(asgn)
+            raise NotImplementedError('sorry...')
