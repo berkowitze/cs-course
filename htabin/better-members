@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+# uses ldapsearch to get members of a group, rather than
+# some weird caching system that frequently breaks
+__author__ = 'Eli Berkowitz'
+__email__  = 'elias_berkowitz@brown.edu'
+
+import re
+import subprocess
+import sys
+
+if len(sys.argv) != 2:
+    print 'Usage: better-members <group>'
+    sys.exit(1)
+
+group = sys.argv[1]
+
+def todict(l):
+    ''' given a string like a=3,b=hello,key=value, turn into a
+    dictionary like {'a': '3', 'b': 'hello', 'key': 'value'} '''
+    d = {}
+    kvs = l.split(',')
+    for kv in kvs:
+        k, v = kv.split('=')
+        d[k] = v
+
+    return d
+
+# get obfuscated group code
+o1 = subprocess.Popen(['ldapsearch', '-Q', 'cn=%s' % group],
+                     stdout=subprocess.PIPE)
+o2 = subprocess.Popen(['grep', 'member'],
+                      stdin=o1.stdout, stdout=subprocess.PIPE)
+o1.wait()
+output = subprocess.check_output(['awk', '{print $2}'], stdin=o2.stdout)
+o2.wait()
+
+group_data = todict(output)
+
+o1 = subprocess.Popen(['ldapsearch', '-Q', '-LLL', '-E',
+                      'pr=500/noprompt', 'cn=%s' % group_data['CN']],
+                     stdout=subprocess.PIPE)
+o2 = subprocess.Popen(['grep', 'member: '],
+                      stdin=o1.stdout, stdout=subprocess.PIPE)
+o1.wait()
+output = subprocess.check_output(['awk', '{print $2}'], stdin=o2.stdout)
+o2.wait()
+
+members = output.strip().split('\n')
+
+
+data = map(todict, members)
+unames = map(lambda d: d['CN'], data)
+print ' '.join(unames)
