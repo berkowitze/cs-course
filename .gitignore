@@ -39,4 +39,5 @@ evaluation
 pysuite
 .repos
 materials
-hta/groups/*
+hta/grading/venv
+hta/testgrades

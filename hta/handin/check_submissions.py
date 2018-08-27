@@ -245,8 +245,12 @@ def fetch_submissions():
 
     spreadsheets = service.spreadsheets().values()
     result = spreadsheets.get(spreadsheetId=ss_id, range=rng).execute()
-
-    vals = result['values']
+    
+    try:
+        vals = result['values']
+    except KeyError:
+        print 'Empty spreadsheet'
+        sys.exit(1)
     responses = []
     for i in range(len(vals)):
         responses.append(Response(vals[i], i))
