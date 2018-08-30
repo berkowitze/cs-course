@@ -178,6 +178,8 @@ class HTA_Assignment(Assignment):
         for student, id, path in sub_paths:
             dest = os.path.join(self.s_files_path, 'student-%s' % id)
             shutil.copytree(path, dest)
+            subprocess.check_output(['chgrp', '-R', 'cs-0111ta', dest])
+            subprocess.check_output(['chmod', '-R', '770', dest])
             for f in os.listdir(dest):
                 fname, ext = os.path.splitext(f)
                 if ext == '.zip':

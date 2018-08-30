@@ -172,6 +172,14 @@ def bracket_check(path):
                 return False, 'Bracket %s has non-number value %s' % (key, val)
 
     return True, 'Valid bracket'
+
+def ta_permission(path, recursive=False):
+    if recursive:
+        subprocess.call(['chgrp', '-R', 'cs-0111ta', path])
+        subprocess.call(['chmod', '-R', '770', path])
+    else:
+        subprocess.call(['chgrp', 'cs-0111ta', path])
+        subprocess.call(['chmod', '770', path])
         
         
 if __name__ == '__main__':
