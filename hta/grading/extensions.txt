@@ -1,2 +1,3 @@
 login assignment date
-qa0111 homework1 08/26/2018 11:59PM
+qa0111 homework1 08/26/2018-11:59PM
+qa0111 homework2 08/26/2018-11:59PM

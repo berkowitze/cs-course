@@ -1,7 +1,9 @@
 import os
 import csv
+import datetime
 
 base = '/course/cs0111'
+os.path.join(base, 'hta', 'grading', 'extensions.txt')
 
 def increasing(lst):
     ''' returns true if the input list is increasing (non-decreasing)
@@ -53,20 +55,6 @@ def student_list():
     ''' gets a list of the student logins '''
     return map(lambda l: l[0], load_students())
 
-if __name__ == '__main__':
-    # run some tests if on __main__ (not being imported)
-    testing_ps = ['No grade', 'CM', 'C', 'CPM', 'CP']
-    testing_rngs = [2, 4, 5]
-    assert determine_grade(testing_ps, testing_rngs, None) == 'No grade'
-    assert determine_grade(testing_ps, testing_rngs, 0) == 'CM'
-    assert determine_grade(testing_ps, testing_rngs, 3) == 'C'
-    assert determine_grade(testing_ps, testing_rngs, 4) == 'CPM'
-    assert determine_grade(testing_ps, testing_rngs, 5) == 'CP'
-    assert determine_grade(testing_ps, testing_rngs, 2) == 'C'
-    assert determine_grade(testing_ps, testing_rngs, 2.0) == 'C'
-    assert determine_grade(testing_ps, testing_rngs, 4.5) == 'CPM'
-    assert determine_grade(testing_ps, testing_rngs, 4.0) == 'CPM'
+def get_extensions_by_login(login):
+    datetime.now
 
-    ps = ['No Grade', 'Fail', 'Check Minus', 'Check', 'Check Plus']
-    ranges = [1.0, 2.0, 2.5]
-    assert determine_grade(ps, ranges, 1) == 'Check Minus'

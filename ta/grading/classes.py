@@ -585,6 +585,8 @@ class Handin(object):
         ''' given a TA username, start grading this handin '''
         self.write_line(ta=ta, status=1, flagged=1, msg='')
         shutil.copyfile(self.question.rubric_filepath, self.grade_path)
+        os.chown(self.grade_path, os.getuid(), grp.getgrnam(TA_GROUP).gr_gid)
+        os.chmod(self.grade_path, 0o770)
         self.grader = ta
         self.line = self.read_line()
         self.extracted = True
