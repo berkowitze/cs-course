@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 
 BASE_PATH = '/course/cs0111'
+extension_path = os.path.join(BASE_PATH, 'hta/grading/extensions.txt')
 
 def col_num_to_str(n):
     ''' convert a column number to the letter corresponding to that
@@ -61,7 +62,6 @@ def load_data(path):
 
 def email_to_login(email):
     students = load_students()
-    print students
     for student in students:
         if student[0] == email:
             return student[1]
@@ -88,3 +88,26 @@ def timestamp_to_datetime(timestamp):
     ''' given a timestamp from a Google Form submission sheet, turn it
     into a datetime object and return the datetime '''
     return datetime.strptime(timestamp, '%m/%d/%Y %H:%M:%S')
+
+class Extension:
+    def __init__(self, student, asgn, date):
+        self.student = student
+        self.asgn    = asgn
+        self.date    = date
+
+    def __repr__(self):
+        return 'Extension(%s, %s)' % (self.user, self.asgn)
+
+def load_extensions():
+    with open(extension_path) as f:
+        lines = f.read().strip().split('\n')[1:]
+    
+    exts = []
+    for line in lines:
+        parts = map(str.strip, line.split(' '))
+        user = parts[0]
+        asgn = parts[1]
+        date = datetime.strptime(parts[2], '%m/%d/%Y-%I:%M%p')
+        exts.append(Extension(user, asgn, date))
+
+    return exts

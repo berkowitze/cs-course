@@ -14,13 +14,21 @@ import datetime as dt
 from datetime import datetime
 from helpers import *
 
-# TODO :
-# - change confirmation email to be from brown email/brown cs email
-# - need to figure out yagmail with different accnt
-
 data_file = '/course/cs0111/ta/assignments.json'
 data = load_data(data_file)
 log_path = os.path.join(data['handin_log_path'])
+
+# minutes after deadline students can submit without penalty
+# applies to both extended handins and normal handins
+SOFT_CUTOFF = 5 
+
+# students can submit up to one day after deadline
+# and still be graded
+# does not apply to extended handins
+HARD_CUTOFF = (24 * 60) + SOFT_CUTOFF
+
+sc = dt.timedelta(0, SOFT_CUTOFF * 60) # soft cutoff
+hc = dt.timedelta(0, HARD_CUTOFF * 60) # hard cutoff
 
 class Question:
     def __init__(self, question, row):
@@ -63,7 +71,7 @@ class Question:
                     self.fname += actual_ext
 
                 e = 'Student %s uploaded a %s file, expected %s'
-                print e % (login, actual_ext, self.fname)
+                print(e % (login, actual_ext, self.fname))
                 with open('filename_error_template.html', 'r') as f:
                     self.warning = f.read().format(exp_ext=expect_ext,
                                                    sub_ext=actual_ext)
@@ -102,7 +110,7 @@ class Question:
                 else:
                     snippet = lines[0:len(lines)]
             
-            snippet = '<br>'.join(map(lambda line: line.strip(), snippet))
+            snippet = '<br>'.join([line.strip() for line in snippet])
             first_cell = '<span style="color: green">Submitted.%s</span>'
             return first_cell % self.warning, snippet
 
@@ -121,9 +129,63 @@ class Response:
         self.row       = row
         self.confirmed = self.ident in confirmed_responses(log_path)
 
+    def set_status(self):
+        ''' set status attributes of instance:
+               - self.email_late : should confirmation email
+                        say the submission was late
+               - self.gradeable  : should the handin be graded
+                        (will send rejection email, not be downloaded)
+               - self.actual_late : will the assignment be deducted
+                        for being submitted late
+               - self.ext_applied : was an extension applied to the
+                        handin
+        '''
+        # if submitted more than a minute late
+        # just say "late" in email, dont mark late
+        if self.sub_time > self.due + dt.timedelta(0, 60):
+            email_late = True
+        else:
+            email_late = False
+
+        gradeable = True
+        ext_applied = False
+        if self.sub_time > self.due + sc:
+            # ^ submitted after soft cutoff
+            ext = self.load_ext()
+            if ext and (self.sub_time < (ext + sc)):
+                # ^has extension and submitted before ext. deadline
+                ext_applied = False
+                actual_late = False
+            elif self.sub_time > self.due + hc:
+                # ^submitted after hard cutoff, no ext
+                gradeable = False
+                actual_late = True
+            else:
+                # ^submitted between hard and soft cutoffs, no ext
+                actual_late = True
+        else:
+            # ^ not late
+            actual_late = True
+
+        self.email_late  = email_late
+        self.gradeable   = gradeable
+        self.actual_late = actual_late
+    
+    def load_ext(self):
+        exts = load_extensions()
+        def relevant_ext(e):
+            return e.student == self.login and e.asng == self.dir_name
+
+        s_a_exts = list(filter(relevant_ext, exts))
+        if s_a_exts:
+            # get furthest-reaching extension
+            return max(s_a_exts, key=lambda e: e.date)
+        else:
+            return None
+
     def download(self):
         if self.confirmed:
-            raise 'Response has already been downloaded & confirmed.'
+            raise ValueError('Response has already been downloaded & confirmed.')
 
         self.asgn      = data['assignments'][self.asgn_name.lower()]
         self.due       = datetime.strptime(self.asgn['due'], '%m/%d/%Y %I:%M%p')
@@ -133,10 +195,14 @@ class Response:
             question.get_gfile()
             self.qs.append(question)
 
-        self.create_directory()
-        self.gfiles = map(lambda q: q.gf, self.qs)
-        self.download_files()
-        self.downloaded = True
+        self.set_status()
+        if self.gradeable:
+            self.create_directory()
+            self.gfiles = [q.gf for q in self.qs]
+            self.download_files()
+            self.downloaded = True
+        else:
+            self.reject()
 
     def confirm(self):
         html = open('confirmation_template.html').read().strip()
@@ -147,9 +213,11 @@ class Response:
             a, b = q.get_snippet()
             table += row.format(cell_1=q.fname, cell_2=a, cell_3=b)
 
-        if self.email_late:
+        if self.email_late and not self.ext_applied:
             msg = '<p><span style="color: red">Note: Submission was late.</span>'
-            msg += ' If you have an extension, disregard this message.</span>'
+            msg += ' If you have an extension, disregard this message.</p>'
+        elif self.email_late and self.ext_applied:
+            msg = '<span style="color: green">Note: Extension Applied</span>'
         else:
             msg = ''
         html = html.format(name=self.login,
@@ -174,6 +242,17 @@ class Response:
                  contents=[html, zip_path])
         os.remove(zip_path)
 
+    def reject(self):
+        with open('reject_template.html') as f:
+            html = f.read().strip()
+
+        html = html.format(name=self.login,
+                           sub_time=self.sub_timestr,
+                           asgn_name=self.asgn_name)
+        yag = yagmail.SMTP(data['email_from'])
+        subject = 'Rejection of %s submission' % self.asgn_name
+        yag.send(to=self.email, subject=subject, contents=[html])
+
     def add_to_log(self):
         with open(log_path, 'a') as f:
             f.write('%s\n' % self.ident)
@@ -183,7 +262,7 @@ class Response:
         base = data['base_path'] #change to /course/cs0111/hta/...
         login_path = os.path.join(base, self.login)
         if not os.path.exists(login_path):
-            print 'Directory for %s did not exist, creating...' % self.login
+            print('Directory for %s did not exist, creating...' % self.login)
             os.mkdir(login_path)
 
         full_base_path = os.path.join(base, self.login, self.dir_name)
@@ -202,26 +281,14 @@ class Response:
                         last_sub = sub_numb
                 except:
                     e = 'Student %s directory contains invalid directory %s'
-                    print e % (self.login, submission)
+                    print(e % (self.login, submission))
                     continue
 
             fold_name = '%s-submission' % str(last_sub + 1)
 
-        # if submitted more than a minute late
-        # just say "late" in email, dont mark late
-        if self.sub_time > self.due + dt.timedelta(0, 60):
-            self.email_late = True
-        else:
-            self.email_late = False
-        # if submitted more than 5 minutes after deadline...
-        if self.sub_time > self.due + dt.timedelta(0, 5*60):
-            fold_name += '-late'
-            self.actual_late = True
-        else:
-            self.actual_late = False
-
         self.full_path = os.path.join(full_base_path, fold_name)
-        os.mkdir(self.full_path)
+        if self.gradeable:
+            os.mkdir(self.full_path)
 
     def download_files(self):
         for q in self.qs:
@@ -243,13 +310,13 @@ def fetch_submissions():
                           data['start_row'], data['end_col'])
     service = sheets_api()
 
-    spreadsheets = service.spreadsheets().values()
+    spreadsheets = list(service.spreadsheets().values())
     result = spreadsheets.get(spreadsheetId=ss_id, range=rng).execute()
     
     try:
         vals = result['values']
     except KeyError:
-        print 'Empty spreadsheet'
+        print('Empty spreadsheet')
         sys.exit(1)
     responses = []
     for i in range(len(vals)):
