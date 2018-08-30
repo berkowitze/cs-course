@@ -7,10 +7,10 @@
 BASE_PATH="/course/cs0111/hta/groups"
 PATH="$PATH:/course/cs0111/htabin"
 
-group_data cs-0111student txt $BASE_PATH/students.txt
-group_data cs-0111student csv $BASE_PATH/students.csv
-group_data cs-0111ta txt $BASE_PATH/tas.txt
-group_data cs-0111hta txt $BASE_PATH/htas.txt
+group-data cs-0111student txt $BASE_PATH/students.txt
+group-data cs-0111student csv $BASE_PATH/students.csv
+group-data cs-0111ta txt $BASE_PATH/tas.txt
+group-data cs-0111hta txt $BASE_PATH/htas.txt
 
 # give TAs read-write access, HTAs full access
 hta-ta-file $BASE_PATH/tas.txt rx
