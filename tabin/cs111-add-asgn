@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+from datetime import datetime
+import json
+data = json.load(open('/course/cs0111/ta/assignments.json'))
+
+print 'What is the assignment name?'
+asgn = raw_input('> ')
+
+print 'Creating %s' % asgn
+
+print 'Will this be graded anonymously? (usually no for projects)'
+print '1 for anonymous, 2 for non-anonymous'
+opt = raw_input('> ')
+if opt == '1':
+    anonymous = True
+elif opt == '2':
+    anonymous = False
+else:
+    raise ValueError('must enter 1 or 2')
+
+print 'When is it due? Use "mm/dd/yy hh:mm _M" format'
+due = raw_input('> ')
+due = datetime.strptime(due,'%m/%d/%y %I:%M %p')
+
+qs = []
+url = 'https://docs.google.com/a/brown.edu/spreadsheets/d/1WBNNlcFQAnIau1AKgUTR_HmOTgl_C1VtPHOKkwvbO0A'
+print 'Google sheet is at %s' % url
+while True:
+    if qs:
+        print 'Add question? [y/n]'
+        if raw_input('> ') != 'y':
+            break
+    print 'What column is the file uploaded to in the handin google sheet?'
+    col = raw_input('> ')
+
+    print 'What is the name of the file for this question?'
+    fname = raw_input('> ')
+    qs.append({"col": col, "filename": fname})
+
+new_data = {
+            "anonymous": anonymous,
+            "available": due.strftime('%m/%d/%Y %I:%M%p'),
+            "due": due.strftime('%m/%d/%Y %I:%M%p'),
+            "grading_completed": False,
+            "grading_started": False,
+            "sent_emails": False,
+            "questions": qs
+           }
+data["assignments"][asgn] = new_data
+with open('/course/cs0111/ta/assignments.json', 'w') as f:
+    json.dump(data, f, indent=2, sort_keys=True)
