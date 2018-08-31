@@ -10,8 +10,9 @@ from threading import Thread
 
 BASE_PATH = '/course/cs0111'
 default_resource_path = os.path.join(BASE_PATH, 'resource-lock.lock')
+
 @contextmanager
-def locked_file(filename, mode='r'):
+def locked_file(filename, mode='r', hta=False):
     ''' this will ensure no file is opened across different processes '''
     # todo: should probably make write mode threaded, not sure how to easily
     # though. so if the program halts while a file is open in write mode,
@@ -27,6 +28,7 @@ def locked_file(filename, mode='r'):
     lock = FileLock(lock_path, timeout=5) # throw error after 5 seconds
     with lock, open(filename, mode) as f:
         yield f
+
         # after file is closed, attempt to remove the .lock
         # file; the file is only clutter, it won't have an impact
         # on anything, so don't try too hard.
@@ -173,15 +175,6 @@ def bracket_check(path):
 
     return True, 'Valid bracket'
 
-def ta_permission(path, recursive=False):
-    if recursive:
-        subprocess.call(['chgrp', '-R', 'cs-0111ta', path])
-        subprocess.call(['chmod', '-R', '770', path])
-    else:
-        subprocess.call(['chgrp', 'cs-0111ta', path])
-        subprocess.call(['chmod', '770', path])
-        
-        
 if __name__ == '__main__':
     import sys
     fp = os.path.join(BASE_PATH, 'ta', 'assignments.json')

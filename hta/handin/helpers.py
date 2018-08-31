@@ -27,14 +27,14 @@ def col_str_to_num(col):
 
 def url_to_gid(url):
     ''' take a drive.google.com URL and extract the ID '''
-    import urlparse
+    import urllib.parse
     if url == '' or url == None:
         return None
     try:
-        o = urlparse.urlparse(url)
-        return urlparse.parse_qs(o.query)['id'][0]
+        o = urllib.parse.urlparse(url)
+        return urllib.parse.parse_qs(o.query)['id'][0]
     except Exception as e:
-        print 'Check columns in assignments.json'
+        print('Check columns in assignments.json')
         raise Exception('Invalid link in url_to_gid')
 
 def load_students():
@@ -55,7 +55,7 @@ def load_students():
 def load_data(path):
     import json
     data = json.load(open(path))
-    for key in data['assignments'].keys():
+    for key in list(data['assignments'].keys()):
         data['assignments'][key.lower()] = data['assignments'].pop(key)
 
     return data
@@ -82,7 +82,7 @@ def confirmed_responses(filename='submission_log.txt'):
         if not lines or lines == ['']:
             return []
         else:
-            return map(int, lines)
+            return list(map(int, lines))
 
 def timestamp_to_datetime(timestamp):
     ''' given a timestamp from a Google Form submission sheet, turn it
@@ -104,7 +104,7 @@ def load_extensions():
     
     exts = []
     for line in lines:
-        parts = map(str.strip, line.split(' '))
+        parts = list(map(str.strip, line.split(' ')))
         user = parts[0]
         asgn = parts[1]
         date = datetime.strptime(parts[2], '%m/%d/%Y-%I:%M%p')

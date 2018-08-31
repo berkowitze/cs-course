@@ -5,7 +5,7 @@ import os
 
 if os.path.exists('credentials.json'):
     import sys
-    print 'credentials.json already exists, remove to continue.'
+    print('credentials.json already exists, remove to continue.')
     sys.exit(0)
 
 secret_path = 'client_secret.json'
@@ -16,5 +16,5 @@ SCOPES = ['https://www.googleapis.com/auth/drive',
 flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
 creds = tools.run_flow(flow, store)
 
-print 'The refresh token is:\n%s' % creds.refresh_token
+print('The refresh token is:\n%s' % creds.refresh_token)
 

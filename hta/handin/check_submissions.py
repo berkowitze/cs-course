@@ -71,7 +71,7 @@ class Question:
                     self.fname += actual_ext
 
                 e = 'Student %s uploaded a %s file, expected %s'
-                print(e % (login, actual_ext, self.fname))
+                print((e % (login, actual_ext, self.fname)))
                 with open('filename_error_template.html', 'r') as f:
                     self.warning = f.read().format(exp_ext=expect_ext,
                                                    sub_ext=actual_ext)
@@ -97,7 +97,10 @@ class Question:
                    'Snippet Unavailable'
         else:
             with open(self.file_path, 'r') as dl_f:
-                lines = dl_f.readlines()
+                try:
+                    lines = dl_f.read().strip().split('\n')
+                except UnicodeDecodeError:
+                    return 'Submitted', 'Snippet Unavailable'
                 if lines == [] or lines == ['']:
                     first_cell = '<span style="color: orange">Empty file.%s</span>'
                     return first_cell % self.warning, ''
@@ -152,9 +155,9 @@ class Response:
         if self.sub_time > self.due + sc:
             # ^ submitted after soft cutoff
             ext = self.load_ext()
-            if ext and (self.sub_time < (ext + sc)):
+            if ext and (self.sub_time < (ext.date + sc)):
                 # ^has extension and submitted before ext. deadline
-                ext_applied = False
+                ext_applied = True
                 actual_late = False
             elif self.sub_time > self.due + hc:
                 # ^submitted after hard cutoff, no ext
@@ -170,11 +173,12 @@ class Response:
         self.email_late  = email_late
         self.gradeable   = gradeable
         self.actual_late = actual_late
+        self.ext_applied = ext_applied
     
     def load_ext(self):
         exts = load_extensions()
         def relevant_ext(e):
-            return e.student == self.login and e.asng == self.dir_name
+            return e.student == self.login and e.asgn == self.dir_name
 
         s_a_exts = list(filter(relevant_ext, exts))
         if s_a_exts:
@@ -201,8 +205,6 @@ class Response:
             self.gfiles = [q.gf for q in self.qs]
             self.download_files()
             self.downloaded = True
-        else:
-            self.reject()
 
     def confirm(self):
         html = open('confirmation_template.html').read().strip()
@@ -215,7 +217,7 @@ class Response:
 
         if self.email_late and not self.ext_applied:
             msg = '<p><span style="color: red">Note: Submission was late.</span>'
-            msg += ' If you have an extension, disregard this message.</p>'
+            msg += ' If you have an extension and are seeing this, email the HTAs.</p>'
         elif self.email_late and self.ext_applied:
             msg = '<span style="color: green">Note: Extension Applied</span>'
         else:
@@ -262,7 +264,7 @@ class Response:
         base = data['base_path'] #change to /course/cs0111/hta/...
         login_path = os.path.join(base, self.login)
         if not os.path.exists(login_path):
-            print('Directory for %s did not exist, creating...' % self.login)
+            print(('Directory for %s did not exist, creating...' % self.login))
             os.mkdir(login_path)
 
         full_base_path = os.path.join(base, self.login, self.dir_name)
@@ -281,7 +283,7 @@ class Response:
                         last_sub = sub_numb
                 except:
                     e = 'Student %s directory contains invalid directory %s'
-                    print(e % (self.login, submission))
+                    print((e % (self.login, submission)))
                     continue
 
             fold_name = '%s-submission' % str(last_sub + 1)
@@ -310,7 +312,7 @@ def fetch_submissions():
                           data['start_row'], data['end_col'])
     service = sheets_api()
 
-    spreadsheets = list(service.spreadsheets().values())
+    spreadsheets = service.spreadsheets().values()
     result = spreadsheets.get(spreadsheetId=ss_id, range=rng).execute()
     
     try:
@@ -337,7 +339,10 @@ def fetch_submissions():
                          contents=content)
                 raise
             try:
-                response.confirm()
+                if response.gradeable:
+                    response.confirm()
+                else:
+                    response.reject()
             except:
                 tb = traceback.format_exc()
                 raise
