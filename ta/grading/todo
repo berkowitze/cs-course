@@ -1,15 +1,17 @@
 High Priority:
+    - 
+
+High-ish Priority:
     Send email to individual student (easy-medium)
-    Deal with late handins (?)
     Implement change-point-val into asgn-hub (medium)
 
 Medium Priority:
-    View flag reason if handin is flagged (easy)
-    Go to student's next/last problem (medium-hard)
-    Add "test" option which spits out results to a modal (medium-hard)
+    View flag reason if handin is flagged (easy) [working for HTA]
+    Go to student's next/last problem (medium-hard) [working for non-anonymous assignments]
+    Add "test" option which spits out results to a modal (medium)
         Run shell script like /course/cs0111/tabin/test pyret filepath
-    New rubric item option (hard)
-    New rubric item (hard)
+    New rubric item option (hard) [unnecessary]
+    New rubric item (hard) [unnecessary]
 
 Low priority:
     Better sidebar colors (easy)
@@ -18,3 +20,4 @@ Low priority:
 Done:
     View flagged handins in asgn-hub (medium)
     Report generation: make it work if not all items complete (annoying)
+    Deal with late handins (?)

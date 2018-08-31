@@ -3,12 +3,15 @@ import json
 import csv
 import os
 import random
+import grp
 import shutil
 from textwrap import wrap, fill
 import sys
 from helpers import locked_file, require_resource, bracket_check, \
     rubric_check
 from datetime import datetime as dt
+import subprocess
+
 
 ## READ BEFORE EDITING THIS FILE ##
 # do not use the builtin `open` function; instead use the
@@ -585,8 +588,6 @@ class Handin(object):
         ''' given a TA username, start grading this handin '''
         self.write_line(ta=ta, status=1, flagged=1, msg='')
         shutil.copyfile(self.question.rubric_filepath, self.grade_path)
-        os.chown(self.grade_path, os.getuid(), grp.getgrnam(TA_GROUP).gr_gid)
-        os.chmod(self.grade_path, 0o770)
         self.grader = ta
         self.line = self.read_line()
         self.extracted = True

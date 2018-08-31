@@ -2,6 +2,7 @@ from classes import *
 import zipfile
 from hta_helpers import *
 import numpy as np
+import subprocess
 
 anon_map_path = os.path.join(BASE_PATH, 'hta/grading/anonymization')
 handin_base_path = os.path.join(BASE_PATH, 'hta/handin/students')
@@ -76,6 +77,7 @@ class HTA_Assignment(Assignment):
             raise OSError(base % (self, self.bracket_path))
             
     def get_blocklists(self):
+        print ta_path, hta_path
         tas = np.loadtxt(ta_path, dtype=str)
         htas = np.loadtxt(hta_path, dtype=str)
         # combine list of TAs
@@ -101,9 +103,7 @@ class HTA_Assignment(Assignment):
 
     def setup_blocklist(self):
         mapping = self.get_blocklists()
-        print mapping
         students = student_list()
-        print students
         with open(self.blocklist_path, 'a') as f:
             for ta in mapping:
                 for student in mapping[ta]:

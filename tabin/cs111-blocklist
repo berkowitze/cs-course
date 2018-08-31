@@ -7,6 +7,8 @@ import sys
 import tabulate
 import re
 
+os.umask(007)
+
 BASE_PATH = '/course/cs0111'
 anon_path = os.path.join(BASE_PATH, 'ta', 't-s-blocklist.txt')
 students_path = os.path.join(BASE_PATH, 'ta', 'groups', 'students.txt')

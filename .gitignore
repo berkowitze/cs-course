@@ -34,7 +34,6 @@ hta/handin/credentials.json
 hta/handin/students.txt
 ta/groups
 py-env
-www
 evaluation
 pysuite
 .repos
@@ -42,3 +41,5 @@ materials
 hta/grading/venv
 hta/testgrades
 hta/handin/v3
+hta/handin/backup
+*.bak

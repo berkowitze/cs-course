@@ -38,4 +38,4 @@ class GoogleFile:
 if __name__ == '__main__':
     file = GoogleFile(f_id, drive)
     file.download('/Users/Eli/Desktop/incredible.arr')
-    print file.name
+    print(file.name)

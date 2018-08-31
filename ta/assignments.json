@@ -31,6 +31,20 @@
         }
       ], 
       "sent_emails": false
+    }, 
+    "Homework 3": {
+      "anonymous": true, 
+      "available": "08/30/2018 06:20PM", 
+      "due": "08/29/2018 06:20PM", 
+      "grading_completed": false, 
+      "grading_started": true, 
+      "questions": [
+        {
+          "col": "F", 
+          "filename": "hello.arr"
+        }
+      ], 
+      "sent_emails": false
     }
   }, 
   "base_path": "/course/cs0111/hta/handin/students", 
