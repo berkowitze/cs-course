@@ -9,13 +9,6 @@ import sys
 import tabulate
 import yagmail
 
-# pr.disable()
-# s = StringIO.StringIO()
-# sortby = 'cumulative'
-# ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-# ps.print_stats()
-# print s.getvalue()
-
 def get_opt(prompt, options, first=True):
     ''' given a prompt (to display to the user), and a list of options,
     this will collect a valid index (0-indexed) from the options.
@@ -45,7 +38,7 @@ def send_asgn_emails(asgn, handins):
     for student in handins.keys():
         hpath = os.path.join(BASE_PATH, 'hta/handin/students',
                              student, asgn.mini_name)
-        if not os.path.exists(hpath):
+        if not os.path.exists(hpath): # if no submission for hw...
             continue
 
         try:
@@ -209,8 +202,10 @@ else:
         print ''
 
         print 'What would you like to do?'
-        opt = get_opt('> ', ['Reset Assignment Grading', 'Generate Grade Reports',
-                             'Email Grade Report(s)', 'View flagged handins',
+        opt = get_opt('> ', ['Reset Assignment Grading',
+                             'Generate [and email] Grade Reports',
+                             'Email Grade Report(s)',
+                             'View flagged handins',
                              'Add handin'])
         if opt == 0:
             print 'Resetting the assignment will delete any grades given.'

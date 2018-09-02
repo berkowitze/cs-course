@@ -141,16 +141,15 @@ class HTA_Assignment(Assignment):
         students = list(os.walk(self.handin_path))[0][1]
         ids = random.sample(range(len(students)), len(students))
         for i, student in enumerate(students):
-            sub_path = os.path.join(self.handin_path, student, self.mini_name)
-            if not os.path.exists(sub_path):
+            final_path = latest_submission_path(self.handin_path,
+                                                student,
+                                                self.mini_name)
+            if final_path is None:
                 continue # student didn't submit for this hw
+            elif not os.path.exists(final_path):
+                e = 'latest_submission_path returned nonexisting path'
+                raise ValueError(e)
 
-            submissions = filter(lambda f: 'submission' in f,
-                                 list(next(os.walk(sub_path)))[1])
-            sub_numbs = map(lambda fname: int(fname.split('-')[0]),
-                            submissions)
-            latest = submissions[np.argmax(sub_numbs)]
-            final_path = os.path.join(sub_path, latest)
             sub_paths.append((student, ids[i], final_path))
         
         # get a random id for every student
@@ -271,6 +270,13 @@ class HTA_Assignment(Assignment):
             anon_ident = -1
 
         assert self.started # at the very least grading should be started
+        final_path = latest_submission_path(self.handin_path,
+                                            student_id,
+                                            self.mini_name)
+        if final_path is not None and '-late' in final_path:
+            late = True
+        else:
+            late = False
 
         grade_dir = os.path.join(grade_base_path,
                          '%s/%s' % (student_id, self.mini_name))
@@ -325,10 +331,14 @@ class HTA_Assignment(Assignment):
                     else:
                         grade[key] = report_grade[key]
 
-        final_grades = self.use_brackets(grade)
+        final_grades = self.use_brackets(grade, late=late)
+
         grade_string = 'Grade Summary\n'
         for key in final_grades:
             grade_string += '  %s: %s\n' % (key, final_grades[key])
+
+        if late:
+            grade_string += '(Late deduction applied)'
 
         full_string += '\n%s\n' % grade_string
         
@@ -355,16 +365,25 @@ class HTA_Assignment(Assignment):
 
         return student_id, final_grades, full_string
 
-    def use_brackets(self, grade):
+    def use_brackets(self, grade, late=False):
         ''' given a grade dictionary with numeric grades, determine the
-        text grades from the possibilities list (defined in function)'''
+        text grades from the possibilities list (defined in function) '''
         def use_bracket(bracket, grade):
             bounds = map(lambda k: k['upper_bound'], bracket)
             if not increasing(bounds):
                 raise ValueError('Bounds must increase throughout bracket')
-            for item in bracket:
+            for i, item in enumerate(bracket):
                 if grade <= item['upper_bound']:
-                    return item['grade']
+                    cg = item['grade']
+                    if not late:
+                        return cg
+                    else:
+                        if i == 0:
+                            # lowest grade anyway...
+                            return cg
+                        else:
+                            ng = bracket[i - 1]['grade']
+                            return "%s -> %s" % (cg, ng)
 
             g = bracket[-1]['grade']
             print 'Warning: grade above uppermost bound. Giving %s' % g
@@ -389,7 +408,10 @@ class HTA_Assignment(Assignment):
 
         final_grade = {}
         for key in brackets:
-            final_grade[key] = use_bracket(brackets[key], grade[key])
+            if grade[key] is None:
+                final_grade[key] = "No handin"
+            else:
+                final_grade[key] = use_bracket(brackets[key], grade[key])
 
         return final_grade
 

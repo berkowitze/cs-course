@@ -9,6 +9,10 @@ from passlib.hash import sha256_crypt
 import getpass
 from classes import started_asgns, Assignment, ta_path, hta_path, User
 
+# do not run this directly or file permissions will be messed up
+# and you need to be in a virtualenvironment
+# either run cs111-grade, or reproduce what is done in that script
+
 # could everything be reorganized into a database? yes.
 # is it worth it? up to whoever's reading this. I didn't do it
 # because it's annoying to learn how databases work and this is an
