@@ -5,8 +5,8 @@ import os
 import random
 import grp
 import shutil
-from textwrap import wrap, fill
 import sys
+from textwrap import wrap, fill
 from helpers import locked_file, require_resource, bracket_check, \
     rubric_check
 from datetime import datetime as dt
@@ -23,6 +23,7 @@ import subprocess
 current_time = dt.now()
 BASE_PATH = '/course/cs0111'
 DATA_PATH = os.path.join(BASE_PATH, 'ta', 'grading', 'data')
+GLOB_COMMENTS     = os.path.join(DATA_PATH, 'global-comments.json')
 asgn_data_path    = os.path.join(BASE_PATH, 'ta', 'assignments.json')
 ta_path           = os.path.join(BASE_PATH, 'ta/groups', 'tas.txt')
 hta_path          = os.path.join(BASE_PATH, 'ta/groups', 'htas.txt')
@@ -38,6 +39,21 @@ if not os.path.exists(asgn_data_path):
 
 with locked_file(asgn_data_path) as f:
     data = json.load(f)
+
+def insert_global_comments(write_to):
+    with locked_file(write_to) as f:
+        to = json.load(f)
+
+    with locked_file(GLOB_COMMENTS) as f:
+        library = json.load(f)
+
+    for key in library:
+        if key in to.keys():
+            for comment in library[key]:
+                to[key]['comments'].append({'comment': comment, 'value': False})
+    
+    with locked_file(write_to, 'w') as f:
+        json.dump(to, f, indent=2, sort_keys=True)
 
 def started_asgns():
     assignments = []
@@ -63,7 +79,7 @@ def is_started(f):
             raise Exception(e % asgn.full_name)
         else:
             ''' run as normal if grading has started '''
-            is_started.__doc__ = f.__doc__  # todo probably can delete
+            is_started.__doc__ = f.__doc__
             return f(*args, **kwargs)
 
     return magic
@@ -588,6 +604,7 @@ class Handin(object):
         ''' given a TA username, start grading this handin '''
         self.write_line(ta=ta, status=1, flagged=1, msg='')
         shutil.copyfile(self.question.rubric_filepath, self.grade_path)
+        insert_global_comments(self.grade_path)
         self.grader = ta
         self.line = self.read_line()
         self.extracted = True
