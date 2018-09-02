@@ -1,6 +1,7 @@
 import os
 import csv
 import datetime
+import numpy as np
 
 base = '/course/cs0111'
 os.path.join(base, 'hta', 'grading', 'extensions.txt')
@@ -55,6 +56,14 @@ def student_list():
     ''' gets a list of the student logins '''
     return map(lambda l: l[0], load_students())
 
-def get_extensions_by_login(login):
-    datetime.now
+def latest_submission_path(base, login, assignment):
+    sub_path = os.path.join(base, login, assignment)
+    if not os.path.exists(sub_path):
+        return None
+
+    submissions = filter(lambda f: 'submission' in f,
+                         os.listdir(sub_path))
+    sub_numbs = map(lambda f: int(f.split('-')[0]), submissions)
+    latest = submissions[np.argmax(sub_numbs)]
+    return os.path.join(sub_path, latest)
 

@@ -1,12 +1,14 @@
 qa0111
 jyaffe1
 bsmith28
+jkim377
 mlavrent
+jreitz
 mvigilan
 ncolon1
 rkakar
+kqualls
 jjones26
-kkawamu1
 bk26
 azhang81
 adambr1
@@ -25,6 +27,7 @@ kboyce
 zchen68
 ekuno
 nbaatark
+ghoxha
 yyoo1
 spark88
 amancin2
@@ -39,7 +42,6 @@ clam14
 aossimet
 earaia
 amazza
-sskwarch
 cchrabas
 nrodrig5
 yshao13
@@ -80,13 +82,13 @@ rcohen1
 gmartin
 jpirl
 haugust
+sroy6
 mdolan
 ncheng2
 apapol
 ndelwort
 eberkowi
 egould1
-cdibella
 kchhabri
 kthein1
 orussell

@@ -749,8 +749,10 @@ class Handin(object):
             comment_lines = fill(comment, 74,
                                  initial_indent=(pre_string + '- '))
             report_str += '%s\n\n' % comment_lines
-
-        report_str += '%s\n' % ('-' * 74)
+        
+        ta_em = '%s@cs.brown.edu' % self.grader
+        report_str += 'Grader: %s (%s)' % (self.grader, ta_em)
+        report_str += '\n\n%s\n' % ('-' * 74)
         return report_str
 
     def generate_grade_report(self):
