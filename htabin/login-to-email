@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+ldapsearch -Q cn=$1 | grep mail
+

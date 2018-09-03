@@ -193,6 +193,47 @@ class HTA_Assignment(Assignment):
             for question in self.questions:
                 question.add_handin_to_log(id)
 
+    def add_new_handin(self, login):
+        rand_id = self.get_new_id()
+        final_path = latest_submission_path(self.handin_path, login,
+                                            self.mini_name)
+        if final_path is None:
+            return
+        elif not os.path.exists(final_path):
+	    e = 'latest_submission_path returned nonexisting path'
+	    raise ValueError(e)
+        if self.anonymous:
+            base_anon_path = self.anon_path
+        else:
+            base_anon_path = self.ta_anon_path
+
+        with open(base_anon_path, 'a') as f:
+            f.write('%s,%s' % (login, rand_id))
+
+	dest = os.path.join(self.s_files_path, 'student-%s' % rand_id)
+	shutil.copytree(final_path, dest)
+	for f in os.listdir(dest):
+	    fname, ext = os.path.splitext(f)
+	    if ext == '.zip':
+		full_path = os.path.join(dest, f)
+		new_fname = '%s-extracted' % fname
+		new_dest  = os.path.join(dest, new_fname)
+		with zipfile.ZipFile(full_path, 'r') as zf:
+		    zf.extractall(new_dest)
+        
+        self.load_questions()
+        for question in self.questions:
+            question.add_handin_to_log(rand_id)
+
+    def get_new_id(self):
+        with open(self.anon_path) as f:
+            ids = []
+            for line in csv.reader(f):
+                ids.append(int(line[1]))
+        
+        print max(ids) + 1
+        return max(ids) + 1
+
     def create_log(self):
         if os.path.exists(self.log_path):
             raise Exception('create_log called on a log that already exists')
