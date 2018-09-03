@@ -51,4 +51,4 @@ members = output.strip().split('\n')
 
 data = map(todict, members)
 unames = map(lambda d: d['CN'], data)
-print ' '.join(unames)
+print ' '.join(list(sorted(unames)))
