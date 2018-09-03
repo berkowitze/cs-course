@@ -194,11 +194,18 @@ class HTA_Assignment(Assignment):
                 question.add_handin_to_log(id)
 
     def add_new_handin(self, login):
+        try:
+            self.login_to_id(login)
+            e = "Student %s is already being graded. Fix manually." % login
+            raise Exception(e)
+        except ValueError:
+            pass
+
         rand_id = self.get_new_id()
         final_path = latest_submission_path(self.handin_path, login,
                                             self.mini_name)
         if final_path is None:
-            return
+            raise ValueError("No handin for %s" % login)
         elif not os.path.exists(final_path):
 	    e = 'latest_submission_path returned nonexisting path'
 	    raise ValueError(e)
@@ -208,7 +215,7 @@ class HTA_Assignment(Assignment):
             base_anon_path = self.ta_anon_path
 
         with open(base_anon_path, 'a') as f:
-            f.write('%s,%s' % (login, rand_id))
+            f.write('%s,%s\n' % (login, rand_id))
 
 	dest = os.path.join(self.s_files_path, 'student-%s' % rand_id)
 	shutil.copytree(final_path, dest)
@@ -229,6 +236,7 @@ class HTA_Assignment(Assignment):
         with open(self.anon_path) as f:
             ids = []
             for line in csv.reader(f):
+                print line
                 ids.append(int(line[1]))
         
         print max(ids) + 1
