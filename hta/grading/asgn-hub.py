@@ -273,14 +273,4 @@ else:
 
         elif opt == 4:
             login = raw_input('Enter student login: ')
-            late = raw_input('Mark as late? [y/n] ')
-            if late.lower() == 'y' or late.lower() == 'yes':
-                late = True
-            elif late.lower() == 'n' or late.lower() == 'no':
-                late = False
-            else:
-                print 'Invalid input...'
-                sys.exit(1)
-            
-            print dir(asgn)
-            raise NotImplementedError('sorry...')
+            asgn.add_new_handin(login)
