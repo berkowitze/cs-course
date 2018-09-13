@@ -44,3 +44,4 @@ hta/handin/v3
 hta/handin/backup
 *.bak
 hta/asgn-backups
+ta/grading/data/labs/lab*

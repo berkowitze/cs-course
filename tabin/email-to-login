@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+a=$(ldapsearch -Q mail=$1 | grep cn)
+
+echo ${a/cn: /""}

@@ -264,7 +264,7 @@ class Response:
         base = data['base_path'] #change to /course/cs0111/hta/...
         login_path = os.path.join(base, self.login)
         if not os.path.exists(login_path):
-            print(('Directory for %s did not exist, creating...' % self.login))
+            #print(('Directory for %s did not exist, creating...' % self.login))
             os.mkdir(login_path)
 
         full_base_path = os.path.join(base, self.login, self.dir_name)

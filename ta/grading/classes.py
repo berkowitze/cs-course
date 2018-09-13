@@ -29,6 +29,7 @@ ta_path           = os.path.join(BASE_PATH, 'ta/groups', 'tas.txt')
 hta_path          = os.path.join(BASE_PATH, 'ta/groups', 'htas.txt')
 student_path      = os.path.join(BASE_PATH, 'ta/groups', 'students.txt')
 log_base_path     = os.path.join(DATA_PATH, 'logs')
+test_base_path    = os.path.join(DATA_PATH, 'tests')
 rubric_base_path  = os.path.join(DATA_PATH, 'rubrics')
 grade_base_path   = os.path.join(DATA_PATH, 'grades')
 s_files_base_path = os.path.join(DATA_PATH, 'sfiles')
@@ -159,6 +160,9 @@ class Assignment(object):
 
         self.s_files_path = os.path.join(s_files_base_path, self.mini_name)
 
+        # directory where tests are stored
+        self.test_path = os.path.join(test_base_path, self.mini_name)
+
         self.blocklist_path = os.path.join(blocklist_path,
                                            '%s.csv' % self.mini_name)
 
@@ -263,6 +267,10 @@ class Question(object):
         self.log_filepath = os.path.join(parent_assignment.log_path,
                                          'q%s.csv' % self.qnumb)
         self.code_filename = self.json['filename']
+        test_filename = 'q%s.%s' % (self.qnumb, self.json['test-ext'])
+        self.test_path = os.path.join(parent_assignment.test_path,
+                                      test_filename)
+                                      
 
     def load_handins(self):
         ''' set self.handins based on the questions' log file '''
@@ -552,6 +560,12 @@ class Handin(object):
             # only ever reading this file, no need for lock
             with open(filepath) as f:
                 code = f.read()
+            
+            try:
+                json.dumps(code)
+            except UnicodeDecodeError:
+                code = 'Students code could not be decoded. Look at'
+                code += ' original handin & contact an HTA'
 
             return code
 
@@ -701,7 +715,6 @@ class Handin(object):
         bl_path = self.question.assignment.blocklist_path
         with locked_file(bl_path) as f:
             lines = csv.reader(f)
-        
             for line in lines:
                 if line[0] == ta and int(line[1]) == student_id:
                     return True
@@ -805,6 +818,55 @@ class Handin(object):
                 grade[key] = 0
 
         return report_str, grade
+
+    def run_test(self):
+        filepath = os.path.join(self.handin_path, self.question.code_filename)
+        if not os.path.exists(filepath):
+            return 'No handin or missing handin'
+        
+        test_dir = os.path.join(self.handin_path, 'TA_TESTS')
+        if not os.path.exists(test_dir):
+            os.mkdir(test_dir)
+
+        if not os.path.exists(self.question.test_path):
+            return 'No test file for this question: contact HTA'
+
+        test_filepath = os.path.join(test_dir,
+                                     os.path.split(self.question.test_path)[1])
+        if not os.path.exists(test_dir):
+            shutil.copyfile(self.question.test_path, test_filepath)
+
+            with locked_file(test_filepath, 'r') as f:
+                lines = f.readlines()
+                relpath = os.path.relpath(filepath, test_dir)
+                print relpath
+                lines.insert(0, 'import file("%s") as SC\n' % relpath)
+
+            with locked_file(test_filepath, 'w') as f:
+                f.writelines(lines)
+        
+        if self.question.json['test-ext'] == 'arr':
+            cmd = [os.path.join(BASE_PATH, 'tabin', 'pyret-test'),
+                   filepath, test_filepath, test_dir]
+        else:
+            return 'NOT IMPLEMENTED'
+
+        return subprocess.check_output(cmd)
+
+    def delete(self, override=False):
+        if not override:
+            raise ValueError('cannot delete handin without True override')
+
+        #shutil.rmtree(self.handin_path)
+        try:
+            pass
+            #os.remove(self.grade_path)
+        except OSError:
+            pass
+
+        cmd = ['sed', '-i.bak', '/^%s\,/d' % str(self.id),
+               self.question.log_filepath]
+        subprocess.check_output(cmd)
 
     def __repr__(self):
         base = 'Handin(id=%s, extracted=%s, completed=%s)'

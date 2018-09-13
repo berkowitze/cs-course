@@ -36,7 +36,18 @@ while True:
 
     print 'What is the name of the file for this question?'
     fname = raw_input('> ')
-    qs.append({"col": col, "filename": fname})
+    print 'Test suite: pyret or python?'
+    print '(enter arr or py for the file extension)?'
+    print 'If it\'s neither, just type one in plz.'
+    while True:
+        ext = raw_input('> ')
+        if ext == 'arr' or ext == 'py':
+            print 'cmon... arr or py only plzzz'
+            continue
+        else:
+            break
+    
+    qs.append({"col": col, "filename": fname, 'test-ext': ext})
 
 new_data = {
             "anonymous": anonymous,
