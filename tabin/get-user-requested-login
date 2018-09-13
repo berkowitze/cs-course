@@ -1,0 +1,7 @@
+#!/local/projects/python3.7/bin/python3.7
+
+for x in range(10):
+    print(str(x))
+
+a = input('> ')
+print('A: %s' % a)

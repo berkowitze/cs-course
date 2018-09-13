@@ -77,7 +77,6 @@ class HTA_Assignment(Assignment):
             raise OSError(base % (self, self.bracket_path))
             
     def get_blocklists(self):
-        print ta_path, hta_path
         tas = np.loadtxt(ta_path, dtype=str)
         htas = np.loadtxt(hta_path, dtype=str)
         # combine list of TAs
@@ -113,7 +112,8 @@ class HTA_Assignment(Assignment):
                             ident = int(self.login_to_id(student))
                             f.write('%s,%s\n' % (ta, ident))
                         except ValueError:
-                            pass
+                            # student did not submit this homework
+                            continue
 
     def login_to_id(self, login):
         lines = list(csv.reader(open(self.anon_path)))
@@ -236,11 +236,28 @@ class HTA_Assignment(Assignment):
         with open(self.anon_path) as f:
             ids = []
             for line in csv.reader(f):
-                print line
                 ids.append(int(line[1]))
         
-        print max(ids) + 1
         return max(ids) + 1
+
+    def delete_student_handin(self, login):
+        print 'Confirm removal of %s handin from grading app [y/n]'
+	if raw_input('> ').lower() != 'y':
+	    return
+
+        try:
+	    ident = self.login_to_id(login)
+        except ValueError:
+            raise ValueError('%s does not have a handin that\'s being graded')
+        
+        cmd = ['sed', '-i.bak', '/^%s\,/d' % login, self.anon_path]
+        subprocess.check_output(cmd)
+
+        for q in self.questions:
+            try:
+	        q.get_handin_by_sid(ident, User('eberkowi')).delete(True)
+            except ValueError:
+                pass
 
     def create_log(self):
         if os.path.exists(self.log_path):
@@ -460,7 +477,10 @@ class HTA_Assignment(Assignment):
             if grade[key] is None:
                 final_grade[key] = "No handin"
             else:
-                final_grade[key] = use_bracket(brackets[key], grade[key])
+                if brackets[key] == "Numeric":
+                    final_grade[key] = str(grade[key])
+                else:
+                    final_grade[key] = use_bracket(brackets[key], grade[key])
 
         return final_grade
 

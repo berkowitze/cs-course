@@ -1,4 +1,4 @@
-#!/course/cs0050/ta/grading/venv/bin/python2.7
+#!/course/cs0111/ta/grading/venv/bin/python2.7
 
 import os
 import subprocess
@@ -45,7 +45,7 @@ for i, user in enumerate(lines):
 print tabulate.tabulate(ls, headers=('#', 'Login', 'Name'))
 
 print ''
-print 'Which user would you like to blacklist?'
+print 'Which user would you like to blocklist?'
 print 'Type the number next to their login'
 while True:
     inp = raw_input('Enter a number: ')
@@ -60,6 +60,6 @@ while True:
         print 'Enter a number only...'
 
 with open(anon_path, 'a') as f:
-    f.write('%s,%s' % (ta_uname, student))
+    f.write('%s,%s\n' % (ta_uname, student))
 
 print '%s blacklisted.' % student

@@ -575,6 +575,35 @@ function reportLoaded(data) {
     $('#report-contents').html(JSON.parse(data));
 }
 
+function runTest(x) {
+    button = $(x);
+    button.prop('disabled', true);
+    button.text('Running... do not do anything!')
+    cid = $('main').data('active-id');
+    $.ajax({
+        url: '/run_test',
+        data: {'id': cid},
+        success: testsRun,
+        error: testsFailed
+    });
+}
+
+function testsRun(data) {
+    var b = $('#run-test-button')
+    b.prop('disabled', false);
+    b.text('Run tests');
+
+    res = JSON.parse(data);
+    $('#test-content').text(res);
+    $('#test-modal').modal('open');
+}
+
+function testsFailed(data) {
+    console.log(data);
+    M.toast({'html': 'Test run failed: contact HTA (console)',
+             'displayLength': 3000});
+}
+
 $(document).ready(function(){
     $('select#asgn-list').focus();
     x = 3;
@@ -621,6 +650,7 @@ $(document).ready(function(){
     // initialize code viewer
     $('#code-modal').modal();
     $('#report-modal').modal();
+    $('#test-modal').modal();
     $('#student-list-modal').modal();
     $('#student-list-modal').removeAttr('tabindex');
 

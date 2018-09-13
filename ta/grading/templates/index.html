@@ -69,6 +69,10 @@
     <h5 class='modal-header'>Double-click to select all. Open <a target="_blank" href="https://code.pyret.org/editor">CPO</a>. <input id='code-link' type='text'/><button onclick='copyCodeLink(this)' class='browser-default waves-effect waves-teal btn-flat'>Copy Link to Code Directory</button></h5>
     <pre><code id="code-content" class='python'></code></pre>
   </div>
+  <div class='modal' id='test-modal'>
+    <h5 class='modal-header'>Test Results</h5>
+    <pre><code id="test-content" class='json'></code></pre>
+  </div>
   <div class='modal' id='report-modal'>
     <pre id='report-contents'></pre>
   </div>
@@ -84,12 +88,13 @@
 <footer class='page-footer col s8 white nodisp'>
   <div class='row' id='handin-options'>
     <button class='btn green handin-button extract-button darken-1 waves-light' id='extract-handin' onclick='extract(this)'>New handin</button>
+    <button class='btn modal-trigger extract-button green handin-button darken-1 waves-light' id='extract-by-login' data-target="student-list-modal">Extract by login</button>
     <button class='btn green handin-button darken-1 waves-light' id='handin-complete' onclick='completeHandin(this)' disabled>Save &amp; done</button>
     <button class='btn green handin-button darken-1 waves-light' id='handin-save' onclick='saveHandin(this)' disabled>Save</button>
     <button class='btn green handin-button darken-1 waves-light' id='handin-flag' onclick='flagToggle(this)' disabled>Flag</button>
     <button class='btn green handin-button darken-1 waves-light' id='handin-unextract' onclick='unextractHandin(this)' disabled>Unextract</button>
     <button class='btn green handin-button darken-1 waves-light' id='handin-report-view' data-target='report-modal' onclick='viewReport(this)' disabled>View Report</button>
-    <button class='btn modal-trigger extract-button green handin-button darken-1 waves-light' id='extract-by-login' data-target="student-list-modal">Extract by login</button>
+    <button class='btn green handin-button darken-1 waves-light' id='run-test-button' onclick='runTest(this)'>Run tests</button>
   </div>
 </footer>
 </body>

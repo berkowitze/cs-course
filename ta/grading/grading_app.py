@@ -86,7 +86,8 @@ def load_prob():
         assert asgn.started, 'grading unstarted assignment %s' % asgn.full_name
         question = asgn.get_question(prob_ndx)
         workflow['question'] = question
-        return json.dumps(question.html_data(user))
+        d = question.html_data(user)
+        return json.dumps(d)
 
 @app.route('/extract_handin')
 @is_logged_in
@@ -196,6 +197,14 @@ def preview_report():
         'trying to preview report of inactive handin'
 
     return json.dumps(workflow['handin'].generate_report_str())
+
+@app.route('/run_test')
+@is_logged_in
+def run_test():
+    ident = request.args['id']
+    assert workflow['handin'].id == int(ident), \
+        'trying to preview report of inactive handin'
+    return json.dumps(workflow['handin'].run_test())
 
 # handle authentication
 @app.route('/login', methods=['GET', 'POST'])

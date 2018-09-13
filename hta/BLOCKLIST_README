@@ -1,0 +1,9 @@
+there are two blocklists:
+/ta/t-s-blocklist.txt (tas blocklisting students)
+/hta/s-t-blocklist.txt (students blocklisting tas)
+
+running cs111-blocklist manages the former
+the latter must be managed manually
+
+blocklists always follow the form
+talogin,studentlogin\n

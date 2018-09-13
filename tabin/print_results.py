@@ -13,5 +13,24 @@ if sys.argv[1] == 'pyret':
 
     with open(r) as f:
         data = json.load(f)
+    
+    try:
+        blocks = data['result']['Ok']
+        for block in blocks:
+            pass_count = 0
+            test_count = 0
+            for test in block['tests']:
+                if test['passed']:
+                    pass_count += 1
+                
+                test_count += 1
 
+            print 'Block %s: %s/%s tests passed.' % (block['name'],
+                                                     pass_count,
+                                                     test_count)
+    except KeyError:
+        print 'TEST FORMATTING FAILED'
+
+    print ''
+    print 'Full results:'
     print json.dumps(data, indent=2, sort_keys=True)
