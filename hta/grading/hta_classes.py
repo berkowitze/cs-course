@@ -478,7 +478,11 @@ class HTA_Assignment(Assignment):
                 final_grade[key] = "No handin"
             else:
                 if brackets[key] == "Numeric":
-                    final_grade[key] = str(grade[key])
+                    if late:
+                        g = "%s -> %s" % (grade[key], grade[key] - 1)
+                        final_grade[key] = g
+                    else:
+                        final_grade[key] = str(grade[key])
                 else:
                     final_grade[key] = use_bracket(brackets[key], grade[key])
 

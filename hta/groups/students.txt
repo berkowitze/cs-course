@@ -1,5 +1,6 @@
 abraver2
 adambr1
+aertman
 afriedm2
 ajhernan
 akim65
@@ -9,6 +10,7 @@ ali62
 aossimet
 apapol
 azhang81
+bfink1
 bk26
 cdeitch1
 cheiden
@@ -21,6 +23,7 @@ dfenn
 eberkowi
 ebrenna1
 eli17
+em71
 epeck1
 epushee
 eshire
@@ -32,7 +35,6 @@ hdrewes
 hprecel
 jdaviso1
 jjones26
-jkim252
 jkranzle
 jlao
 jmuneton
@@ -64,7 +66,6 @@ rschmid3
 santonio
 slaporta
 srhee1
-sroy6
 stucker
 swang68
 twilli10

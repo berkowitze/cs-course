@@ -44,22 +44,25 @@ for i, user in enumerate(lines):
 
 print tabulate.tabulate(ls, headers=('#', 'Login', 'Name'))
 
-print ''
-print 'Which user would you like to blocklist?'
-print 'Type the number next to their login'
 while True:
-    inp = raw_input('Enter a number: ')
-    try:
-        student = lines[int(inp) - 1]
-        print 'Confirm you want to blacklist %s [y/n]' % student
-        i = raw_input('> ').lower()
-        if i == 'y' or i == 'yes':
-            break
+    print ''
+    print 'Which user would you like to blocklist? (ctrl-c to stop)'
+    print 'Type the number next to their login'
+    while True:
+        inp = raw_input('Enter a number: ')
+        try:
+            student = lines[int(inp) - 1]
+            print 'Confirm you want to blocklist %s [y/n]' % student
+            i = raw_input('> ').lower()
+            if i == 'y' or i == 'yes':
+                break
+        except ValueError:
+            print 'Enter a number only...'
+        except KeyboardInterrupt:
+            print 'Exiting...'
+            sys.exit(0)
 
-    except ValueError:
-        print 'Enter a number only...'
+    with open(anon_path, 'a') as f:
+        f.write('%s,%s\n' % (ta_uname, student))
 
-with open(anon_path, 'a') as f:
-    f.write('%s,%s\n' % (ta_uname, student))
-
-print '%s blacklisted.' % student
+    print '%s blocklisted.' % student

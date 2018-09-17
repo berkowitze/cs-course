@@ -8,6 +8,7 @@ from hta_classes import get_full_asgn_list, asgn_data_path, \
 import sys
 import tabulate
 import yagmail
+import subprocess
 
 def get_opt(prompt, options, first=True):
     ''' given a prompt (to display to the user), and a list of options,
@@ -80,6 +81,9 @@ if opt == 0:
     # i hope there's a better way to do this...
     # there is! todo
     students = os.listdir(os.path.join(BASE_PATH, 'hta', 'grades'))
+    tas = subprocess.check_output(['/course/cs0111/htabin/better-members', 'cs-0111ta']).strip()
+    tas = tas.split(' ')
+    students = [student for student in students if student not in tas]
     header = ['Student']
     for asgn in asgns:
         if asgn.grading_completed:

@@ -13,5 +13,14 @@ def is_blacklisted(u1, u2, path):
 
     return False
 
+def green(text):
+    return '\033[32m%s\033[0m' % text
+
+def red(text):
+    return '\033[31m%s\033[0m' % text
+
+def yellow(text):
+    return '\033[33m%s\033[0m' % text
+
 if __name__ == '__main__':
     print is_blacklisted('eberkowi', 'ncheng2', '/course/cs0111/ta/t-s-blocklist.txt')
