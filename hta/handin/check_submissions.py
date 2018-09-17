@@ -322,11 +322,17 @@ def fetch_submissions():
         sys.exit(1)
     responses = []
     for i in range(len(vals)):
-        responses.append(Response(vals[i], i))
+        try:
+            responses.append(Response(vals[i], i))
+        except ValueError as e:
+            if 'not found' in str(e):
+                responses.append(None)
+            else:
+                raise
 
     confirms = 0
     for response in responses:
-        if not response.confirmed:
+        if response is not None and not response.confirmed:
             confirms += 1
             try:
                 response.download()

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+/course/cs0111/ta/grading/venv/bin/ipython -i /course/cs0111/hta/grading/hta_classes.py

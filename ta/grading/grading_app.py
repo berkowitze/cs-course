@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import flask
 import json
@@ -36,6 +37,11 @@ workflow = {}
 # get logged in username
 username = getpass.getuser()
 user = User(username)
+if user.hta:
+    if len(sys.argv) > 1:
+        user = User(sys.argv[-1])
+
+print user
 
 def is_logged_in(f):
     ''' this decorator ensures that the user is logged in when attempting
