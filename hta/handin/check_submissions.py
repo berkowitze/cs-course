@@ -235,10 +235,15 @@ class Response:
 
         zip_path = self.get_zip()
         if self.asgn['grading_started']:
-            c = 'Student %s submitted %s after grading had started.'
+            c = 'Student %s submitted %s after grading had started.\nTo grade,'
+            c += ' run `cs111-asgn-hub` and select the add student option.'
+            c = c % (self.login, self.asgn_name)
+            htas = ['eberkowi@cs.brown.edu', 'hprecel@cs.brown.edu',
+                    'jpattiz@cs.brown.edu']
             yag.send(to=data['email_errors_to'],
                      subject='Submission after grading started',
-                     contents='<pre>%s</pre>' % (c % (self.login, self.asgn_name)))
+                     contents='<pre>%s</pre>' % c)
+
         yag.send(to=self.email,
                  subject=subject,
                  contents=[html, zip_path])
