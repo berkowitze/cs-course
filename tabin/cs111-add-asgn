@@ -21,7 +21,7 @@ else:
 
 print 'When is it due? Use "mm/dd/yy hh:mm _M" format'
 due = raw_input('> ')
-due = datetime.strptime(due,'%m/%d/%y %I:%M %p')
+due = datetime.strptime(due,'%m/%d/%Y %I:%M %p')
 
 qs = []
 url = 'https://docs.google.com/a/brown.edu/spreadsheets/d/1WBNNlcFQAnIau1AKgUTR_HmOTgl_C1VtPHOKkwvbO0A'
@@ -41,7 +41,7 @@ while True:
     print 'If it\'s neither, just type one in plz.'
     while True:
         ext = raw_input('> ')
-        if ext == 'arr' or ext == 'py':
+        if ext != 'arr' and ext != 'py':
             print 'cmon... arr or py only plzzz'
             continue
         else:
@@ -56,6 +56,7 @@ new_data = {
             "grading_completed": False,
             "grading_started": False,
             "sent_emails": False,
+            "group_asgn": False,
             "questions": qs
            }
 data["assignments"][asgn] = new_data
