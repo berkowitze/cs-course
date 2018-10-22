@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+raise NotImplementedError('Do not use without first reading through and testing')
 # usage: anonymize-script <filename> [<outfile>]
 # goes through all student logins/emails/names and removes occurences
 # of them from filename. if outfile is provided, outputs anonymized
