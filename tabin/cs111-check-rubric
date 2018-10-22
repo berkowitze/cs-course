@@ -41,5 +41,8 @@ for category in rubric:
         assert 'default' in crit_keys, \
                '%s > "%s" does not have "default" key' % (category, criterion['name'])
 
-assert sorted(list(set(criteria))) == sorted(criteria)
+        if criterion['default'] is not None:
+            assert criterion['default'] in criterion['options'], 'rubric item "%s" invalid default' % criterion['name']
+
+assert sorted(list(set(criteria))) == sorted(criteria), 'repeated rubric item names'
 print 'Rubric is valid.'
