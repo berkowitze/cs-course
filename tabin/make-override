@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+umask 007
 echo "Making override in current directory..."
 cp report.txt report-override.txt &>/dev/null &&
 cp grade.json grade-override.json &>/dev/null &&
