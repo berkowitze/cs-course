@@ -8,7 +8,15 @@ from flask import Flask, session, redirect, url_for, request, render_template
 from functools import wraps
 from passlib.hash import sha256_crypt
 import getpass
+import argparse
 from classes import started_asgns, Assignment, ta_path, hta_path, User
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--port', default=6924, type=int,
+                    help='Port to run the app on.')
+parser.add_argument('-u', '--user', type=str,
+                    help='TA to run the app as. HTAs only.')
+args = parser.parse_args()
 
 # do not run this directly or file permissions will be messed up
 # and you need to be in a virtualenvironment
@@ -37,9 +45,8 @@ workflow = {}
 # get logged in username
 username = getpass.getuser()
 user = User(username)
-if user.hta:
-    if len(sys.argv) > 1:
-        user = User(sys.argv[-1])
+if user.hta and args.user is not None:
+    user = User(args.user)
 
 print user
 
@@ -234,7 +241,7 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    port = 6924 # use an obscure port
+    port = args.port
     runtime_dir = os.path.dirname(os.path.abspath(__file__))
     app.run(host='0.0.0.0', port=port)
 
