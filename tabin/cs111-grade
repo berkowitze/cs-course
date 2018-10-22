@@ -3,6 +3,6 @@
 cd /course/cs0111/ta/grading
 umask 007
 
-/course/cs0111/ta/grading/venv/bin/python2.7 /course/cs0111/ta/grading/grading_app.py $2 $3 $4
+/course/cs0111/ta/grading/venv/bin/python2.7 /course/cs0111/ta/grading/grading_app.py "$@"
 
 
