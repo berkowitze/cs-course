@@ -1,0 +1,60 @@
+#!/course/cs0111/ta/grading/venv/bin/python2.7
+import os
+import sys
+import json
+from helpers import get_login_from_list
+
+PROJECTS = ['Project 1', 'Project 2', 'Project 3']
+BASE_PATH = '/course/cs0111'
+grade_path = os.path.join(BASE_PATH, 'ta/grading/data/projects')
+
+if not os.path.exists(grade_path):
+    raise OSError('%s does not exist' % grade_path)
+
+print 'Which project are you adding a pair for?'
+for i, proj in enumerate(PROJECTS):
+    print '%s. %s' % (i + 1, proj)
+
+resp = int(raw_input('> '))
+if resp not in range(1, len(PROJECTS) + 1):
+    raise ValueError('Input must be between 1 and %s' % len(projects) + 1)
+
+proj = PROJECTS[resp - 1]
+
+mininame = proj.lower().replace(' ', '')
+group_dir = os.path.join(grade_path, mininame)
+if not os.path.exists(group_dir):
+    print '%s dir didn\'t exist, creating'
+    os.mkdir(group_dir)
+
+
+group_path = os.path.join(grade_path, mininame, 'groups.json')
+if not os.path.exists(group_path):
+    with open(group_path, 'w') as f:
+        json.dump([], f, indent=2)
+
+try:
+    with open(group_path) as f:
+        json.load(f)
+except ValueError:
+    with open(group_path, 'w') as f:
+        json.dump([], f, indent=2)
+
+print 'How many students in the group?'
+n = int(raw_input('> '))
+logins = get_login_from_list(n, required=True)
+with open(group_path) as f:
+    data = json.load(f)
+
+for pairing in data:
+    for login in pairing:
+        if login in logins:
+            e = 'Student has already been added to a group (%s)' % pairing
+            raise ValueError(e)
+
+data.append(list(logins))
+with open(group_path, 'w') as f:
+    json.dump(data, f, indent=2)
+
+print '%s added to %s' % (list(logins), proj)
+
