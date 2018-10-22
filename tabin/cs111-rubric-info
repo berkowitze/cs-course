@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+import json
+import sys
+import os
+
+if not len(sys.argv) == 2:
+    print 'Usage: cs111-rubric-info <path-to-rubric>'
+
+if not os.path.exists(sys.argv[1]):
+    raise OSError('%s does not exist' % sys.argv[1])
+
+p = sys.argv[1]
+with open(p) as f:
+    rubric = json.load(f)
+
+# setup
+rubric.pop('_COMMENTS')
+b = rubric[rubric.keys()[0]]['rubric_items'][0]
+populated = ('value' in b.keys())
+
+for key in rubric:
+    if populated:
+        V = 0
+        M = 0
+        for item in rubric[key]['rubric_items']:
+            V += item['point-val'][item['options'].index(item['value'])]
+            M += max(item['point-val'])
+    
+    if populated:
+        print '%s (%s/%s)' % (key.upper(), V, M)
+    else:
+        print key.upper()
+    items = rubric[key]['rubric_items']
+    for item in items:
+        print '  %s' % item['name']
+        if populated:
+            val = item['value']
+            pval = item['point-val'][item['options'].index(val)]
+            mval = max(item['point-val'])
+            print '    %s (%s/%s)' % (val, pval, mval)
+        else:
+            for opt, val in zip(item['options'], item['point-val']):
+                print '    %s (%s)' % (opt, val)
+
