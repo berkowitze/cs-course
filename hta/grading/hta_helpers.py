@@ -4,7 +4,6 @@ import datetime
 import numpy as np
 
 base = '/course/cs0111'
-os.path.join(base, 'hta', 'grading', 'extensions.txt')
 
 def increasing(lst):
     ''' returns true if the input list is increasing (non-decreasing)
@@ -15,19 +14,6 @@ def increasing(lst):
         lst.pop(0)
 
     return True
-
-def login_gradepath_list():
-    '''
-    Returns 1) a list of student logins, 2) a list of the grade paths
-    for each login (in same order)
-    '''
-    logins = map(lambda l: l[0], load_students())
-    spath = os.path.join(base, 'hta', 'groups', 'students.txt')
-    with open(spath) as f:
-        logins = map(str.strip, f.read().strip().split('\n'))
-
-    grade_paths = map(lambda f: os.path.join(base, f), logins)
-    return logins, grade_paths
 
 def load_students():
     ''' reads students from the hta/groups/students.csv file '''

@@ -1,0 +1,33 @@
+#!/course/cs0111/ta/grading/venv/bin/python2.7
+
+import os
+from hta_classes import *
+
+asgn_path = os.path.join(BASE_PATH, 'ta/assignments.json')
+group_dir = os.path.join(BASE_PATH, 'ta/grading/data/projects')
+
+group_projs = []
+for key in data['assignments']:
+    if data['assignments'][key]['group_asgn']:
+        group_projs.append(key)
+
+for i, p in enumerate(group_projs):
+    print '%s. %s' % (i + 1, p)
+
+print 'Which project would you like to check?'
+i = int(raw_input('> '))
+check_p = group_projs[i - 1]
+
+asgn = HTA_Assignment(check_p)
+
+# currently assumes one question assignment
+q = asgn.questions[0]
+for handin in q.handins:
+    login = asgn.id_to_login(handin.id)
+    grader = handin.grader
+    if not handin.complete:
+        if not handin.extracted:
+            '%s has not extracted %s\'s handin' % (grader, login)
+        else:
+            '%s is still grading %s\'s handin' % (grader, login)
+    

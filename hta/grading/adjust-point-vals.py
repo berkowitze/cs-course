@@ -19,17 +19,17 @@ def get_choice(prompt, choices):
 
 base = '/course/cs0111'
 grade_base = os.path.join(base, 'ta/grading/data/grades')
-#asgn_name = raw_input("Which assignment are you generating grades for?\n> ")
-asgn_name = 'Homework 4' # TODO fix this
+asgn_name = raw_input("Which assignment are you generating grades for?\n> ")
+#asgn_name = 'Homework 4' # TODO fix this
 asgn = HTA_Assignment(asgn_name)
 asgn.load_questions()
 
 print 'Which question are you updating the JSON for?'
-for i, q in enumerate(asgn.logs):
+for i, q in enumerate(asgn.questions):
     print '%s. %s' % (i + 1, q)
 
-choice = get_choice('> ', range(1, len(asgn.logs) + 1))
-question = asgn.logs[choice - 1]
+choice = get_choice('> ', range(1, len(asgn.questions) + 1))
+question = asgn.questions[choice - 1]
 
 print 'Which category are you adjusting?'
 rubric = question.copy_rubric()
@@ -39,7 +39,7 @@ for i, c in enumerate(rubric.keys()):
 choice = get_choice('> ', range(1, len(rubric.keys()) + 1))
 category = rubric.keys()[choice - 1]
 
-sub_rubric = rubric[category]
+sub_rubric = rubric[category]['rubric_items']
 print 'Which rubric item are you changing?'
 for i, item in enumerate(sub_rubric):
     print '%s. %s' % (i + 1, item['name'])
@@ -58,7 +58,7 @@ while True:
         print 'Invalid input format'
 
 print "Updating..."
-rubric[category][choice - 1]['point-val'] = x
+rubric[category]['rubric_items'][choice - 1]['point-val'] = x
 question.rewrite_rubric(rubric, 'YES')
 
 for handin in question.handins:
@@ -67,13 +67,13 @@ for handin in question.handins:
         c_cat = grade[category]
         found = False
         for c_ndx, c_item in enumerate(c_cat):
-            if c_item['name'] == item['name']:
+            if c_item['rubric_items']['name'] == item['name']:
                 found = True
                 break
 
         assert found
-        assert c_item['name'] == item['name']
-        grade[category][c_ndx]['point-val'] = x
+        assert c_item['rubric_items']['name'] == item['name']
+        grade[category]['rubric_items'][c_ndx]['point-val'] = x
         handin.write_grade(grade)
     else:
         if os.path.exists(handin.grade_path):

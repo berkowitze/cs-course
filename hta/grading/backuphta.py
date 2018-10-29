@@ -28,12 +28,17 @@ class HTA_Assignment(Assignment):
         super(HTA_Assignment, self).__init__(*args, **kwargs)
         # then set some HTA only attributes
         self.anon_path = os.path.join(anon_map_path,
-                                      '%s.json' % self.mini_name)
+                                      '%s.csv' % self.mini_name)
         if self.started: # load list of logins that handed in this assignment
             with locked_file(self.anon_path) as f:
-                d = json.load(f)
+                lines = f.read().strip().split('\n')
 
-            self.login_handin_list = d.keys()
+            login_handin_list = []
+            for line in lines:
+                s = line.split(',')[0].strip()
+                login_handin_list.append(s)
+
+            self.login_handin_list = login_handin_list
 
         self.handin_path = handin_base_path
         self.bracket_path = os.path.join(rubric_base_path,
@@ -105,47 +110,38 @@ class HTA_Assignment(Assignment):
 
     def setup_blocklist(self):
         mapping = self.get_blocklists()
-        data = defaultdict(lambda: [])
-        for ta in mapping:
-            for student in mapping[ta]:
-                try:
-                    ident = self.login_to_id(student)
-                    data[ta].append(ident)
-                except ValueError: # no submission for this student
-                    continue
-
-        with locked_file(self.blocklist_path, 'w') as f:
-            json.dump(data, f, indent=2, sort_keys=True)
-        
-        #with locked_file(self.blocklist_path, 'a') as f: # DEL
-        #    for ta in mapping:
-        #        for student in mapping[ta]:
-        #            if student in students:
-        #                line = '%s,%s\n'
-        #                try:
-        #                    ident = int(self.login_to_id(student))
-        #                    f.write('%s,%s\n' % (ta, ident))
-        #                except ValueError:
-        #                    # student did not submit this homework
-        #                    continue
+        students = student_list()
+        with locked_file(self.blocklist_path, 'a') as f:
+            for ta in mapping:
+                for student in mapping[ta]:
+                    if student in students:
+                        line = '%s,%s\n'
+                        try:
+                            ident = int(self.login_to_id(student))
+                            f.write('%s,%s\n' % (ta, ident))
+                        except ValueError:
+                            # student did not submit this homework
+                            continue
 
     def login_to_id(self, login):
         with locked_file(self.anon_path) as f:
-            data = json.load(f)
-        try:
-            return data[login]
-        except KeyError:
-            e = 'login %s does not exist in map for %s'
-            raise ValueError(e % (login, self)) 
+            lines = list(csv.reader(f))
+        
+        for line in lines:
+            if line[0] == login:
+                return line[1]
+
+        e = 'login %s does not exist in map for %s'
+        raise ValueError(e % (login, self)) 
 
     def id_to_login(self, id):
         with locked_file(self.anon_path) as f:
-            data = json.load(f)
+            lines = list(csv.reader(f))
 
-        for k in data:
-            if data[k] == id:
-                return str(k)
-        
+        for line in lines:
+            if line[1] == str(id):
+                return line[0]
+
         e = 'id %s does not exist in map for %s'
         raise ValueError(e % (id, self))
 
@@ -154,9 +150,7 @@ class HTA_Assignment(Assignment):
             and puts them in the TA folder; zip files with be extracted
             to a new folder (hopefully) '''
         sub_paths = []
-
-        file_sys = os.walk(self.handin_path)
-        students = next(file_sys)[1]
+        students = list(os.walk(self.handin_path))[0][1]
         ids = random.sample(range(len(students)), len(students))
         for i, student in enumerate(students):
             final_path = latest_submission_path(self.handin_path,
@@ -178,13 +172,10 @@ class HTA_Assignment(Assignment):
             base_anon_path = self.anon_path
         else:
             base_anon_path = self.ta_anon_path
-        
-        data = {}
-        for student, id, _ in sub_paths:
-            data[student] = id
-
         with locked_file(base_anon_path, 'w') as f:
-            json.dump(data, f, sort_keys=True, indent=2)
+            writer = csv.writer(f, lineterminator='\n')
+            for student, id, path in sub_paths:
+                writer.writerow([student, id])
         
         if not self.anonymous: # make a link in the HTA folder as well
             try:
@@ -198,6 +189,8 @@ class HTA_Assignment(Assignment):
         for student, id, path in sub_paths:
             dest = os.path.join(self.s_files_path, 'student-%s' % id)
             shutil.copytree(path, dest)
+            subprocess.check_output(['chgrp', '-R', 'cs-0111ta', dest])
+            subprocess.check_output(['chmod', '-R', '770', dest])
             for f in os.listdir(dest):
                 fname, ext = os.path.splitext(f)
                 if ext == '.zip':
@@ -234,11 +227,11 @@ class HTA_Assignment(Assignment):
             base_anon_path = self.ta_anon_path
         
         with locked_file(base_anon_path) as f:
-            data = json.load(f)
-
-        data[login] = rand_id
+            lines = f.read().split('\n')
+        
+        lines.append('%s,%s' % (login, rand_id))
         with locked_file(base_anon_path, 'w') as f:
-            json.dump(data, f, indent=2, sort_keys=True)
+            f.write('\n'.join(lines))
 
 	dest = os.path.join(self.s_files_path, 'student-%s' % rand_id)
 	shutil.copytree(final_path, dest)
@@ -257,33 +250,28 @@ class HTA_Assignment(Assignment):
 
     def get_new_id(self):
         with locked_file(self.anon_path) as f:
-            data = json.load(f)
+            ids = []
+            for line in csv.reader(f):
+                ids.append(int(line[1]))
         
-        if len(data) > 0:
-            return max(data.values()) + 1
-        else:
-            return 0
-          #  for line in csv.reader(f): # DEL
-          #      ids.append(int(line[1]))
-       ## 
-        #return max(ids) + 1
+        return max(ids) + 1
 
     def delete_student_handin(self, login, override=False):
-        #def remove_from_file(fp, ident, ndx=1, header=False): # DEL
-        #    with locked_file(fp) as f:
-        #        lines = map(str.strip, f.read().strip().split('\n'))
-        #        if header:
-        #            header = lines[0]
-        #            lines = lines[1:]
-#
-#            new_lines = [] if not header else [header]
- #           for line in lines:
-   ##             if int(line.split(',')[ndx]) != int(ident):
-     #               new_lines.append(line)
-#
- #           with locked_file(fp, 'w') as f:
-  #              f.write('\n'.join(new_lines))
-#
+        def remove_from_file(fp, ident, ndx=1, header=False):
+            with locked_file(fp) as f:
+                lines = map(str.strip, f.read().strip().split('\n'))
+                if header:
+                    header = lines[0]
+                    lines = lines[1:]
+
+            new_lines = [] if not header else [header]
+            for line in lines:
+                if int(line.split(',')[ndx]) != int(ident):
+                    new_lines.append(line)
+
+            with locked_file(fp, 'w') as f:
+                f.write('\n'.join(new_lines))
+
         if not override:
             print 'Confirm removal of %s handin from grading app [y/n]' % login
             if raw_input('> ').lower() != 'y':
@@ -299,29 +287,14 @@ class HTA_Assignment(Assignment):
         dest = os.path.join(self.s_files_path, 'student-%s' % ident)
         if os.path.exists(dest):
             shutil.rmtree(dest)
-        
-        if not self.anonymous:
-            assert os.path.exists(self.ta_anon_path)
-            p = self.ta_anon_path
+
+        if os.path.exists(self.ta_anon_path):
+            remove_from_file(self.ta_anon_path, ident)
         else:
-            p = self.anon_path
+            remove_from_file(self.anon_path, ident)
         
-        with locked_file(p) as f:
-            data = json.load(f)
         
-        data.pop(login)
-        
-        with locked_file(p, 'w') as f:
-            json.dump(data, f, indent=2, sort_keys=True)
-
-        with locked_file(self.blocklist_path) as f:
-            data = json.load(f)
-
-        for k in data:
-            data[k] = filter(lambda i: i != ident, data[k])
-        
-        with locked_file(self.blocklist_path, 'w') as f:
-            json.dump(data, f, indent=2, sort_keys=True)
+        remove_from_file(self.blocklist_path, ident)
 
         for q in self.questions:
             try:
@@ -331,13 +304,8 @@ class HTA_Assignment(Assignment):
                 continue
             if os.path.exists(h.grade_path):
                 os.remove(h.grade_path)
-            
-            with locked_file(q.log_filepath) as f:
-                data = json.load(f)
 
-            data = filter(lambda d: d['id'] != ident, data)
-            with locked_file(q.log_filepath, 'w') as f:
-                json.dump(data, f, indent=2, sort_keys=True)
+            remove_from_file(q.log_filepath, ident, ndx=0, header=True)
 
     def create_log(self):
         if os.path.exists(self.log_path):
@@ -351,7 +319,10 @@ class HTA_Assignment(Assignment):
             q = Question(self, i)
             os.makedirs(q.grade_path) # probably shouldnt do this here
             with locked_file(q.log_filepath, 'w') as f:
-                json.dump([], f, indent=2, sort_keys=True)
+                writer = csv.writer(f)
+                writer.writerow(['student', 'ta', 'status',
+                                 'flagged', 'explanation'])
+                f.flush()
 
     def get_empty_grade(self, set_to=0):
         ''' create a dictionary with one key for every theme on this assignment,
@@ -483,7 +454,6 @@ class HTA_Assignment(Assignment):
         return self.generate_report(ps, login, soft=soft, overrides=overrides)
 
     def generate_report(self, problems, student_id, soft=True, overrides=False):
-        # this needs some serious cleanup
         ''' given a list of Handins and either a (nonanonymous) student id,
         generate a report for that student.
         the third argument, soft, represents whether or not to write the grades
@@ -522,7 +492,7 @@ class HTA_Assignment(Assignment):
         grade_path   = os.path.join(grade_dir, 'grade.json')
         override_r_p = os.path.join(grade_dir, 'report-override.txt')
         override_g_p = os.path.join(grade_dir, 'grade-override.json')
-        if overrides and not soft:
+        if overrides:
             report_path = override_r_p
             grade_path = override_g_p
             if os.path.exists(report_path):
@@ -771,7 +741,7 @@ class HTA_Assignment(Assignment):
 
     def deanonymize(self):
         # step 1 : get anonymization file into right place
-        dest = os.path.join(anon_base_path, '%s.json' % self.mini_name)
+        dest = os.path.join(anon_base_path, '%s.csv' % self.mini_name)
         src = self.anon_path
         if not os.path.exists(dest):
             os.symlink(src, dest)
