@@ -212,7 +212,7 @@ function copyCodeLink(x) {
 function handinLoaded(problemData) {
     var problemData = JSON.parse(problemData);
     resetContainer();
-    $('#code-content').html(problemData['student-code']); // set code viewer content
+    $('#code-content').text(problemData['student-code']); // set code viewer content
     $('#code-link').val(problemData['sfile-link']);
     $('main').data('active-id', problemData['id']); // set main data to the student's id
     var sidebarItem = sidebarById(problemData['id']); // get sidebar item for this handin
