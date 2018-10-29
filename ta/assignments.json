@@ -1,15 +1,17 @@
 {
   "_README1": "under assignments, all keys must be the same as the Google Form option, case insensitive.", 
-  "_README2": "dates are mm/dd/yyyy HH:MM_M format", 
+  "_README2": "dates are mm/dd/yyyy HH:MM_M format (i.e. 11/29/2018 05:00PM)", 
   "_README3": "if you're getting an error, it may be because of the end_col key; check that first", 
-  "_README4": "the due key is useless with the way the website's set up, but may be used in classes.py; get rid of it with care at some point", 
+  "_README4": "the available key is useless with the way the website's set up, but may be used in classes.py; get rid of it with care at some point", 
+  "_README5": "projects/group assignments: if group_asgn is true, there must be another key-value which contains the directory in ta/grading/data/projects to put group information in (see Project 1/Project 1 Design Check)", 
   "assignments": {
     "Homework 1": {
-      "anonymous": true, 
+      "anonymous": false, 
       "available": "06/01/2018 03:00PM", 
       "due": "09/11/2018 09:00PM", 
       "grading_completed": true, 
       "grading_started": true, 
+      "group_asgn": false, 
       "questions": [
         {
           "col": "D", 
@@ -17,14 +19,15 @@
           "test-ext": "arr"
         }
       ], 
-      "sent_emails": false
+      "sent_emails": true
     }, 
     "Homework 2": {
-      "anonymous": true, 
+      "anonymous": false, 
       "available": "06/01/2018 03:00PM", 
-      "due": "09/18/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
+      "due": "09/19/2018 06:00PM", 
+      "grading_completed": true, 
+      "grading_started": true, 
+      "group_asgn": false, 
       "questions": [
         {
           "col": "E", 
@@ -47,6 +50,146 @@
           "test-ext": "arr"
         }
       ], 
+      "sent_emails": true
+    }, 
+    "Homework 3": {
+      "anonymous": false, 
+      "available": "06/01/2018 03:00PM", 
+      "due": "09/25/2018 09:00PM", 
+      "grading_completed": true, 
+      "grading_started": true, 
+      "group_asgn": false, 
+      "questions": [
+        {
+          "col": "M", 
+          "filename": "safety.arr", 
+          "test-ext": "arr"
+        }, 
+        {
+          "col": "N", 
+          "filename": "calculate-rate.arr", 
+          "test-ext": "arr"
+        }, 
+        {
+          "col": "O", 
+          "filename": "sunset.arr", 
+          "test-ext": "arr"
+        }
+      ], 
+      "sent_emails": true
+    }, 
+    "Homework 4": {
+      "anonymous": false, 
+      "available": "10/02/2018 09:00PM", 
+      "due": "10/02/2018 09:00PM", 
+      "grading_completed": true, 
+      "grading_started": true, 
+      "group_asgn": false, 
+      "questions": [
+        {
+          "col": "S", 
+          "filename": "planets-table.arr", 
+          "test-ext": "arr"
+        }, 
+        {
+          "col": "T", 
+          "filename": "climate-tables.arr", 
+          "test-ext": "arr"
+        }
+      ], 
+      "sent_emails": true
+    }, 
+    "Homework 6": {
+      "anonymous": false, 
+      "available": "10/23/2018 09:00PM", 
+      "due": "10/23/2018 09:00PM", 
+      "grading_completed": false, 
+      "grading_started": true, 
+      "group_asgn": false, 
+      "questions": [
+        {
+          "col": "X", 
+          "filename": "shakespeare.arr", 
+          "test-ext": "arr"
+        }, 
+        {
+          "col": "Y", 
+          "filename": "fruits.arr", 
+          "test-ext": "arr"
+        }
+      ], 
+      "sent_emails": false
+    }, 
+    "Project 1": {
+      "anonymous": false, 
+      "available": "10/02/2018 09:00PM", 
+      "due": "10/16/2018 09:00PM", 
+      "grading_completed": true, 
+      "grading_started": true, 
+      "group_asgn": true, 
+      "group_dir": "project1", 
+      "questions": [
+        {
+          "col": "W", 
+          "filename": "transit-report.pdf", 
+          "test-ext": "NONE"
+        }, 
+        {
+          "col": "V", 
+          "filename": "transit-analysis.arr", 
+          "test-ext": "arr"
+        }
+      ], 
+      "sent_emails": true
+    }, 
+    "Project 1 Design Check": {
+      "anonymous": false, 
+      "available": "10/02/2018 09:00PM", 
+      "due": "10/14/2018 09:00PM", 
+      "grading_completed": true, 
+      "grading_started": true, 
+      "group_asgn": true, 
+      "group_dir": "project1", 
+      "questions": [
+        {
+          "col": "U", 
+          "filename": "project-1-design-check.pdf", 
+          "test-ext": "NONE"
+        }
+      ], 
+      "sent_emails": true
+    }, 
+    "Project 2 Design Check": {
+      "anonymous": false, 
+      "available": "11/05/2018 09:00PM", 
+      "due": "11/05/2018 09:00PM", 
+      "grading_completed": false, 
+      "grading_started": false, 
+      "group_asgn": true, 
+      "group_dir": "project2", 
+      "questions": [
+        {
+          "col": "Z", 
+          "filename": "magicmaze.arr", 
+          "test-ext": "arr"
+        }
+      ], 
+      "sent_emails": false
+    }, 
+    "testing": {
+      "anonymous": true, 
+      "available": "04/05/2018 09:00PM", 
+      "due": "04/05/2018 09:00PM", 
+      "grading_completed": false, 
+      "grading_started": true, 
+      "group_asgn": false, 
+      "questions": [
+        {
+          "col": "XX", 
+          "filename": "LOL.arr", 
+          "test-ext": "arr"
+        }
+      ], 
       "sent_emails": false
     }
   }, 
@@ -54,7 +197,7 @@
   "email_col": "B", 
   "email_errors_to": "elias_berkowitz@brown.edu", 
   "email_from": "csci0111@brown.edu", 
-  "end_col": "X", 
+  "end_col": "AZ", 
   "handin_log_path": "/course/cs0111/hta/handin/submission_log.txt", 
   "sheet_id": "1EvkiBdoH5pZClNk0RW-vjePUmVD_LgjjcdfzUsflJSA", 
   "sheet_name": "handins", 

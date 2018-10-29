@@ -11,6 +11,7 @@ from helpers import locked_file, require_resource, bracket_check, \
     rubric_check
 from datetime import datetime as dt
 import subprocess
+import time
 
 
 ## READ BEFORE EDITING THIS FILE ##
@@ -24,6 +25,7 @@ current_time = dt.now()
 BASE_PATH = '/course/cs0111'
 DATA_PATH = os.path.join(BASE_PATH, 'ta', 'grading', 'data')
 GLOB_COMMENTS     = os.path.join(DATA_PATH, 'global-comments.json')
+proj_base_path    = os.path.join(DATA_PATH, 'projects')
 asgn_data_path    = os.path.join(BASE_PATH, 'ta', 'assignments.json')
 ta_path           = os.path.join(BASE_PATH, 'ta/groups', 'tas.txt')
 hta_path          = os.path.join(BASE_PATH, 'ta/groups', 'htas.txt')
@@ -136,18 +138,34 @@ class Assignment(object):
         except KeyError:
             base = 'No assignment key "%s" in assignments.json'
             raise KeyError(base % self.full_name)
-        else: # no exceptions raised
-            self.due_date = dt.strptime(self.json['due'], '%m/%d/%Y %I:%M%p')
-            self.due = self.due_date < current_time
+
+        self.due_date = dt.strptime(self.json['due'], '%m/%d/%Y %I:%M%p')
+        self.due = self.due_date < current_time # may be unnecessary
+        try:
             self.started = self.json['grading_started']
-            try:
-                self.anonymous = self.json['anonymous']
-                if not self.anonymous:
-                    self.ta_anon_path = os.path.join(anon_base_path,
-                                                     '%s.csv' % self.mini_name)
-            except KeyError:
-                print '%s should have anonymous key' % self.full_name
-                raise
+        except KeyError:
+            base = '%s should have grading_started key'
+            raise KeyError(base % self.full_name)
+        
+        try:
+            self.group_asgn = self.json['group_asgn']
+        except KeyError:
+            base = '%s should have group_asgn key'
+            raise KeyError(base % self.full_name)
+
+        if self.group_asgn:
+            group_dir = self.json['group_dir']
+            self.proj_dir = os.path.join(proj_base_path,
+                                         group_dir,
+                                         'groups.json') # rename this, overlong
+        try:
+            self.anonymous = self.json['anonymous']
+            if not self.anonymous:
+                self.ta_anon_path = os.path.join(anon_base_path,
+                                                 '%s.json' % self.mini_name)
+        except KeyError:
+            base = '%s should have anonymous key' % self.full_name
+            raise KeyError(base)
 
         # directory with all grading logs
         self.log_path = os.path.join(log_base_path, self.mini_name)
@@ -155,20 +173,25 @@ class Assignment(object):
         # directory with all rubrics
         self.rubric_path = os.path.join(rubric_base_path, self.mini_name)
 
-        # directory where grades will be stored
+        # directory where grades are stored (raw rubrics)
         self.grade_path = os.path.join(grade_base_path, self.mini_name)
-
+        
+        # directory where all student files are stored
         self.s_files_path = os.path.join(s_files_base_path, self.mini_name)
 
         # directory where tests are stored
         self.test_path = os.path.join(test_base_path, self.mini_name)
-
+        
+        # file with blocklist mapping
         self.blocklist_path = os.path.join(blocklist_path,
-                                           '%s.csv' % self.mini_name)
+                                               '%s.json' % self.mini_name)
 
-        if not self.started:
+        # do not load questions, just return skeleton assignment
+        if not self.started: 
             return
-
+        
+        # started assignments must have certain paths
+        key = '"%s"' % key
         assert os.path.exists(self.log_path), \
             'started assignment %s with no log directory' % key
 
@@ -177,6 +200,12 @@ class Assignment(object):
 
         assert os.path.exists(self.grade_path), \
             'started assignment %s with no grade directory' % key
+
+        assert os.path.exists(self.blocklist_path), \
+            'started assignment %s with no blocklist file' % key
+
+        assert os.path.exists(self.s_files_path), \
+            'started assignment %s with no student code directory' % key
 
         self.load_questions()
 
@@ -210,22 +239,25 @@ class Assignment(object):
         if self.anonymous:
             raise ValueError('Cannot get login on anonymous assignment')
 
-        lines = list(csv.reader(open(self.ta_anon_path)))
-        for line in lines:
-            if line[0] == login:
-                return line[1]
+        with locked_file(self.anon_path) as f:
+            data = json.load(f)
 
-        e = 'login %s does not exist in map for %s'
-        raise ValueError(e % (login, self))
+        try:
+            return data[login]
+        except KeyError:
+            e = 'login %s does not exist in map for %s'
+            raise ValueError(e % (login, self))
 
     def id_to_login(self, id):
         if self.anonymous:
             raise ValueError('Cannot get login on anonymous assignment')
+        
+        with locked_file(self.ta_anon_path) as f:
+            data = json.load(f)
 
-        lines = list(csv.reader(open(self.ta_anon_path)))
-        for line in lines:
-            if line[1] == str(id):
-                return line[0]
+        for k in data:
+            if data[k] == id:
+                return str(k)
 
         e = 'id %s does not exist in map for %s'
         raise ValueError(e % (id, self))
@@ -265,34 +297,39 @@ class Question(object):
         self.rubric_filepath = os.path.join(parent_assignment.rubric_path,
                                             'q%s.json' % self.qnumb)
         self.log_filepath = os.path.join(parent_assignment.log_path,
-                                         'q%s.csv' % self.qnumb)
+                                         'q%s.json' % self.qnumb)
         self.code_filename = self.json['filename']
         test_filename = 'q%s.%s' % (self.qnumb, self.json['test-ext'])
         self.test_path = os.path.join(parent_assignment.test_path,
                                       test_filename)
-                                      
 
+    @require_resource('/course/cs0111/handin-loading-lock.lock')
     def load_handins(self):
         ''' set self.handins based on the questions' log file '''
         with locked_file(self.log_filepath) as f:
-            reader = csv.reader(f)
+            data = json.load(f)
+        
+        handins = []
+        for raw_handin in data:
+            handins.append(Handin(self, raw_handin.pop('id'), **raw_handin))
+           # reader = csv.reader(f) # DEL
 
             # reader.next() will get the first line; after next is used, when
             # looping over reader, it will start from the second line
             # look up generators if you need to modify this, or run
             # lines = list(csv.reader(f)) and you will get a full list
-            try:
-                header = reader.next()
-            except StopIteration:
-                base = '%s log file has no contents; must have a header'
-                raise OSError(base % self.log_filepath)
-            else: # no errors loading file, so load handins
-                handins = []
-                for line in reader:
-                    handins.append(Handin(self, line))
-
-            self.handins = handins
-            self.handin_count = len(self.handins)
+            #try:
+            #    header = reader.next()
+            #except StopIteration:
+            #    base = '%s log file has no contents; must have a header'
+            #    raise OSError(base % self.log_filepath)
+            #else: # no errors loading file, so load handins
+            #    handins = []
+            #    for line in reader:
+            #        handins.append(Handin(self, line))
+#
+        self.handins = handins
+        self.handin_count = len(self.handins)
 
         # now set some boolean attributes
         def has_incomplete():
@@ -403,12 +440,21 @@ class Question(object):
 
         raise ValueError('No handin with id %s' % anon_id)
 
-    def add_handin_to_log(self, id): # can somehow use Handin.write_line?
+    def add_handin_to_log(self, id):
         ''' add a new handin to the question's log file '''
-        with locked_file(self.log_filepath, 'a') as f:
-            f.write('%s\n' % ','.join([str(id), '', '1', '1', '']))
+        with locked_file(self.log_filepath) as f:
+            data = json.load(f)
+            # lines = map(str.strip, f.read().strip().split('\n')) # DEL
+        
+        new_data = {'id': id, 'flag_reason': None,
+                    'complete': False, 'grader': None}
+        data.append(new_data)
+        # lines.append(','.join([str(id), '', '1', '1', ''])) # DEL
+        with locked_file(self.log_filepath, 'w') as f:
+            # f.write('%s' % '\n'.join(lines)) # DEL
+            json.dump(data, f, indent=2, sort_keys=True)
 
-        self.load_handins()
+        self.load_handins() # ugh idk concurrency is annoying
 
     def copy_rubric(self):
         ''' return the json rubric '''
@@ -459,26 +505,48 @@ class Question(object):
         return 'Question(file=[%s])' % self.code_filename
 
 class Handin(object):
-    def __init__(self, question, line):
-        try:
-            self.id = int(line[0])
-        except ValueError:
-            base = '%s has invalid line %s (ID must be integer)'
-            raise ValueError(base % (question, line))
-        except IndexError:
-            base = '%s has invalid line %s (must start with ID)'
-            raise ValueError(base % (question, line))
+    def __init__(self, question, id, complete, grader, flag_reason):
+        #try: # DEL ALL
+        #    self.id = int(line[0])
+        #except ValueError:
+        #    base = '%s has invalid line %s (ID must be integer)'
+        #    raise ValueError(base % (question, line))
+        #except IndexError:
+        #    base = '%s has invalid line %s (must start with ID)'
+        #    raise ValueError(base % (question, line))
 
         self.question = question
-        self.line = line
+        self.id       = id
+        self.complete = complete
+        self.extracted = (grader is not None)
+        self.grader   = grader
+        self.flagged  = flag_reason is not None
+        self.flag_reason = flag_reason
 
         self.grade_path = os.path.join(question.grade_path,
                                        'student-%s.json' % self.id)
         self.handin_path = os.path.join(self.question.assignment.s_files_path,
                                         'student-%s' % self.id)
-        self.update_attrs(line)
+    def read_line(self, *args, **kwargs):
+        raise NotImplementedError('Do not use read_line method')
 
-    def update_attrs(self, line):
+    def raw_data(self):
+        ''' read the handin's data from the question's logfile '''
+        with locked_file(self.question.log_filepath, 'r') as f:
+            data = json.load(f)
+            # for line in csv.reader(f): # DEL
+            #     try:
+            #        if int(line[0]) == self.id:
+            #            return line
+            #    except ValueError:
+            #        continue
+
+        for handin in data:
+            if handin['id'] == self.id:
+                return handin
+
+    def update_attrs(self):
+        raise NotImplementedError("Don't use this method")
         # status can be:
         # 1 <- either unextracted or in progress
         # 2 <- complete
@@ -500,9 +568,12 @@ class Handin(object):
         # not extracted if no allocated TA
         self.extracted = (self.grader != '')
 
-        e = 'extracted handin for student %s missing grade file'
-        e += ' or incorrectly has grade file'
-        assert self.extracted == os.path.exists(self.grade_path), e % self.id
+        if self.extracted != os.path.exists(self.grade_path):
+            time.sleep(0.5)
+            e = 'extracted handin for student %s missing grade file'
+            e += ' or incorrectly has grade file'
+            assert self.extracted and os.path.exists(self.grade_path), e % self.id
+            assert not(self.extracted or os.path.exists(self.grade_path)), e % self.id
 
     def get_rubric(self):
         ''' get the rubric for this handin only; must be extracted '''
@@ -514,10 +585,10 @@ class Handin(object):
             base = 'Attempting to get rubric of unextracted handin %s'
             raise ValueError(base % self)
 
-    def get_rubric_data(self):
+    def get_rubric_data(self): # DEL
         ''' collect information about the student's grade rubric '''
-        self.line = self.read_line()
-        self.update_attrs(self.line)
+        # self.line = self.read_line() # DEL
+        # self.update_attrs(self.line) # DEL
         rdata = {}
         rdata['functionality'] = 3
         rdata['id'] = self.id
@@ -531,16 +602,13 @@ class Handin(object):
             rdata['student-name'] = self.student_name
         else:
             rdata['student-name'] = None
-        # if self.question.assignment.anonymous:
-        #     rdata['student-name'] = None
-        # else:
-        #     rdata['student-name'] = self.student_name
+
         rdata['flagged'] = self.flagged
         rdata['complete'] = self.complete
         rdata['rubric'] = self.get_rubric()
         rdata['filename'] = self.question.code_filename
         rdata['student-code'] = self.get_code()
-        rdata['sfile-link'] = 'file:///%s' % self.handin_path
+        rdata['sfile-link'] = '%s' % self.handin_path
         return rdata
 
     def get_code(self):
@@ -569,31 +637,36 @@ class Handin(object):
 
             return code
 
-    def read_line(self):
-        ''' read the handin's line from the question's logfile '''
-        with locked_file(self.question.log_filepath, 'r') as f:
-            for line in csv.reader(f):
-                try:
-                    if int(line[0]) == self.id:
-                        return line
-                except ValueError:
-                    continue
 
-    def write_line(self, ta=None, status=None, flagged=None, msg=None):
+    def write_line(self, **kwargs):
         ''' write the handin line to the question's log path. does not
         update anything if ta, status, flagged, or msg kwargs are not
         passed in '''
-        cline = self.read_line()
-        if ta is not None:
-            cline[1] = ta
-        if status is not None:
-            cline[2] = status
-        if flagged is not None:
-            cline[3] = flagged
-        if msg is not None:
-            # get rid of commas so csv in isn't messed up
-            cline[4] = msg.replace(',', '_')
+        with locked_file(self.question.log_filepath) as f:
+            data = json.load(f)
+           
+        for handin in data:
+            found = False
+            if handin['id'] == self.id:
+                found = True
+                if 'grader' in kwargs:
+                    handin['grader'] = kwargs['grader']
 
+                if 'flag_reason' in kwargs:
+                    handin['flag_reason'] = kwargs['flag_reason']
+
+                if 'extracted' in kwargs:
+                    handin['extracted'] = kwargs['extracted']
+                
+                break
+        if not found:
+            raise ValueError('write_line inexistent handin not in log')
+        
+        with locked_file(self.question.log_filepath, 'w') as f:
+            json.dump(data, f, indent=2, sort_keys=True)
+
+        return
+        # DEL
         with locked_file(self.question.log_filepath) as f:
             lines = csv.reader(f)
             newlines = [lines.next()] # put header into list
@@ -613,39 +686,42 @@ class Handin(object):
             with locked_file(self.question.log_filepath, 'a') as f:
                 writer = csv.writer(f)
                 writer.writerow(cline)
-
+    
+    @require_resource('/course/cs0111/ta/question_extract_resource')
     def start_grading(self, ta):
         ''' given a TA username, start grading this handin '''
-        self.write_line(ta=ta, status=1, flagged=1, msg='')
+        assert not self.extracted, 'cannot start grading on extracted handin'
+        self.write_line(grader=ta, flag_reason=None, complete=False)
         shutil.copyfile(self.question.rubric_filepath, self.grade_path)
         insert_global_comments(self.grade_path)
         self.grader = ta
-        self.line = self.read_line()
         self.extracted = True
 
+    @require_resource()
     def unextract(self):
         ''' unextract handin; gets rid of grade rubric '''
-        self.write_line(ta='', status=1, flagged=1, msg='')
+        self.write_line(grader=None, extracted=False, flag_reason=None)
         os.remove(self.grade_path)
-        self.grader = ''
-        self.line = self.read_line()
+        self.grader = None
         self.extracted = False
+        self.complete = False
 
     def flag(self, msg=''):
         ''' flag a handin with an optional message '''
         if not isinstance(msg, (str, unicode)):
             raise TypeError('flag msg must be str, got %s' % msg)
-        self.write_line(flagged='2', msg=msg)
+
+        self.write_line(flag_reason=msg)
         self.flagged = True
 
     def unflag(self):
         ''' unflag handin, reset flag message if there was one '''
-        self.write_line(flagged='1', msg='')
+        self.write_line(flag_reason=None)
         self.flagged = False
 
     def set_complete(self):
         ''' handin grading complete '''
-        self.write_line(status='2')
+        self.write_line(complete=True)
         self.complete = True
 
     def write_grade(self, json_data):
@@ -668,6 +744,7 @@ class Handin(object):
             comments to add, update the matching old_comments to the "value"
             key be True. (potential break point should be fine tho) '''
             final_comments = []
+            print old_comments, new_comment_texts
             for i, comment in enumerate(old_comments):
                 if comment['comment'] in new_comment_texts:
                     new_comment_texts.remove(comment['comment'])
@@ -703,24 +780,6 @@ class Handin(object):
         self.write_grade(rubric)
         return True
 
-    def gradeable_by(self, uname):
-        ''' is this handin gradeable by input uname (str);
-        checks if the student is blocklisted by the TA or if the 
-        handin has already been extracted (False if so) '''
-        return not (self.blocklisted_by(uname) or self.extracted)
-
-    def blocklisted_by(self, ta):
-        ''' returns True if the student is blocklisted by ta (str) '''
-        student_id = self.id
-        bl_path = self.question.assignment.blocklist_path
-        with locked_file(bl_path) as f:
-            lines = csv.reader(f)
-            for line in lines:
-                if line[0] == ta and int(line[1]) == student_id:
-                    return True
-
-        return False
-
     def add_comment(self, category, comment):
         ''' add comment to the handin's json grade rubric, with 
         value of False. must save with the comment in the list of
@@ -736,6 +795,21 @@ class Handin(object):
             rubric[category]['comments'].append(comment_data)
         with locked_file(self.grade_path, 'w') as f:
             json.dump(rubric, f, indent=2, sort_keys=True)
+
+    def gradeable_by(self, uname):
+        ''' is this handin gradeable by input uname (str);
+        checks if the student is blocklisted by the TA or if the 
+        handin has already been extracted (False if so) '''
+        return not (self.blocklisted_by(uname) or self.extracted)
+
+    def blocklisted_by(self, ta):
+        ''' returns True if the student is blocklisted by ta (str) '''
+        student_id = self.id
+        bl_path = self.question.assignment.blocklist_path
+        with locked_file(bl_path) as f:
+            data = json.load(f)
+
+        return ta in data and int(self.id) in data[ta]
 
     def generate_report_str(self, rubric=None):
         ''' return a report string for this handin (this question only)
@@ -833,13 +907,12 @@ class Handin(object):
 
         test_filepath = os.path.join(test_dir,
                                      os.path.split(self.question.test_path)[1])
-        if not os.path.exists(test_dir):
+        if not os.path.exists(test_filepath):
             shutil.copyfile(self.question.test_path, test_filepath)
 
             with locked_file(test_filepath, 'r') as f:
                 lines = f.readlines()
                 relpath = os.path.relpath(filepath, test_dir)
-                print relpath
                 lines.insert(0, 'import file("%s") as SC\n' % relpath)
 
             with locked_file(test_filepath, 'w') as f:
@@ -853,21 +926,6 @@ class Handin(object):
 
         return subprocess.check_output(cmd)
 
-    def delete(self, override=False):
-        if not override:
-            raise ValueError('cannot delete handin without True override')
-
-        #shutil.rmtree(self.handin_path)
-        try:
-            pass
-            #os.remove(self.grade_path)
-        except OSError:
-            pass
-
-        cmd = ['sed', '-i.bak', '/^%s\,/d' % str(self.id),
-               self.question.log_filepath]
-        subprocess.check_output(cmd)
-
     def __repr__(self):
-        base = 'Handin(id=%s, extracted=%s, completed=%s)'
+        base = 'Handin(id=%s, extracted=%s, complete=%s)'
         return base % (self.id, self.extracted, self.complete)
