@@ -16,8 +16,8 @@ with open(p) as f:
 
 # setup
 rubric.pop('_COMMENTS')
-b = rubric[rubric.keys()[0]]['rubric_items'][0]
-populated = ('value' in b.keys())
+b = rubric[rubric.keys()[0]]['rubric_items'][0] # get a sample item
+populated = ('value' in b.keys()) # is this rubric filled in
 
 for key in rubric:
     if populated:

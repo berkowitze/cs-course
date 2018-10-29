@@ -24,7 +24,7 @@ proj = PROJECTS[resp - 1]
 mininame = proj.lower().replace(' ', '')
 group_dir = os.path.join(grade_path, mininame)
 if not os.path.exists(group_dir):
-    print '%s dir didn\'t exist, creating'
+    print '%s dir didn\'t exist, creating' % mininame
     os.mkdir(group_dir)
 
 
