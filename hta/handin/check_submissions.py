@@ -1,4 +1,5 @@
 import json
+import subprocess
 import sys
 import zipfile
 import traceback
@@ -14,9 +15,12 @@ import datetime as dt
 from datetime import datetime
 from helpers import *
 
+os.umask(0o007)
+
 data_file = '/course/cs0111/ta/assignments.json'
 data = load_data(data_file)
 log_path = os.path.join(data['handin_log_path'])
+add_sub_path = os.path.join('/course/cs0111', 'hta', 'grading', 'add-student-submission')
 
 # minutes after deadline students can submit without penalty
 # applies to both extended handins and normal handins
@@ -25,7 +29,7 @@ SOFT_CUTOFF = 5
 # students can submit up to one day after deadline
 # and still be graded
 # does not apply to extended handins
-HARD_CUTOFF = (24 * 60) + SOFT_CUTOFF
+HARD_CUTOFF = (19 * 60) + SOFT_CUTOFF
 
 sc = dt.timedelta(0, SOFT_CUTOFF * 60) # soft cutoff
 hc = dt.timedelta(0, HARD_CUTOFF * 60) # hard cutoff
@@ -131,6 +135,8 @@ class Response:
         self.ident     = ident
         self.row       = row
         self.confirmed = self.ident in confirmed_responses(log_path)
+        self.asgn      = data['assignments'][self.asgn_name.lower()]
+        self.due       = datetime.strptime(self.asgn['due'], '%m/%d/%Y %I:%M%p')
 
     def set_status(self):
         ''' set status attributes of instance:
@@ -167,15 +173,15 @@ class Response:
                 # ^submitted between hard and soft cutoffs, no ext
                 actual_late = True
         else:
-            # ^ not late
-            actual_late = True
+            # not late
+            actual_late = False
 
         self.email_late  = email_late
         self.gradeable   = gradeable
         self.actual_late = actual_late
         self.ext_applied = ext_applied
     
-    def load_ext(self):
+    def load_ext(self): # TODO : remove
         exts = load_extensions()
         def relevant_ext(e):
             return e.student == self.login and e.asgn == self.dir_name
@@ -191,8 +197,6 @@ class Response:
         if self.confirmed:
             raise ValueError('Response has already been downloaded & confirmed.')
 
-        self.asgn      = data['assignments'][self.asgn_name.lower()]
-        self.due       = datetime.strptime(self.asgn['due'], '%m/%d/%Y %I:%M%p')
         self.qs = []
         for i in range(len(self.asgn['questions'])):
             question = Question(self.asgn['questions'][i], self.row)
@@ -208,7 +212,7 @@ class Response:
 
     def confirm(self):
         html = open('confirmation_template.html').read().strip()
-        row_template = '<tr><td>{cell_1}</td><td>{cell_2}</td><td>{cell_3}</td></tr>'
+        row_template = '<tr><td>{cell_1}</td><td>{cell_2}</td><td><pre>{cell_3}</pre></td></tr>'
         table = ''
         for q in self.qs:
             row = row_template
@@ -235,12 +239,12 @@ class Response:
 
         zip_path = self.get_zip()
         if self.asgn['grading_started']:
+            subprocess.check_output([add_sub_path, self.asgn_name, self.login])
             c = 'Student %s submitted %s after grading had started.\nTo grade,'
-            c += ' run `cs111-asgn-hub` and select the add student option.'
+            c += ' run cs111-grade and extract the handin. Let an HTA know when'
+            c += ' you are done so the report can be sent. (testing sorry tas)'
             c = c % (self.login, self.asgn_name)
-            htas = ['eberkowi@cs.brown.edu', 'hprecel@cs.brown.edu',
-                    'jpattiz@cs.brown.edu']
-            yag.send(to=data['email_errors_to'],
+            yag.send(to='elias_berkowitz@brown.edu',
                      subject='Submission after grading started',
                      contents='<pre>%s</pre>' % c)
 
@@ -292,8 +296,11 @@ class Response:
                     continue
 
             fold_name = '%s-submission' % str(last_sub + 1)
-
+        
         self.full_path = os.path.join(full_base_path, fold_name)
+        if self.actual_late:
+            self.full_path += '-late'
+
         if self.gradeable:
             os.mkdir(self.full_path)
 
@@ -309,6 +316,9 @@ class Response:
 
         zipf.close()
         return zipf.filename
+    
+    def __repr__(self):
+        return 'Response(asgn=%s, email=%s)' % (self.asgn_name, self.email)
 
 def fetch_submissions():
     yag = yagmail.SMTP(data['email_from'])
@@ -362,6 +372,8 @@ def fetch_submissions():
                 response.done = True
             except:
                 raise
+
+    return responses
 
 def try_fetch():
     try:
