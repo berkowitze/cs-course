@@ -4,7 +4,7 @@ import cProfile, pstats, StringIO
 import json
 import os
 from hta_classes import get_full_asgn_list, asgn_data_path, \
-                        BASE_PATH, login_gradepath_list, User, login_to_email
+                        BASE_PATH, student_list, User, login_to_email
 import sys
 import tabulate
 import yagmail
@@ -28,18 +28,26 @@ def get_opt(prompt, options, first=True):
             return get_opt(prompt, options, first=False)
     except ValueError:
         print 'Enter a number...'
-        return get_opt(prompt, options, first=False)\
+        return get_opt(prompt, options, first=False)
 
 def send_asgn_emails(asgn, handins):
+    ''' this needs to be cleaned up for project groups
+    (send to groups that handed in only, including partners) '''
     # this is convoluted logic but it's so that I can see
     # what kind of issues come up; will make it better
-    # during semester
+    # during semester (maybe)
     yag = yagmail.SMTP('csci0111@brown.edu')
+    for student in handins.keys():
+        asgn.send_email(student, login_to_email(student), yag)
+
+    asgn.set_emails_sent()
+    return
     tosend = asgn.login_handin_list[:] # make copy of login list
     for student in handins.keys():
         hpath = os.path.join(BASE_PATH, 'hta/handin/students',
                              student, asgn.mini_name)
         if not os.path.exists(hpath): # if no submission for hw...
+            print 'no submission for %s, not sending email' % student
             continue
 
         try:
@@ -57,6 +65,32 @@ def send_asgn_emails(asgn, handins):
 
     asgn.set_emails_sent()
 
+def send_grade_report(asgn, login):
+    yag = yagmail.SMTP('csci0111@brown.edu')
+    asgn.send_email(login, login_to_email(login), yag)
+
+def get_student_labcount(student):
+    count = 0
+    p = '/course/cs0111/ta/grading/data/labs'
+    f_system = os.walk(p)
+    root, folds, _ = next(f_system)
+    for lab_fold in folds:
+        lab_fold = os.path.join(root, lab_fold)
+        labc = False
+        for f in os.listdir(lab_fold):
+            if 'checkoff' not in f:
+                continue
+            fp = os.path.join(lab_fold, f)
+            with open(fp) as fo:
+                students = map(str.strip, fo.read().strip().split('\n'))
+                if student in students:
+                    labc = True
+                    break
+
+        if labc:
+            count += 1
+
+    return count
 
 opt = get_opt('> ', ['Generate gradebook', 'Work with assignment'])
 asgns = get_full_asgn_list()
@@ -99,7 +133,7 @@ if opt == 0:
             string += ')'
             print '\t%s %s' % (asgn.full_name, string)
 
-
+    header.append('Labs attended')
     rows = []
     for student in students:
         row = range(len(header))
@@ -133,7 +167,8 @@ if opt == 0:
                 except:
                     print student_grade, key, asgn, student
                     raise
-
+        
+        row.append(get_student_labcount(student))
         rows.append(row)
 
     with open(path, 'w') as f:
@@ -164,7 +199,6 @@ else:
     print tabulate.tabulate(rows, header)
     print ''
     print 'Which assignment # would you like to work on?'
-    # ndx = 5
     ndx = get_opt('> ', range(1, len(asgns) + 1), False)
     asgn = asgns[ndx]
     x = (80 - len(asgn.full_name) - 2) / 2
@@ -210,7 +244,8 @@ else:
                              'Generate [and email] Grade Reports',
                              'Email Grade Report(s)',
                              'View flagged handins',
-                             'Add handin'])
+                             'Add handin',
+                             'Deanonymize (for regrading)'])
         if opt == 0:
             print 'Resetting the assignment will delete any grades given.'
             if raw_input('Confirm [y/n]: ').lower() != 'y':
@@ -230,7 +265,7 @@ else:
             username = getpass.getuser()
             user = User(username)
             print 'Generating grade reports...'
-            logins, paths = login_gradepath_list()
+            logins = student_list()
 
             handins = asgn.get_handin_dict(logins, user)
             for student in handins.keys():
@@ -250,9 +285,43 @@ else:
             import getpass
             username = getpass.getuser()
             user = User(username)
-            logins, paths = login_gradepath_list()
-            handins = asgn.get_handin_dict(logins, user)
-            send_asgn_emails(asgn, handins)
+            r = get_opt('> ',
+                        ['Send to individual student (by login)',
+                         'Send to individual student (by anon id)',
+                         'Send to all students'])
+            if r == 0 or r == 1:
+                if r == 0:
+                    l = raw_input('Enter student login: ')
+                elif r == 1:
+                    i = raw_input('Enter anonymous id: ')
+                    l = asgn.id_to_login(i)
+                else:
+                    raise Exception('whut')
+                handins = asgn.get_handin_dict([l], user)
+                handin_list = handins[l]
+                
+                if asgn.report_already_generated(l):
+                    print 'A grade report has already been generated for this student.'
+                    print 'Re-generate report or email existing report?'
+                    s = get_opt('> ', ['Regenerate report', 'Send existing report'])
+                    if s == 0:
+                        asgn.generate_report(handin_list,
+                                     student_id=l,
+                                     soft=False,
+                                     overrides=True)
+                    
+                else:
+                    asgn.generate_report(handin_list,
+                                     student_id=l,
+                                     soft=False,
+                                     overrides=True)
+
+                send_grade_report(asgn, l)
+
+            else:
+                logins = student_list()
+                handins = asgn.get_handin_dict(logins, user)
+                send_asgn_emails(asgn, handins)
 
         elif opt == 3:
             header = ['Anon ID', 'Login', 'Grader', 'Flag Reason']
@@ -262,7 +331,7 @@ else:
                 for h in q.handins:
                     if h.flagged:
                         data = [h.id, asgn.id_to_login(h.id),
-                                h.grader, h.line[-1]]
+                                h.grader, h.flag_reason]
 
                         full_data.append(data)
 
@@ -278,3 +347,7 @@ else:
         elif opt == 4:
             login = raw_input('Enter student login: ')
             asgn.add_new_handin(login)
+
+        elif opt == 5:
+            asgn.deanonymize()
+            print 'Assignment deanonymized'
