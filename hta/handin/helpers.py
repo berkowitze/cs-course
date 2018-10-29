@@ -1,8 +1,39 @@
 from datetime import datetime
+import json
 import os
+from filelock import Timeout, FileLock
+from contextlib import contextmanager
 
 BASE_PATH = '/course/cs0111'
 extension_path = os.path.join(BASE_PATH, 'hta/grading/extensions.txt')
+
+@contextmanager
+def locked_file(filename, mode='r', hta=False):
+    ''' this will ensure no file is opened across different processes '''
+    # todo: should probably make write mode threaded, not sure how to easily
+    # though. so if the program halts while a file is open in write mode,
+    # the contents of the file won't be removed. one option is havng user
+    # pass in a function that does the work if they are using 'w' mode, but
+    # that's a hassle. will implement if it becomes an issue (.snapshots until
+    # then if necessary)
+    if not (mode == 'r' or mode == 'a' or mode == 'w'):
+        base = 'Can only open locked file in r, w, or a mode (just in case)'
+        raise ValueError(base)
+
+    lock_path = filename + '.lock'
+    lock = FileLock(lock_path, timeout=5) # throw error after 5 seconds
+    with lock, open(filename, mode) as f:
+        yield f
+
+        # after file is closed, attempt to remove the .lock
+        # file; the file is only clutter, it won't have an impact
+        # on anything, so don't try too hard.
+        try:
+            os.unlink(lock_path)
+        except NameError:
+            raise
+        except:
+            pass
 
 def col_num_to_str(n):
     ''' convert a column number to the letter corresponding to that
@@ -40,10 +71,13 @@ def url_to_gid(url):
 def load_students():
     path = os.path.join(BASE_PATH, 'ta', 'groups', 'students.csv')
     students = []
-    with open(path, 'r') as f:
-        lines = f.read().strip().split('\n')
+    with locked_file(path, 'r') as f:
+        lines = map(str.strip, f.read().strip().split('\n'))
         for line in lines:
             row      = line.split(',')
+            if len(row) != 3:
+                e = 'row %s in students.txt invalid, lines=%s'
+                raise IndexError(e % (row, lines))
             username = row[0]
             email    = row[1]
             students.append((email, username))
@@ -53,8 +87,9 @@ def load_students():
     return students
 
 def load_data(path):
-    import json
-    data = json.load(open(path))
+    with locked_file(path) as f:
+        data = json.load(f)
+
     for key in list(data['assignments'].keys()):
         data['assignments'][key.lower()] = data['assignments'].pop(key)
 
@@ -77,7 +112,7 @@ def login_to_email(login):
     raise ValueError('Student %s not found.' % login)
 
 def confirmed_responses(filename='submission_log.txt'):
-    with open(filename, 'r') as f:
+    with locked_file(filename, 'r') as f:
         lines = f.read().strip().split('\n')
         if not lines or lines == ['']:
             return []
@@ -96,10 +131,10 @@ class Extension:
         self.date    = date
 
     def __repr__(self):
-        return 'Extension(%s, %s)' % (self.user, self.asgn)
+        return 'Extension(%s, %s)' % (self.student, self.asgn)
 
 def load_extensions():
-    with open(extension_path) as f:
+    with locked_file(extension_path) as f:
         lines = f.read().strip().split('\n')[1:]
     
     exts = []

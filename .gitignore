@@ -46,3 +46,6 @@ hta/handin/backup
 hta/asgn-backups
 ta/grading/data/labs/lab*
 hta/archive
+._*.py
+ta/grading/grades/
+tabin/storm-tas
