@@ -2,7 +2,6 @@ abraver2
 adambr1
 aertman
 afriedm2
-ajhernan
 akim65
 akulman
 alac
@@ -10,7 +9,6 @@ ali62
 aossimet
 apapol
 azhang81
-bfink1
 bk26
 cdeitch1
 cheiden
@@ -29,8 +27,6 @@ epushee
 eshire
 esilvert
 ezelicks
-gwelp
-haugust
 hdrewes
 hprecel
 jdaviso1
@@ -40,19 +36,14 @@ jlao
 jmuneton
 jpattiz
 jsepulve
-jwaldman
 jwindha1
-kboyce
-kchhabri
 kt23
 lcohen16
 lkosar
 lmucciol
 lryu
 mali7
-mdolan
 mkozlov
-mlee45
 mlurbur
 mrosenfe
 ncheng2
@@ -69,7 +60,5 @@ srhee1
 stucker
 swang68
 twilli10
-vkones
 vtiourin
-yzhao15
 zgardell
