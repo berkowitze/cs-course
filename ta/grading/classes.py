@@ -160,9 +160,8 @@ class Assignment(object):
                                          'groups.json') # rename this, overlong
         try:
             self.anonymous = self.json['anonymous']
-            if not self.anonymous:
-                self.ta_anon_path = os.path.join(anon_base_path,
-                                                 '%s.json' % self.mini_name)
+            jpath = '%s.json' % self.mini_name
+            self.anon_path = os.path.join(anon_base_path, jpath)
         except KeyError:
             base = '%s should have anonymous key' % self.full_name
             raise KeyError(base)
@@ -252,7 +251,7 @@ class Assignment(object):
         if self.anonymous:
             raise ValueError('Cannot get login on anonymous assignment')
         
-        with locked_file(self.ta_anon_path) as f:
+        with locked_file(self.anon_path) as f:
             data = json.load(f)
 
         for k in data:
@@ -655,8 +654,8 @@ class Handin(object):
                 if 'flag_reason' in kwargs:
                     handin['flag_reason'] = kwargs['flag_reason']
 
-                if 'extracted' in kwargs:
-                    handin['extracted'] = kwargs['extracted']
+                if 'complete' in kwargs:
+                    handin['complete'] = kwargs['complete']
                 
                 break
         if not found:

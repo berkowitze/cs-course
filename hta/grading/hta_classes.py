@@ -27,9 +27,14 @@ class HTA_Assignment(Assignment):
         # initialize TA version of Assignment class
         super(HTA_Assignment, self).__init__(*args, **kwargs)
         # then set some HTA only attributes
-        self.anon_path = os.path.join(anon_map_path,
-                                      '%s.json' % self.mini_name)
+        if self.anonymous:
+            jpath = '%s.json' % self.mini_name
+            self.anon_path = os.path.join(anon_map_path, jpath)
+        else:
+            assert self.anon_path != '', 'error with anon path tell eli'
+
         if self.started: # load list of logins that handed in this assignment
+            # probably useless to do this but is used in asgn hub
             with locked_file(self.anon_path) as f:
                 d = json.load(f)
 
@@ -174,26 +179,22 @@ class HTA_Assignment(Assignment):
         ids = random.sample(range(len(students)), len(students))
         # set up a file that maps anon id back to student id, 
         # and copy over student files
-        if self.anonymous:
-            base_anon_path = self.anon_path
-        else:
-            base_anon_path = self.ta_anon_path
-        
+
         data = {}
         for student, id, _ in sub_paths:
             data[student] = id
 
-        with locked_file(base_anon_path, 'w') as f:
+        with locked_file(self.anon_path, 'w') as f:
             json.dump(data, f, sort_keys=True, indent=2)
         
-        if not self.anonymous: # make a link in the HTA folder as well
-            try:
-                os.symlink(self.ta_anon_path, self.anon_path)
-            except OSError:
-                if not os.path.isdir(self.anon_path):
-                    print '/hta/anonymization probably doesn\'t exist'
+        # if not self.anonymous: # make a link in the HTA folder as well
+        #     try:
+        #         os.symlink(self.ta_anon_path, self.anon_path)
+        #     except OSError:
+        #         if not os.path.isdir(self.anon_path):
+        #             print '/hta/anonymization probably doesn\'t exist'
 
-                raise
+        #         raise
 
         for student, id, path in sub_paths:
             dest = os.path.join(self.s_files_path, 'student-%s' % id)
@@ -226,31 +227,27 @@ class HTA_Assignment(Assignment):
         if final_path is None:
             raise ValueError("No handin for %s" % login)
         elif not os.path.exists(final_path):
-	    e = 'latest_submission_path returned nonexisting path'
-	    raise ValueError(e)
-        if self.anonymous:
-            base_anon_path = self.anon_path
-        else:
-            base_anon_path = self.ta_anon_path
+            e = 'latest_submission_path returned nonexisting path'
+            raise ValueError(e)
         
-        with locked_file(base_anon_path) as f:
+        with locked_file(self.anon_path) as f:
             data = json.load(f)
 
         data[login] = rand_id
-        with locked_file(base_anon_path, 'w') as f:
+        with locked_file(self.anon_path, 'w') as f:
             json.dump(data, f, indent=2, sort_keys=True)
 
-	dest = os.path.join(self.s_files_path, 'student-%s' % rand_id)
-	shutil.copytree(final_path, dest)
-	for f in os.listdir(dest):
-	    fname, ext = os.path.splitext(f)
-	    if ext == '.zip':
-		full_path = os.path.join(dest, f)
-		new_fname = '%s-extracted' % fname
-		new_dest  = os.path.join(dest, new_fname)
-		with zipfile.ZipFile(full_path, 'r') as zf:
-		    zf.extractall(new_dest)
-        
+        dest = os.path.join(self.s_files_path, 'student-%s' % rand_id)
+        shutil.copytree(final_path, dest)
+        for f in os.listdir(dest):
+            fname, ext = os.path.splitext(f)
+            if ext == '.zip':
+                full_path = os.path.join(dest, f)
+                new_fname = '%s-extracted' % fname
+                new_dest  = os.path.join(dest, new_fname)
+                with zipfile.ZipFile(full_path, 'r') as zf:
+                    zf.extractall(new_dest)
+            
         self.load_questions()
         for question in self.questions:
             question.add_handin_to_log(rand_id)
@@ -290,7 +287,7 @@ class HTA_Assignment(Assignment):
                 return
 
         try:
-	    ident = self.login_to_id(login)
+            ident = self.login_to_id(login)
             print 'DELETING %s' % ident
         except ValueError:
             e = '%s does not have a handin that\'s being graded' % login
@@ -300,18 +297,18 @@ class HTA_Assignment(Assignment):
         if os.path.exists(dest):
             shutil.rmtree(dest)
         
-        if not self.anonymous:
-            assert os.path.exists(self.ta_anon_path)
-            p = self.ta_anon_path
-        else:
-            p = self.anon_path
+        # if not self.anonymous:
+        #     assert os.path.exists(self.ta_anon_path)
+        #     p = self.ta_anon_path
+        # else:
+        #     p = self.anon_path
         
-        with locked_file(p) as f:
+        with locked_file(self.anon_path) as f:
             data = json.load(f)
         
         data.pop(login)
         
-        with locked_file(p, 'w') as f:
+        with locked_file(self.anon_path, 'w') as f:
             json.dump(data, f, indent=2, sort_keys=True)
 
         with locked_file(self.blocklist_path) as f:
@@ -325,7 +322,7 @@ class HTA_Assignment(Assignment):
 
         for q in self.questions:
             try:
-	        h = q.get_handin_by_sid(ident, User('eberkowi'))
+                h = q.get_handin_by_sid(ident, User('eberkowi'))
             except ValueError:
                 print "Could not delete %s" % q
                 continue
@@ -727,7 +724,9 @@ class HTA_Assignment(Assignment):
         try:
             os.remove(self.anon_path)
             try:
-                os.remove(self.ta_anon_path)
+                os.remove(os.path.join(anon_base_path,
+                          '%s.json' % self.mini_name))
+                # os.remove(self.ta_anon_path)
             except OSError:
                 pass
 
@@ -770,11 +769,10 @@ class HTA_Assignment(Assignment):
         raise NotImplementedError("Status method not implemented")
 
     def deanonymize(self):
-        # step 1 : get anonymization file into right place
+        # step 1 : move anonymization file from HTA to TA
         dest = os.path.join(anon_base_path, '%s.json' % self.mini_name)
         src = self.anon_path
-        if not os.path.exists(dest):
-            os.symlink(src, dest)
+        os.rename(src, dest)
         
         # step 2 : give TAs links to the grade files
         # use defaultdict so don't have to check if key exists
