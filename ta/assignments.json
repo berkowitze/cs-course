@@ -164,7 +164,7 @@
       "available": "11/05/2018 09:00PM", 
       "due": "11/05/2018 09:00PM", 
       "grading_completed": false, 
-      "grading_started": false, 
+      "grading_started": true, 
       "group_asgn": true, 
       "group_dir": "project2", 
       "questions": [
@@ -177,7 +177,7 @@
       "sent_emails": false
     }, 
     "testing": {
-      "anonymous": true, 
+      "anonymous": false, 
       "available": "04/05/2018 09:00PM", 
       "due": "04/05/2018 09:00PM", 
       "grading_completed": false, 

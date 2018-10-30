@@ -49,3 +49,5 @@ hta/archive
 ._*.py
 ta/grading/grades/
 tabin/storm-tas
+dontreadme
+ta/grading/data/projects/*

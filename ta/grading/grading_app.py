@@ -10,7 +10,8 @@ from passlib.hash import sha256_crypt
 import getpass
 import argparse
 from classes import started_asgns, Assignment, ta_path, hta_path, User
-
+#print 'Eli\'s fixing schtuff, please hold'
+#sys.exit(1)
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--port', default=6924, type=int,
                     help='Port to run the app on.')

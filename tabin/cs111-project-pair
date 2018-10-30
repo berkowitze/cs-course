@@ -1,9 +1,9 @@
 #!/course/cs0111/ta/grading/venv/bin/python2.7
 import os
+os.umask(007)
 import sys
 import json
 from helpers import get_login_from_list
-
 PROJECTS = ['Project 1', 'Project 2', 'Project 3']
 BASE_PATH = '/course/cs0111'
 grade_path = os.path.join(BASE_PATH, 'ta/grading/data/projects')
