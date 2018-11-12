@@ -5,6 +5,22 @@
   "_README4": "the available key is useless with the way the website's set up, but may be used in classes.py; get rid of it with care at some point", 
   "_README5": "projects/group assignments: if group_asgn is true, there must be another key-value which contains the directory in ta/grading/data/projects to put group information in (see Project 1/Project 1 Design Check)", 
   "assignments": {
+    "Drill 14": {
+      "anonymous": true, 
+      "available": "11/05/2018 12:00PM", 
+      "due": "11/05/2018 08:00PM", 
+      "grading_completed": false, 
+      "grading_started": true, 
+      "group_asgn": false, 
+      "questions": [
+        {
+          "col": "AB", 
+          "filename": "drill14.py", 
+          "test-ext": "py"
+        }
+      ], 
+      "sent_emails": false
+    }, 
     "Homework 1": {
       "anonymous": false, 
       "available": "06/01/2018 03:00PM", 
@@ -103,7 +119,7 @@
       "anonymous": false, 
       "available": "10/23/2018 09:00PM", 
       "due": "10/23/2018 09:00PM", 
-      "grading_completed": false, 
+      "grading_completed": true, 
       "grading_started": true, 
       "group_asgn": false, 
       "questions": [
@@ -116,6 +132,22 @@
           "col": "Y", 
           "filename": "fruits.arr", 
           "test-ext": "arr"
+        }
+      ], 
+      "sent_emails": true
+    }, 
+    "Homework 7": {
+      "anonymous": true, 
+      "available": "11/13/2018 09:00PM", 
+      "due": "11/13/2018 09:00PM", 
+      "grading_completed": false, 
+      "grading_started": false, 
+      "group_asgn": false, 
+      "questions": [
+        {
+          "col": "AD", 
+          "filename": "election.py", 
+          "test-ext": "py"
         }
       ], 
       "sent_emails": false
@@ -159,6 +191,23 @@
       ], 
       "sent_emails": true
     }, 
+    "Project 2": {
+      "anonymous": false, 
+      "available": "11/06/2018 09:00PM", 
+      "due": "11/06/2018 09:00PM", 
+      "grading_completed": false, 
+      "grading_started": true, 
+      "group_asgn": true, 
+      "group_dir": "project2", 
+      "questions": [
+        {
+          "col": "AC", 
+          "filename": "magicmaze.arr", 
+          "test-ext": "arr"
+        }
+      ], 
+      "sent_emails": false
+    }, 
     "Project 2 Design Check": {
       "anonymous": false, 
       "available": "11/05/2018 09:00PM", 
@@ -177,7 +226,7 @@
       "sent_emails": false
     }, 
     "testing": {
-      "anonymous": false, 
+      "anonymous": true, 
       "available": "04/05/2018 09:00PM", 
       "due": "04/05/2018 09:00PM", 
       "grading_completed": false, 

@@ -121,18 +121,6 @@ class HTA_Assignment(Assignment):
 
         with locked_file(self.blocklist_path, 'w') as f:
             json.dump(data, f, indent=2, sort_keys=True)
-        
-        #with locked_file(self.blocklist_path, 'a') as f: # DEL
-        #    for ta in mapping:
-        #        for student in mapping[ta]:
-        #            if student in students:
-        #                line = '%s,%s\n'
-        #                try:
-        #                    ident = int(self.login_to_id(student))
-        #                    f.write('%s,%s\n' % (ta, ident))
-        #                except ValueError:
-        #                    # student did not submit this homework
-        #                    continue
 
     def login_to_id(self, login):
         with locked_file(self.anon_path) as f:
@@ -215,7 +203,24 @@ class HTA_Assignment(Assignment):
 
     def add_new_handin(self, login):
         try:
-            self.login_to_id(login)
+            ident = self.login_to_id(login)
+            has_graded_handin = False
+            for q in self.questions:
+                try:
+                    h = q.get_handin_by_sid(ident, User('eberkowi'))
+                    if h.complete:
+                        has_graded_handin = True
+
+                except ValueError:
+                    # no handin for this question
+                    pass
+            
+            if has_graded_handin:
+                base = 'Student %s resubmitted %s after grading completed.'
+                base += ' Not adding to grading app; handle manually.'
+                base = base % (login, self.full_name)
+                return
+
             self.delete_student_handin(login, override=True)
         except ValueError:
             pass
@@ -260,27 +265,8 @@ class HTA_Assignment(Assignment):
             return max(data.values()) + 1
         else:
             return 0
-          #  for line in csv.reader(f): # DEL
-          #      ids.append(int(line[1]))
-       ## 
-        #return max(ids) + 1
 
     def delete_student_handin(self, login, override=False):
-        #def remove_from_file(fp, ident, ndx=1, header=False): # DEL
-        #    with locked_file(fp) as f:
-        #        lines = map(str.strip, f.read().strip().split('\n'))
-        #        if header:
-        #            header = lines[0]
-        #            lines = lines[1:]
-#
-#            new_lines = [] if not header else [header]
- #           for line in lines:
-   ##             if int(line.split(',')[ndx]) != int(ident):
-     #               new_lines.append(line)
-#
- #           with locked_file(fp, 'w') as f:
-  #              f.write('\n'.join(new_lines))
-#
         if not override:
             print 'Confirm removal of %s handin from grading app [y/n]' % login
             if raw_input('> ').lower() != 'y':
@@ -689,7 +675,7 @@ class HTA_Assignment(Assignment):
         print 'Report sent to %s' % student_id
         with locked_file(f) as fl:
             grade = fl.read()
-
+    
         yag.send(to=student_email,
                  subject=subject,
                  contents=['<pre>%s</pre>' % grade])
@@ -812,4 +798,26 @@ def get_full_asgn_list():
 
     return map(HTA_Assignment, sorted(data['assignments'].keys()))
 
+
+def magic_update(question, func):
+    ''' given a Question and a function that takes in a rubric (dictionary)
+    and outputs a rubric (dictionary), change a) the base rubric, and b) each
+    extracted rubric by applying func to those rubrics '''
+    if not isinstance(question, Question):
+        raise TypeError('question must be a Question instance')
+    if not callable(func):
+        raise TypeError('func must be callable')
+    
+    question.load_handins()
+    d = question.copy_rubric()
+    new_data = func(d)
+    with locked_file(question.rubric_filepath, 'w') as f:
+        json.dump(new_data, f, indent=2, sort_keys=True)
+
+    for handin in question.handins:
+        if not handin.extracted:
+            continue
+        d = handin.get_rubric()
+        new_d = func(d)
+        handin.write_grade(new_d)
 

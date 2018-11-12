@@ -40,9 +40,13 @@ for category in rubric:
                '%s > "%s" does not have "options" key' % (category, criterion['name'])
         assert 'default' in crit_keys, \
                '%s > "%s" does not have "default" key' % (category, criterion['name'])
-
+        assert 'point-val' in crit_keys, \
+                '%s > "%s" does not have "point-val" key' % (category, criterion['name'])
+        assert len(criterion['options']) == len(criterion['point-val']), \
+                '%s > "%s" point-val and option count different' % (category, criterion['name'])
         if criterion['default'] is not None:
             assert criterion['default'] in criterion['options'], 'rubric item "%s" invalid default' % criterion['name']
 
-assert sorted(list(set(criteria))) == sorted(criteria), 'repeated rubric item names'
+assert sorted(list(set(criteria))) == sorted(criteria), \
+        'repeated rubric item names'
 print 'Rubric is valid.'
