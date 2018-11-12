@@ -526,6 +526,9 @@ class Handin(object):
                                        'student-%s.json' % self.id)
         self.handin_path = os.path.join(self.question.assignment.s_files_path,
                                         'student-%s' % self.id)
+        if not self.question.assignment.anonymous:
+            self.login = self.question.assignment.id_to_login(self.id)
+
     def read_line(self, *args, **kwargs):
         raise NotImplementedError('Do not use read_line method')
 
@@ -926,5 +929,16 @@ class Handin(object):
         return subprocess.check_output(cmd)
 
     def __repr__(self):
-        base = 'Handin(id=%s, extracted=%s, complete=%s)'
-        return base % (self.id, self.extracted, self.complete)
+        if self.question.assignment.anonymous:
+            vals = (self.id, self.extracted, self.complete)
+            base = 'Handin(id=%s, extracted=%s, complete=%s' % vals
+        else:
+            vals = (self.id, self.login, self.extracted, self.complete)
+            base = 'Handin(id=%s, login=%s, extracted=%s, complete=%s' %  vals
+
+        if self.extracted:
+            base += ', grader=%s)' % self.grader
+        else:
+            base += ')'
+
+        return base

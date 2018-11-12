@@ -51,3 +51,6 @@ ta/grading/grades/
 tabin/storm-tas
 dontreadme
 ta/grading/data/projects/*
+hta/grading/extensions.txt
+hta/grading/extensions.txt~
+hta/summaries/*.txt

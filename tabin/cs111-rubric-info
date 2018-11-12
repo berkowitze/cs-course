@@ -14,11 +14,13 @@ p = sys.argv[1]
 with open(p) as f:
     rubric = json.load(f)
 
+print('This takes max of all points, so subtract max fudge points (if any)')
 # setup
 rubric.pop('_COMMENTS')
 b = rubric[rubric.keys()[0]]['rubric_items'][0] # get a sample item
 populated = ('value' in b.keys()) # is this rubric filled in
 
+summary = {}
 for key in rubric:
     if populated:
         V = 0
@@ -26,11 +28,17 @@ for key in rubric:
         for item in rubric[key]['rubric_items']:
             V += item['point-val'][item['options'].index(item['value'])]
             M += max(item['point-val'])
+    else:
+        M = 0
+        for item in rubric[key]['rubric_items']:
+            M += max(item['point-val'])
+
+    summary[key] = M
     
     if populated:
         print '%s (%s/%s)' % (key.upper(), V, M)
     else:
-        print key.upper()
+        print '%s (%s)' % (key.upper(), M)
     items = rubric[key]['rubric_items']
     for item in items:
         print '  %s' % item['name']
@@ -43,3 +51,7 @@ for key in rubric:
             for opt, val in zip(item['options'], item['point-val']):
                 print '    %s (%s)' % (opt, val)
 
+print ''
+print 'Summary:'
+for key in summary:
+    print "\t%s: %s" % (key, summary[key])
