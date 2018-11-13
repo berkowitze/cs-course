@@ -75,7 +75,44 @@ def generate_gradebook(path=None):
         print('Warning: Output format is tsv, but writing to non-tsv file')
 
     data = get_full_grade_dict()
-    for student in data:
+    categories = set()
+    gradebook = defaultdict(lambda: {})
+    for student in data.keys():
         s_data = data[student]
+        for key in s_data.keys():
+            cats = s_data[key].keys()
+            for cat in cats:
+                descr = '%s %s' % (key, cat)
+                categories.add(descr)
+                gradebook[descr][student] = s_data[key][cat]
+    
+    students = sorted(data.keys())
+    col1 = sorted(data.keys())
+    sorted_cats = sorted(categories)
+    final_book_unt = [sorted_cats]
+    book = [['Student']]
+    book[0].extend(sorted_cats)
+    for student in students:
+        summary = [student]
+        for descr in sorted_cats:
+            if student in gradebook[descr]:
+                grade = gradebook[descr][student]
+            else:
+                grade = '(No data)'
+
+            summary.append(grade)
+
+        book.append(summary)
+
+    S = ''
+    for line in book:
+        line_str = '\t'.join(line)
+        S += '%s\n' % line_str
+
+    with locked_file(path, 'w') as f:
+        f.write(S)
 
 
+if __name__ == '__main__':
+    pass
+#    generate_gradebook()
