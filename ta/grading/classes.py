@@ -7,8 +7,7 @@ import grp
 import shutil
 import sys
 from textwrap import wrap, fill
-from helpers import locked_file, require_resource, bracket_check, \
-    rubric_check
+from helpers import locked_file, require_resource, bracket_check, rubric_check
 from datetime import datetime as dt
 import subprocess
 import time
@@ -526,6 +525,7 @@ class Handin(object):
                                        'student-%s.json' % self.id)
         self.handin_path = os.path.join(self.question.assignment.s_files_path,
                                         'student-%s' % self.id)
+        self.filepath = os.path.join(self.handin_path, self.question.code_filename)
         if not self.question.assignment.anonymous:
             self.login = self.question.assignment.id_to_login(self.id)
 
@@ -618,7 +618,6 @@ class Handin(object):
         file the student submitted; this could be updated to be more
         complex (depending on filename, etc.), and would need to be
         updated in /ta/grading/static/main.js to handle those updates '''
-        files = os.listdir(self.handin_path)
         filepath = os.path.join(self.handin_path, self.question.code_filename)
         if not os.path.exists(filepath):
             msg = 'No submission (or code issue). Check %s to make sure'
@@ -896,6 +895,22 @@ class Handin(object):
         return report_str, grade
 
     def run_test(self):
+        test_type = self.question.json['test-ext']
+        if test_type == 'arr':
+            return self.pyret_test()
+        elif test_type == 'py':
+            return self.python_test()
+        else:
+            return 'Invalid test extension (contact HTA)'
+
+    def python_test(self):
+        test_filepath = self.question.test_path
+        cmd = [os.path.join(BASE_PATH, 'tabin', 'python-test'),
+               test_filepath, self.filepath]
+        return subprocess.check_output(cmd)
+        
+
+    def pyret_test(self):
         filepath = os.path.join(self.handin_path, self.question.code_filename)
         if not os.path.exists(filepath):
             return 'No handin or missing handin'
@@ -920,13 +935,11 @@ class Handin(object):
             with locked_file(test_filepath, 'w') as f:
                 f.writelines(lines)
         
-        if self.question.json['test-ext'] == 'arr':
-            cmd = [os.path.join(BASE_PATH, 'tabin', 'pyret-test'),
-                   filepath, test_filepath, test_dir]
-        else:
-            return 'NOT IMPLEMENTED'
+        cmd = [os.path.join(BASE_PATH, 'tabin', 'pyret-test'),
+               filepath, test_filepath, test_dir]
 
         return subprocess.check_output(cmd)
+
 
     def __repr__(self):
         if self.question.assignment.anonymous:

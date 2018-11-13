@@ -232,7 +232,7 @@ function handinLoaded(problemData) {
     gradingForm.prepend(codeButton);
     $('main .container').html(gradingForm);
     $('pre code').each(function(i, block) {
-        hljs.highlightBlock(block);
+        Prism.highlightElement(block);
     });
 }
 

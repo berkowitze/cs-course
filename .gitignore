@@ -54,3 +54,4 @@ ta/grading/data/projects/*
 hta/grading/extensions.txt
 hta/grading/extensions.txt~
 hta/summaries/*.txt
+hta/grading/stdout.log

@@ -6,19 +6,20 @@
   <script src="/static/progressbar.min.js"></script>
   <script src="/static/confetti.js"></script>
   <link rel="stylesheet" href="/static/atom-one-dark.min.css">
-  <script src="/static/highlight.min.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="/static/jquery-ui.min.js"></script>
   <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.ico">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
   <script src="/static/materialize.min.js"></script>
+  <link href='/static/prism.css' rel='stylesheet' />
   <link rel="stylesheet" href="/static/materialize.min.css">
   <link rel="stylesheet" type="text/css" href="/static/style.css">
   <script type="text/javascript">
-  hljs.initHighlightingOnLoad();</script>
+  </script>
 </head>
 <body>
+  <script src='/static/prism.js'></script>
   <canvas id="confetti" width="1" height="1"></canvas>
   <header style="padding-left: 300px">
     <nav class="top-nav white black-text">
@@ -67,7 +68,7 @@
 <main>
   <div class='modal' id='code-modal'>
     <h5 class='modal-header'>Double-click to select all. Open <a target="_blank" href="https://code.pyret.org/editor">CPO</a>. <input id='code-link' type='text'/><button onclick='copyCodeLink(this)' class='browser-default waves-effect waves-teal btn-flat'>Copy Link to Code Directory</button></h5>
-    <pre><code id="code-content" class='python'></code></pre>
+    <pre class="line-numbers"><code id="code-content" class='language-python'></code></pre>
   </div>
   <div class='modal' id='test-modal'>
     <h5 class='modal-header'>Test Results</h5>
