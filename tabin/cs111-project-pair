@@ -1,4 +1,8 @@
 #!/course/cs0111/ta/grading/venv/bin/python2.7
+msg = 'This script is no longer needed! '
+msg += 'Group information collected through other means'
+raise DeprecationWarning(msg)
+
 import os
 os.umask(007)
 import sys
