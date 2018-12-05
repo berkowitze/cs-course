@@ -19,9 +19,23 @@ elif opt == '2':
 else:
     raise ValueError('must enter 1 or 2')
 
-print 'When is it due? Use "mm/dd/yy hh:mm _M" format'
+print 'When is it due? Use "mm/dd/yyyy hh:mm _M" format'
 due = raw_input('> ')
 due = datetime.strptime(due,'%m/%d/%Y %I:%M %p')
+
+print 'Is this a group assignment? [y/n]'
+g_asgn = raw_input('> ').lower()
+if g_asgn == 'y':
+    g_asgn = True
+elif g_asgn == 'n':
+    g_asgn = False
+else:
+    raise ValueError('Must enter y or n')
+
+if g_asgn:
+    group_dir = raw_input("Enter group directory (i.e. project3): ")
+
+
 
 qs = []
 url = 'https://docs.google.com/a/brown.edu/spreadsheets/d/1WBNNlcFQAnIau1AKgUTR_HmOTgl_C1VtPHOKkwvbO0A'
@@ -56,9 +70,12 @@ new_data = {
             "grading_completed": False,
             "grading_started": False,
             "sent_emails": False,
-            "group_asgn": False,
+            "group_asgn": g_asgn,
             "questions": qs
            }
+if g_asgn:
+    new_data["group_dir"] = group_dir
+
 data["assignments"][asgn] = new_data
 with open('/course/cs0111/ta/assignments.json', 'w') as f:
     json.dump(data, f, indent=2, sort_keys=True)
