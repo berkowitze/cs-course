@@ -25,7 +25,7 @@ def locked_file(filename, mode='r', hta=False):
         raise ValueError(base)
     
     lock_path = filename + '.lock'
-    lock = FileLock(lock_path, timeout=5) # throw error after 5 seconds
+    lock = FileLock(lock_path, timeout=10) # throw error after 5 seconds
     with lock, open(filename, mode) as f:
         yield f
 
