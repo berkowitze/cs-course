@@ -801,13 +801,13 @@ def get_full_asgn_list():
 
 def magic_update(question, func):
     ''' given a Question and a function that takes in a rubric (dictionary)
-    and outputs a rubric (dictionary), change a) the base rubric, and b) each
+    and mutates it. changes a) the base rubric, and b) each
     extracted rubric by applying func to those rubrics '''
     if not isinstance(question, Question):
         raise TypeError('question must be a Question instance')
     if not callable(func):
         raise TypeError('func must be callable')
-    
+
     question.load_handins()
     d = question.copy_rubric()
     new_data = func(d)
@@ -818,6 +818,9 @@ def magic_update(question, func):
         if not handin.extracted:
             continue
         d = handin.get_rubric()
-        new_d = func(d)
+        func(d)
+        if d is None:
+            raise ValueError('Rubric was replaced with non-rubric')
+
         handin.write_grade(new_d)
 
