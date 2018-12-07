@@ -1,10 +1,11 @@
 *.tsv
+*.lock
+*~
+*.pyc
+*.pdf
 hta/gradebook.tsv
 hta/grades/*
 hta/handin/students/*
-*.lock
-*.pyc
-*.pdf
 www
 ta/grading/data/sfiles/*
 ta/grading/data/rubrics/*
@@ -54,4 +55,6 @@ ta/grading/data/projects/*
 hta/grading/extensions.txt
 hta/grading/extensions.txt~
 hta/summaries/*.txt
-hta/grading/stdout.log
+old
+*.log
+hta/*.csv
