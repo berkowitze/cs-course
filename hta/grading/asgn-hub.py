@@ -38,6 +38,9 @@ def send_asgn_emails(asgn, handins):
     # during semester (maybe)
     yag = yagmail.SMTP('csci0111@brown.edu')
     for student in handins.keys():
+        if student == 'csci0111':
+            continue
+
         asgn.send_email(student, login_to_email(student), yag)
 
     asgn.set_emails_sent()
