@@ -154,9 +154,7 @@ class Assignment(object):
 
         if self.group_asgn:
             group_dir = self.json['group_dir']
-            self.proj_dir = os.path.join(proj_base_path,
-                                         group_dir,
-                                         'groups.json') # rename this, overlong
+            self.proj_dir = os.path.join(proj_base_path, group_dir + '.json')
         try:
             self.anonymous = self.json['anonymous']
             jpath = '%s.json' % self.mini_name
@@ -504,15 +502,6 @@ class Question(object):
 
 class Handin(object):
     def __init__(self, question, id, complete, grader, flag_reason):
-        #try: # DEL ALL
-        #    self.id = int(line[0])
-        #except ValueError:
-        #    base = '%s has invalid line %s (ID must be integer)'
-        #    raise ValueError(base % (question, line))
-        #except IndexError:
-        #    base = '%s has invalid line %s (must start with ID)'
-        #    raise ValueError(base % (question, line))
-
         self.question = question
         self.id       = id
         self.complete = complete
@@ -525,7 +514,8 @@ class Handin(object):
                                        'student-%s.json' % self.id)
         self.handin_path = os.path.join(self.question.assignment.s_files_path,
                                         'student-%s' % self.id)
-        self.filepath = os.path.join(self.handin_path, self.question.code_filename)
+        self.filepath = os.path.join(self.handin_path,
+                                     self.question.code_filename)
         if not self.question.assignment.anonymous:
             self.login = self.question.assignment.id_to_login(self.id)
 
@@ -536,12 +526,6 @@ class Handin(object):
         ''' read the handin's data from the question's logfile '''
         with locked_file(self.question.log_filepath, 'r') as f:
             data = json.load(f)
-            # for line in csv.reader(f): # DEL
-            #     try:
-            #        if int(line[0]) == self.id:
-            #            return line
-            #    except ValueError:
-            #        continue
 
         for handin in data:
             if handin['id'] == self.id:
@@ -640,9 +624,12 @@ class Handin(object):
 
 
     def write_line(self, **kwargs):
-        ''' write the handin line to the question's log path. does not
-        update anything if ta, status, flagged, or msg kwargs are not
-        passed in '''
+        ''' update the log file for this handin
+        kwargs:
+            - grader : login str of the handin grader
+            - flag_reason : str explaining why the handin is flagged
+            - complete : boolean whether or not handin is complete
+        '''
         with locked_file(self.question.log_filepath) as f:
             data = json.load(f)
            
@@ -660,34 +647,13 @@ class Handin(object):
                     handin['complete'] = kwargs['complete']
                 
                 break
+
         if not found:
             raise ValueError('write_line inexistent handin not in log')
         
         with locked_file(self.question.log_filepath, 'w') as f:
             json.dump(data, f, indent=2, sort_keys=True)
 
-        return
-        # DEL
-        with locked_file(self.question.log_filepath) as f:
-            lines = csv.reader(f)
-            newlines = [lines.next()] # put header into list
-            found = False
-            for line in lines:
-                if int(line[0]) == self.id:
-                    found = True
-                    newlines.append(cline)
-                else:
-                    newlines.append(line)
-
-        if found:
-            with locked_file(self.question.log_filepath, 'w') as f:
-                writer = csv.writer(f)
-                writer.writerows(newlines)
-        else: # this is a new handin, so just append the new line
-            with locked_file(self.question.log_filepath, 'a') as f:
-                writer = csv.writer(f)
-                writer.writerow(cline)
-    
     @require_resource('/course/cs0111/ta/question_extract_resource')
     def start_grading(self, ta):
         ''' given a TA username, start grading this handin '''
