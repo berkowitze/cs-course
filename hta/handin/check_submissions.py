@@ -15,12 +15,14 @@ import datetime as dt
 from datetime import datetime
 from helpers import *
 
-os.umask(0o007)
+os.umask(0o007) # set file permissions
 
-data_file = '/course/cs0111/ta/assignments.json'
+BASE_PATH = '/course/cs0111'
+data_file = os.path.join(BASE_PATH, 'ta/assignments.json')
 data = load_data(data_file)
-log_path = os.path.join(data['handin_log_path'])
-add_sub_path = os.path.join('/course/cs0111', 'hta', 'grading', 'add-student-submission')
+log_path = data['handin_log_path']
+add_sub_path = os.path.join(BASE_PATH, 'hta', 'grading', 'add-student-submission')
+proj_base = os.path.join(BASE_PATH, 'ta/grading/data/projects')
 
 # minutes after deadline students can submit without penalty
 # applies to both extended handins and normal handins
@@ -130,13 +132,58 @@ class Response:
         self.email = row[col_str_to_num(data['email_col']) - 1]
         # submission login
         self.login = email_to_login(self.email)
+
         self.asgn_name = row[col_str_to_num(data['submit_col']) - 1]
         self.dir_name  = self.asgn_name.replace(' ', '').lower()
         self.ident     = ident
         self.row       = row
         self.confirmed = self.ident in confirmed_responses(log_path)
         self.asgn      = data['assignments'][self.asgn_name.lower()]
-        self.due       = datetime.strptime(self.asgn['due'], '%m/%d/%Y %I:%M%p')
+        if not self.confirmed and self.asgn['partner_data'] is not None:
+            self.set_partner_data(row)
+
+        self.due = datetime.strptime(self.asgn['due'], '%m/%d/%Y %I:%M%p')
+
+    def set_partner_data(self, row):
+        ''' given a row, sets project partner data for this student
+        (puts into project_name.json file) '''
+        if self.asgn['partner_data'] is None:
+            e = 'Cannot call set_partner_data on non-partner-data assignment'
+            raise ValueError(e)
+
+        rndx = col_str_to_num(self.asgn['partner_data'])
+        partner_data = row[rndx - 1].split(', ')
+        if self.login not in partner_data:
+            partner_data.append(self.login)
+        
+        proj_path = os.path.join(proj_base, self.asgn['group_dir'] + '.json')
+        if not os.path.exists(proj_path):
+            with locked_file(proj_path, 'w') as f:
+                json.dump([], f, indent=2, sort_keys=True)
+
+        with locked_file(proj_path) as f:
+            groups = json.load(f)
+
+        # checking this is a valid group
+        in_file = False
+        for group in groups:
+            if set(group) == set(partner_data):
+                in_file = True
+                continue
+
+            for student in partner_data:
+                if student in group:
+                    e = f'Student {student} signed up for multiple groups.'
+                    e += ' Needs fixing (go to ta/grading/data/projects to fix)'
+                    print(e)
+
+        if len(partner_data) != 2:
+            print(f'Group {partner_data} with != 2 members')
+
+        if not in_file:
+            groups.append(partner_data)
+            with locked_file(proj_path, 'w') as f:
+                json.dump(groups, f, indent=2, sort_keys=True)
 
     def set_status(self):
         ''' set status attributes of instance:
