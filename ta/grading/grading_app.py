@@ -212,6 +212,16 @@ def preview_report():
 
     return json.dumps(workflow['handin'].generate_report_str())
 
+@app.route('/view_code')
+@is_logged_in
+def view_code():
+    ident = request.args['id']
+    assert workflow['handin'].id == int(ident), \
+        'trying to view student code of inactive handin'
+    code = workflow['handin'].get_code()
+    code_dir = workflow['handin'].handin_path
+    return render_template('view_code.html', code=code, code_dir=code_dir)
+
 @app.route('/run_test')
 @is_logged_in
 def run_test():
