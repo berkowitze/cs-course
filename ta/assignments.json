@@ -9,17 +9,18 @@
       "anonymous": true, 
       "available": "11/05/2018 12:00PM", 
       "due": "11/05/2018 08:00PM", 
-      "grading_completed": false, 
+      "grading_completed": true, 
       "grading_started": true, 
       "group_asgn": false, 
+      "partner_data": null, 
       "questions": [
         {
-          "col": "AB", 
+          "col": "Y", 
           "filename": "drill14.py", 
           "test-ext": "py"
         }
       ], 
-      "sent_emails": false
+      "sent_emails": true
     }, 
     "Homework 1": {
       "anonymous": false, 
@@ -28,6 +29,7 @@
       "grading_completed": true, 
       "grading_started": true, 
       "group_asgn": false, 
+      "partner_data": null, 
       "questions": [
         {
           "col": "D", 
@@ -44,14 +46,15 @@
       "grading_completed": true, 
       "grading_started": true, 
       "group_asgn": false, 
+      "partner_data": null, 
       "questions": [
         {
-          "col": "E", 
+          "col": "F", 
           "filename": "bingebreaker.txt", 
           "test-ext": "NONE"
         }, 
         {
-          "col": "J", 
+          "col": "G", 
           "filename": "coordinates.arr", 
           "test-ext": "arr"
         }, 
@@ -75,19 +78,20 @@
       "grading_completed": true, 
       "grading_started": true, 
       "group_asgn": false, 
+      "partner_data": null, 
       "questions": [
         {
-          "col": "M", 
+          "col": "K", 
           "filename": "safety.arr", 
           "test-ext": "arr"
         }, 
         {
-          "col": "N", 
+          "col": "L", 
           "filename": "calculate-rate.arr", 
           "test-ext": "arr"
         }, 
         {
-          "col": "O", 
+          "col": "M", 
           "filename": "sunset.arr", 
           "test-ext": "arr"
         }
@@ -101,14 +105,15 @@
       "grading_completed": true, 
       "grading_started": true, 
       "group_asgn": false, 
+      "partner_data": null, 
       "questions": [
         {
-          "col": "S", 
+          "col": "O", 
           "filename": "planets-table.arr", 
           "test-ext": "arr"
         }, 
         {
-          "col": "T", 
+          "col": "P", 
           "filename": "climate-tables.arr", 
           "test-ext": "arr"
         }
@@ -122,14 +127,15 @@
       "grading_completed": true, 
       "grading_started": true, 
       "group_asgn": false, 
+      "partner_data": null, 
       "questions": [
         {
-          "col": "X", 
+          "col": "U", 
           "filename": "shakespeare.arr", 
           "test-ext": "arr"
         }, 
         {
-          "col": "Y", 
+          "col": "V", 
           "filename": "fruits.arr", 
           "test-ext": "arr"
         }
@@ -140,17 +146,35 @@
       "anonymous": true, 
       "available": "11/13/2018 09:00PM", 
       "due": "11/13/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
+      "grading_completed": true, 
+      "grading_started": true, 
       "group_asgn": false, 
+      "partner_data": null, 
       "questions": [
         {
-          "col": "AD", 
+          "col": "AA", 
           "filename": "election.py", 
           "test-ext": "py"
         }
       ], 
-      "sent_emails": false
+      "sent_emails": true
+    }, 
+    "Homework 8": {
+      "anonymous": true, 
+      "available": "11/20/2018 09:00PM", 
+      "due": "11/20/2018 09:00PM", 
+      "grading_completed": true, 
+      "grading_started": true, 
+      "group_asgn": false, 
+      "partner_data": null, 
+      "questions": [
+        {
+          "col": "AC", 
+          "filename": "memory.txt", 
+          "test-ext": "py"
+        }
+      ], 
+      "sent_emails": true
     }, 
     "Project 1": {
       "anonymous": false, 
@@ -160,14 +184,15 @@
       "grading_started": true, 
       "group_asgn": true, 
       "group_dir": "project1", 
+      "partner_data": null, 
       "questions": [
         {
-          "col": "W", 
+          "col": "T", 
           "filename": "transit-report.pdf", 
           "test-ext": "NONE"
         }, 
         {
-          "col": "V", 
+          "col": "S", 
           "filename": "transit-analysis.arr", 
           "test-ext": "arr"
         }
@@ -182,9 +207,10 @@
       "grading_started": true, 
       "group_asgn": true, 
       "group_dir": "project1", 
+      "partner_data": null, 
       "questions": [
         {
-          "col": "U", 
+          "col": "R", 
           "filename": "project-1-design-check.pdf", 
           "test-ext": "NONE"
         }
@@ -195,32 +221,52 @@
       "anonymous": false, 
       "available": "11/06/2018 09:00PM", 
       "due": "11/06/2018 09:00PM", 
-      "grading_completed": false, 
+      "grading_completed": true, 
       "grading_started": true, 
       "group_asgn": true, 
       "group_dir": "project2", 
-      "questions": [
-        {
-          "col": "AC", 
-          "filename": "magicmaze.arr", 
-          "test-ext": "arr"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "Project 2 Design Check": {
-      "anonymous": false, 
-      "available": "11/05/2018 09:00PM", 
-      "due": "11/05/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": true, 
-      "group_asgn": true, 
-      "group_dir": "project2", 
+      "partner_data": null, 
       "questions": [
         {
           "col": "Z", 
           "filename": "magicmaze.arr", 
           "test-ext": "arr"
+        }
+      ], 
+      "sent_emails": true
+    }, 
+    "Project 2 Design Check": {
+      "anonymous": false, 
+      "available": "11/05/2018 09:00PM", 
+      "due": "11/10/2018 09:00PM", 
+      "grading_completed": true, 
+      "grading_started": true, 
+      "group_asgn": true, 
+      "group_dir": "project2", 
+      "partner_data": null, 
+      "questions": [
+        {
+          "col": "X", 
+          "filename": "magicmaze.arr", 
+          "test-ext": "arr"
+        }
+      ], 
+      "sent_emails": true
+    }, 
+    "Project 3 Design Check": {
+      "anonymous": false, 
+      "available": "12/30/2018 09:00PM", 
+      "due": "12/30/2018 09:00PM", 
+      "grading_completed": false, 
+      "grading_started": true, 
+      "group_asgn": true, 
+      "group_dir": "project3", 
+      "partner_data": "AE", 
+      "questions": [
+        {
+          "col": "AD", 
+          "filename": "books.py", 
+          "test-ext": "py"
         }
       ], 
       "sent_emails": false
@@ -232,6 +278,7 @@
       "grading_completed": false, 
       "grading_started": true, 
       "group_asgn": false, 
+      "partner_data": null, 
       "questions": [
         {
           "col": "XX", 
@@ -248,7 +295,7 @@
   "email_from": "csci0111@brown.edu", 
   "end_col": "AZ", 
   "handin_log_path": "/course/cs0111/hta/handin/submission_log.txt", 
-  "sheet_id": "1EvkiBdoH5pZClNk0RW-vjePUmVD_LgjjcdfzUsflJSA", 
+  "sheet_id": "1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8", 
   "sheet_name": "handins", 
   "start_col": "A", 
   "start_row": 2, 
