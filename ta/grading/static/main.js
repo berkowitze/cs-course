@@ -227,7 +227,7 @@ function handinLoaded(problemData) {
         $('#handin-flag').data('flag', true);
     }
     var gradingForm = rubricToForm(problemData['rubric']);
-    var codeButton = $('<button data-target="code-modal" class="btn modal-trigger">');
+    var codeButton = $('<button onclick="openCode(this)" class="btn">');
     codeButton.text('View student code (' + problemData['filename'] + ')');
     gradingForm.prepend(codeButton);
     $('main .container').html(gradingForm);
@@ -658,3 +658,13 @@ $(document).ready(function(){
     $('.select2-multiple').select2();
     $('#student-select').select2();
 });
+
+function newPopup(url) {
+	popupWindow = window.open(
+		url,'popUpWindow','height=800,width=1000,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes')
+}
+
+
+function openCode(x) {
+    newPopup('/view_code?id=' + $('main').data('activeId'));
+}
