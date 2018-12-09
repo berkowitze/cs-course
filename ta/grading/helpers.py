@@ -6,13 +6,15 @@ from filelock import Timeout, FileLock
 from contextlib import contextmanager
 from functools import wraps
 import os
+from typing import Tuple, Callable, Optional, List, TextIO, Generator
+from custom_types import *
 from threading import Thread
 
-BASE_PATH = '/course/cs0111'
-default_resource_path = os.path.join(BASE_PATH, 'resource-lock.lock')
+BASE_PATH: str = '/course/cs0111'
+def_res_path: str = os.path.join(BASE_PATH, 'resource-lock.lock')
 
 @contextmanager
-def locked_file(filename, mode='r', hta=False):
+def locked_file(filename: str, mode: str = 'r', hta: bool = False) -> Generator:
     ''' this will ensure no file is opened across different processes '''
     # todo: should probably make write mode threaded, not sure how to easily
     # though. so if the program halts while a file is open in write mode,
@@ -39,7 +41,7 @@ def locked_file(filename, mode='r', hta=False):
         except:
             pass
 
-def require_resource(resource=default_resource_path):
+def require_resource(resource: str = def_res_path):
     ''' use require_resource as a decorator when writing a function that you
     don't want to be run simultaneously; for example, if you don't want to run
     extract_handin at the same time on two different TA's computers
@@ -62,147 +64,83 @@ def require_resource(resource=default_resource_path):
 
     return decorator
 
-def rubric_check(path):
+def json_file_with_check(path: str):
+    ''' given a path to a json file, return the data in that json file
+    also checking that the path exists (with AssertionErrors raised
+    for invalid input, so that they can be caught along with other
+    AssertionErrors raised in rubric/bracket checking functions below
+    if necessary). works for Rubrics and Brackets '''
+    assert os.path.exists(path)
+    assert os.path.splitext(path)[1] == '.json'
+
+    with locked_file(path) as f:
+        try:
+            data: JSON = json.load(f)
+        except ValueError:
+            raise AssertionError(f'JSON invalid ({path})')
+        else:
+            return data
+
+def rubric_check(path: str) -> None:
     ''' given a path to a rubric JSON file
         /course/.../ta/grading/data/rubrics/.../q1.json
-    determines whether or not the rubric is valid. Returns False if it's not
-    a valid error, along with an informative string informing as to why
-    it's invalid, and True if it is valid (with a useless string placeholder)
+    determines whether or not the rubric is valid (should follow spec in
+    custom_types). raises assertion error if invalid
     '''
-    if not os.path.exists(path):
-        return False, 'Rubric %s does not exist' % path
-    if not os.path.splitext(path)[1] == '.json':
-        return False, 'Rubric %s needs to be a JSON file' % path
-    try:
-        with open(path) as f:
-            data = json.load(f)
-    except ValueError:
-        return False, 'Rubric JSON is invalid (does not load)'
-    
-    if not '_COMMENTS' in data.keys():
-        return False, 'Rubric needs a _COMMENTS key'
-    if not isinstance(data['_COMMENTS'], list):
-        return False, 'Rubric _COMMENTS must be list'
-    for item in data['_COMMENTS']:
-        if not isinstance(item, dict):
-            return False, 'Rubric _COMMENTS has non-dict item %s' % item
-        if 'comment' not in item.keys():
-            return False, 'Comment %s does not have \'comment\' key' % item
-        if 'value' not in item.keys():
-            return False, 'Comment %s does not have \'value\' key' % item
-        if not isinstance(item['value'], bool):
-            v = 'Rubric general comment %s \'value\' key must be boolean'
-            return False, v % item
-    for key in data.keys():
-        if key == '_COMMENTS':
-            continue
-        if not isinstance(data[key], dict):
-            return False, 'Rubric key %s must be a dict' % key
-        if 'comments' not in data[key]:
-            return False, 'Rubric key %s must have \'comments\' key' % key
-        if 'rubric_items' not in data[key]:
-            return False, 'Rubric key %s must have \'rubric_items\' key' % key
-        for item in data[key]['comments']:
-            if not isinstance(item, dict):
-                return False, 'Rubric key %s comments must be dicts' % key
-            if 'comment' not in item.keys():
-                v = 'Rubric key %s comment %s must have comment key'
-                return False, v % (key, item)
-            if 'value' not in item.keys():
-                v = 'Rubric key %s comment %s must have value key'
-                return False, v % (key, item)
-            if not isinstance(item['value'], bool):
-                v = 'Rubric key %s comment %s \'value\' key must be boolean'
-                return False, v % (key, item)
-        if not isinstance(data[key]['rubric_items'], list):
-            return False, 'Rubric key %s rubric_items must be list' % key
-        for item in data[key]['rubric_items']:
-            if not isinstance(item, dict):
-                v = 'Rubric key %s item %s must be a dict'
-                return False, v % (key, item)
-            expected = ['default', 'name', 'options', 'point-val']
-            if sorted(item.keys()) != expected:
-                v = 'Rubric key %s item %s must have %s keys'
-                return False, v % (key, item, expected)
-            if (not isinstance(item['default'], (str, unicode)) and
-                    item['default'] is not None):
-                v = 'Rubric key %s item %s default key must be a string'
-                return False, v % (key, item)
-            if not isinstance(item['name'], (str, unicode)):
-                v = 'Rubric key %s item %s name key must be a string'
-                return False, v % (key, item)
-            if not isinstance(item['options'], list):
-                v = 'Rubric key %s item %s options key must be a list'
-                return False, v % (key, item)
-            if not isinstance(item['point-val'], list):
-                v = 'Rubric key %s item %s point-val key must be a list'
-                return False, v % (key, item)
-            if len(item['point-val']) != len(item['options']):
-                v = 'Rubric key %s item %s options and point-val list must'
-                v += ' be the same length'
-                return False, v % (key, item)
-            for v in item['point-val']:
-                if not isinstance(v, (int, float)):
-                    e = 'Rubric key %s item %s: all point-vals must be numbers'
-                    return False, e % (key, item)
-            for v in item['options']:
-                if not isinstance(v, (str, unicode)):
-                    e = 'Rubric key %s item %s: all options must be strings'
-                    return False, e % (key, item)
-    
-    return True, 'No errors'
+    def check_rubric_category(rc: RubricCategory) -> bool:
+        assert check_comments(rc['comments'])
+        assert isinstance(rc['rubric_items'], list)
+        assert all(map(check_item, rc['rubric_items']))
+        return True
 
-def bracket_check(path):
-    if not os.path.exists(path):
-        return False, 'Bracket %s does not exist' % path
-    if not os.path.splitext(path)[1] == '.json':
-        return False, 'Bracket %s needs to be a JSON file' % path
-    try:
-        with open(path) as f:
-            data = json.load(f)
-    except ValueError:
-        return False, 'Bracket JSON is invalid (does not load)'
-    for key in data.keys():
-        if not isinstance(data[key], list):
-            return False, 'Bracket key %s must be a list' % key
-    good_len = len(data[data.keys()[0]])
-    for key in data:
-        if len(data[key]) != good_len:
-            return False, 'All brackets must be the same length'
-        for val in data[key]:
-            if not isinstance(val, (int, float)):
-                return False, 'Bracket %s has non-number value %s' % (key, val)
+    def check_item(ri: RubricItem) -> bool:
+        assert isinstance(ri['descr'], str)
+        assert isinstance(ri['default'], (type(None), int))
+        assert isinstance(ri['selected'], (type(None), int))
+        assert isinstance(ri['items'], list)
+        assert all(map(check_opt, ri['items']))
+        return True
 
-    return True, 'Valid bracket'
+    def check_opt(ro: RubricOption):
+        assert isinstance(ro, dict)
+        assert isinstance(ro['point_val'], int)
+        assert isinstance(ro['descr'], str)
+        return True
 
-if __name__ == '__main__':
-    import sys
-    fp = os.path.join(BASE_PATH, 'ta', 'assignments.json')
-    ## example of file locking; run helpers.py in two separate shells
-    #  and observe the behavior
-    # def single_file():
-    #     print 'Beginning execution of single_file'
-    #     with locked_file(fp) as f:
-    #         print 'Beginning to do things with lock acquired'
-    #         # raw_input simulating an expensive program being run
-    #         raw_input('Press enter to continue...')
+    def check_comments(comments: Comments) -> bool:
+        assert isinstance(data['comments'], dict)
+        assert isinstance(data['comments']['given'], list)
+        assert isinstance(data['comments']['un_given'], list)
+        assert all(map(lambda s: isinstance(s, str),
+                       data['comments']['given']))
+        assert all(map(lambda s: isinstance(s, str),
+                       data['comments']['un_given']))
+        return True
 
-    #     print 'Lock has been released.'
 
-    # single_file()
-    ## end of first example
+    data: Rubric = json_file_with_check(path)
+    assert isinstance(data, dict)  # loaded rubric is a dictionary
+    assert check_comments(data['comments'])
 
-    ## example of resource locking; uncomment & run helpers.py in two
-    #  different shells and observe the behavior
+    assert isinstance(data['rubric'], dict)  # rubric key exists
+    assert all(map(check_rubric_category, data['rubric'].values()))
 
-    import time
-    @require_resource(fp + '.lock')
-    def resource(x):
-        print 'Resource lock acquired. Running resource(%s)' % x
-        # raw input simulating long execution of resource function
-        raw_input('Press enter to continue')
-        print 'Resource lock released'
+def bracket_check(path: str) -> None:
+    ''' given path to a bracket file, checks that it is a valid bracket
+    file, raising an assertion error if it is not '''
+    def check_bracket_item(bi: BracketItem) -> bool:
+        assert isinstance(bi, dict)
+        assert isinstance(bi['grade'], str)
+        assert isinstance(bi['upper_bound_inclusive'], (int, float))
+        return True
 
-    resource(time.time())
+    def check_bracket_cat(bc: List[BracketItem]) -> bool:
+        assert isinstance(bc, list)
+        assert all(map(check_bracket_item, bc))
+        return True
 
-    
+    data: Bracket = json_file_with_check(path)
+    assert isinstance(data, dict)
+    assert all(map(check_bracket_cat, data.values()))
+
+

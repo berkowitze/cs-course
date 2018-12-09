@@ -3,15 +3,14 @@ import sys
 import random
 import flask
 import json
-import numpy as np # todo get rid of this requirement it's heavy
 from flask import Flask, session, redirect, url_for, request, render_template
 from functools import wraps
 from passlib.hash import sha256_crypt
 import getpass
 import argparse
+from typing import Callable, List, Tuple, Any, NewType, Dict, Optional
 from classes import started_asgns, Assignment, ta_path, hta_path, User
-#print 'Eli\'s fixing schtuff, please hold'
-#sys.exit(1)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--port', default=6924, type=int,
                     help='Port to run the app on.')
@@ -49,9 +48,9 @@ user = User(username)
 if user.hta and args.user is not None:
     user = User(args.user)
 
-print user
+print(user)
 
-def is_logged_in(f):
+def is_logged_in(f: Callable) -> Callable:
     ''' this decorator ensures that the user is logged in when attempting
     to access a route (except /login) '''
     @wraps(f)
@@ -83,8 +82,8 @@ def load_asgn():
     except KeyError: # assignment not found
         return json.dumps("None")
     else: # no exceptions raised
-        return json.dumps(map(lambda q: 'Question %s' % (q+1),
-                          range(len(workflow['assignment'].questions))))
+        lst = [f'Question {q+1}' for q in workflow['assignment'].questions]
+        return json.dumps(lst)
 
 @app.route('/load_prob')
 @is_logged_in
@@ -166,10 +165,6 @@ def save_handin():
 
     comments = json.loads(request.args['comments'])
     completed = json.loads(request.args['completed'])
-    # just sanity checking, can get rid or add this in other places for security todo
-    assert isinstance(comments, dict)
-    assert isinstance(completed, bool)
-    assert isinstance(data, dict)
     # don't force a completely filled out form unless completing
     result = workflow['handin'].save_data(data, comments, force_complete=completed)
     return json.dumps(result)
