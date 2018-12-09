@@ -24,7 +24,6 @@ passlib==1.7.1
 pathlib2==2.3.2
 pexpect==4.6.0
 pickleshare==0.7.4
-pkg-resources==0.0.0
 prompt-toolkit==1.0.15
 ptyprocess==0.6.0
 pycparser==2.18

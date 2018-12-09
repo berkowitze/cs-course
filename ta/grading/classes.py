@@ -6,12 +6,16 @@ import random
 import grp
 import shutil
 import sys
-from textwrap import wrap, fill
-from helpers import locked_file, require_resource, bracket_check, rubric_check
-from datetime import datetime as dt
 import subprocess
-import time
+from textwrap import wrap, fill
+from typing import List, Tuple, Callable, Optional, Any, Union, Dict, NewType
+from datetime import datetime as dt
+from helpers import locked_file, require_resource, bracket_check, rubric_check
+from custom_types import Rubric, RubricCategory, RubricItem, \
+                         RubricOption, Comments
 
+# TODO : improve rubric format so this is more specific
+Rubric = NewType('Rubric', dict)
 
 ## READ BEFORE EDITING THIS FILE ##
 # do not use the builtin `open` function; instead use the
@@ -37,12 +41,12 @@ s_files_base_path = os.path.join(DATA_PATH, 'sfiles')
 anon_base_path    = os.path.join(DATA_PATH, 'anonymization')
 blocklist_path    = os.path.join(DATA_PATH, 'blocklists')
 if not os.path.exists(asgn_data_path):
-    raise OSError('No data file "%s"' % asgn_data_path)
+    raise OSError('No data file "{asgn_data_path}"')
 
 with locked_file(asgn_data_path) as f:
     data = json.load(f)
 
-def insert_global_comments(write_to):
+def insert_global_comments(write_to: str) -> None:
     with locked_file(write_to) as f:
         to = json.load(f)
 
@@ -50,25 +54,16 @@ def insert_global_comments(write_to):
         library = json.load(f)
 
     for key in library:
-        if key in to.keys():
+        if key in to:
             for comment in library[key]:
                 to[key]['comments'].append({'comment': comment, 'value': False})
     
     with locked_file(write_to, 'w') as f:
         json.dump(to, f, indent=2, sort_keys=True)
 
-def started_asgns():
-    assignments = []
-    for key in data['assignments'].keys():
-        asgn = Assignment(key)
-        if asgn.started:
-            assignments.append(asgn)
-
-    return assignments
-
 # function that checks if an assignment has been started
 # f is the function the wrapper will be wrapped around
-def is_started(f):
+def is_started(f: Callable) -> Callable:
     ''' decorator to ensure grading has started before calling methods
         to prevent weird errors/behavior
         anything with this decorator has no docstring, so you will
@@ -77,8 +72,11 @@ def is_started(f):
         ''' use local scope to get access to self '''
         asgn = args[0]
         if not asgn.started:
-            e = 'attempting to call method on unstarted assignment %s'
-            raise Exception(e % asgn.full_name)
+            e = (
+                 f'attempting to call method on unstarted '
+                 f'assignment {asgn.full_name}'
+                )
+            raise Exception(e)
         else:
             ''' run as normal if grading has started '''
             is_started.__doc__ = f.__doc__
@@ -88,7 +86,7 @@ def is_started(f):
 
 
 class User(object):
-    def __init__(self, uname):
+    def __init__(self, uname: str) -> None:
         ''' given a username, make a user instance.
         be careful about using this for authentication, as it is hard
         to be confident about the origin of uname within a python script. 
@@ -103,8 +101,7 @@ class User(object):
         self.ta  = self.uname in tas
         self.hta = self.uname in htas
 
-    def __repr__(self):
-        string = '<%s(%s)>'
+    def __repr__(self) -> str:
         if self.hta and self.ta:
             f = 'HTA-and-TA'
         elif self.hta:
@@ -114,17 +111,17 @@ class User(object):
         else:
             f = 'No-Permission-User'
 
-        return string % (f, self.uname)
+        return f'<{f}({self.uname})>'
 
 
-class Assignment(object):
+class Assignment:
     '''
     Assignment class
     Provides interface with logs, grades, and rubrics, files, etc.
     Takes in a key like "Homework 4" which must match a key in the
     /course/course/ta/assignments.json file.
     '''
-    def __init__(self, key):
+    def __init__(self, key: str) -> None:
         # ex "Homework 2"
         self.full_name = key
 
@@ -135,33 +132,30 @@ class Assignment(object):
         try:
             self.json = data['assignments'][self.full_name]
         except KeyError:
-            base = 'No assignment key "%s" in assignments.json'
-            raise KeyError(base % self.full_name)
+            base = f'No assignment key "{self.full_name}" in assignments.json'
+            raise KeyError(base)
 
         self.due_date = dt.strptime(self.json['due'], '%m/%d/%Y %I:%M%p')
         self.due = self.due_date < current_time # may be unnecessary
         try:
             self.started = self.json['grading_started']
         except KeyError:
-            base = '%s should have grading_started key'
-            raise KeyError(base % self.full_name)
+            raise KeyError(f'{self.full_name} should have grading_started key')
         
         try:
             self.group_asgn = self.json['group_asgn']
         except KeyError:
-            base = '%s should have group_asgn key'
-            raise KeyError(base % self.full_name)
+            raise KeyError(f'{self.full_name} should have group_asgn key')
 
         if self.group_asgn:
             group_dir = self.json['group_dir']
             self.proj_dir = os.path.join(proj_base_path, group_dir + '.json')
         try:
             self.anonymous = self.json['anonymous']
-            jpath = '%s.json' % self.mini_name
+            jpath = f'{self.mini_name}.json'
             self.anon_path = os.path.join(anon_base_path, jpath)
         except KeyError:
-            base = '%s should have anonymous key' % self.full_name
-            raise KeyError(base)
+            raise KeyError(f'{self.full_name} should have anonymous key')
 
         # directory with all grading logs
         self.log_path = os.path.join(log_base_path, self.mini_name)
@@ -180,42 +174,41 @@ class Assignment(object):
         
         # file with blocklist mapping
         self.blocklist_path = os.path.join(blocklist_path,
-                                               '%s.json' % self.mini_name)
+                                           f'{self.mini_name}.json')
 
         # do not load questions, just return skeleton assignment
         if not self.started: 
-            return
+            return None
         
         # started assignments must have certain paths
-        key = '"%s"' % key
+        key = f'"{key}"'
         assert os.path.exists(self.log_path), \
-            'started assignment %s with no log directory' % key
+            f'started assignment {key} with no log directory'
 
         assert os.path.exists(self.rubric_path), \
-            'started assignment %s with no rubric directory' % key
+            f'started assignment {key} with no rubric directory'
 
         assert os.path.exists(self.grade_path), \
-            'started assignment %s with no grade directory' % key
+            f'started assignment {key} with no grade directory'
 
         assert os.path.exists(self.blocklist_path), \
-            'started assignment %s with no blocklist file' % key
+            f'started assignment {key} with no blocklist file'
 
         assert os.path.exists(self.s_files_path), \
-            'started assignment %s with no student code directory' % key
+            f'started assignment {key} with no student code directory'
 
-        self.load_questions()
+        self.load_questions()  # TODO : make this only happen if desired
 
-    def check_rubric(self):
+    def check_rubric(self) -> bool:
         passed, msg = rubric_check(self.rubric_path)
         if not passed:
-            print '%s has invalid rubric:' % self.mini_name
-            print '\t%s' % msg
+            print(f'{self.mini_name} has invalid rubric:\n\t{msg}')
             return False
         else:
             return True
 
     @is_started
-    def load_questions(self):
+    def load_questions(self) -> None:
         ''' load all log files, creating Question instances stored into
             self.questions '''
         questions = []
@@ -227,11 +220,13 @@ class Assignment(object):
         self.questions = questions
 
     @is_started
-    def get_question(self, ndx):
+    def get_question(self, ndx: int) -> Question:
         ''' get a question by index, won't work if grading isn't started '''
         return self.questions[ndx]
-
-    def login_to_id(self, login):
+    
+    @is_started
+    def login_to_id(self, login: str) -> int:
+        # TODO : make this faster (use cached file). it's used a lot.
         if self.anonymous:
             raise ValueError('Cannot get login on anonymous assignment')
 
@@ -241,10 +236,11 @@ class Assignment(object):
         try:
             return data[login]
         except KeyError:
-            e = 'login %s does not exist in map for %s'
-            raise ValueError(e % (login, self))
-
-    def id_to_login(self, id):
+            raise ValueError(f'login {login} does not exist in map for {self}')
+    
+    @is_started
+    def id_to_login(self, ident: int) -> str:
+        # TODO : make this faster (use cached file). it's used a lot.
         if self.anonymous:
             raise ValueError('Cannot get login on anonymous assignment')
         
@@ -252,55 +248,57 @@ class Assignment(object):
             data = json.load(f)
 
         for k in data:
-            if data[k] == id:
+            if data[k] == ident:
                 return str(k)
 
-        e = 'id %s does not exist in map for %s'
-        raise ValueError(e % (id, self))
+        raise ValueError(f'id {ident} does not exist in map for {self}')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         ''' representation of instance (i.e. for printing) '''
-        return 'Assignment(name="%s")' % self.full_name
+        return f'Assignment(name="{self.full_name}")'
 
-class Question(object):
-    def __init__(self, parent_assignment, question_ndx):
+class Question:
+    def __init__(self, parent_assignment: Assignment, q_ndx: int) -> None:
         ''' makes a Question instance; must be given an Assignment
         instance and a question index (zero-indexed)
         Question(Assignment("Homework 4"), 0)
         '''
-
         # input type checking
         if not isinstance(parent_assignment, Assignment):
             raise TypeError('Question must be instantiated with an Assignment')
 
-        if not isinstance(question_ndx, int):
+        if not isinstance(q_ndx, int):
             e = 'Question must be instantiated with a problem index (integer)'
             raise TypeError(e)
 
         try:
-            cdata = parent_assignment.json['questions'][question_ndx]
+            cdata = parent_assignment.json['questions'][q_ndx]
         except IndexError: # no question with this index on this assignment
-            base = '%s does not have problem indexed %s'
-            raise ValueError(base % (parent_assignment, question_ndx))
-        else: # this is a valid question, so continue
+            base = (
+                    f'{parent_assignment} does not have problem '
+                    f'indexed {q_ndx}'
+                   )
+            raise ValueError(base)
+
+        else:  # this is a valid question, so continue
             self.json = cdata
 
         self.assignment = parent_assignment
-        self.qnumb = question_ndx + 1
+        self.qnumb = qn = q_ndx + 1
         
-        self.grade_path = os.path.join(parent_assignment.grade_path,
-                                       'q%s' % self.qnumb)
+        self.grade_path = os.path.join(parent_assignment.grade_path, f'q{qn}')
         self.rubric_filepath = os.path.join(parent_assignment.rubric_path,
-                                            'q%s.json' % self.qnumb)
+                                            f'q{qn}.json')
         self.log_filepath = os.path.join(parent_assignment.log_path,
-                                         'q%s.json' % self.qnumb)
+                                         f'q{qn}.json')
+
         self.code_filename = self.json['filename']
-        test_filename = 'q%s.%s' % (self.qnumb, self.json['test-ext'])
+        test_filename = f'q{qn}.{self.json["text-ext"]}'
         self.test_path = os.path.join(parent_assignment.test_path,
                                       test_filename)
 
     @require_resource('/course/cs0111/handin-loading-lock.lock')
-    def load_handins(self):
+    def load_handins(self) -> None:
         ''' set self.handins based on the questions' log file '''
         with locked_file(self.log_filepath) as f:
             data = json.load(f)
@@ -308,34 +306,19 @@ class Question(object):
         handins = []
         for raw_handin in data:
             handins.append(Handin(self, raw_handin.pop('id'), **raw_handin))
-           # reader = csv.reader(f) # DEL
 
-            # reader.next() will get the first line; after next is used, when
-            # looping over reader, it will start from the second line
-            # look up generators if you need to modify this, or run
-            # lines = list(csv.reader(f)) and you will get a full list
-            #try:
-            #    header = reader.next()
-            #except StopIteration:
-            #    base = '%s log file has no contents; must have a header'
-            #    raise OSError(base % self.log_filepath)
-            #else: # no errors loading file, so load handins
-            #    handins = []
-            #    for line in reader:
-            #        handins.append(Handin(self, line))
-#
         self.handins = handins
         self.handin_count = len(self.handins)
 
         # now set some boolean attributes
-        def has_incomplete():
+        def has_incomplete() -> bool:
             for handin in self.handins:
                 if not handin.complete:
                     return True
 
             return False
 
-        def has_flagged():
+        def has_flagged() -> bool:
             for handin in self.handins:
                 if handin.flagged:
                     return True
@@ -345,19 +328,19 @@ class Question(object):
         self.grading_started = self.assignment.started
         self.has_incomplete = has_incomplete()
         self.has_flagged = has_flagged()
+
         # how many handins for this question have been completed
         self.completed_count = len([x for x in self.handins if x.complete])
         self.flagged_count = len([x for x in self.handins if x.flagged])
 
-    def ta_handins(self, user):
+    def ta_handins(self, user: User) -> List[Handin]:
         ''' return all handins for the given user (User class) '''
         if not isinstance(user, User):
             raise TypeError('html_data user must be a User instance')
 
-        return filter(lambda handin: handin.grader == user.uname,
-                      self.handins)
+        return [h for h in self.handins if h.grader == user.uname]
 
-    def html_data(self, user):
+    def html_data(self, user: User) -> Dict[str, Union[List, int, bool]]:
         ''' given a user, return a dictionary with the data that will be used
         to populate that TA's view of already extracted handins to grade '''
         if not isinstance(user, User):
@@ -371,7 +354,7 @@ class Question(object):
         hdata = {
             # only get data for this TA, not for other TA's
             # todo rename these keys
-            "handin_data": map(lambda h: h.get_rubric_data(), user_handins),
+            "handin_data": [h.get_rubric_data() for h in user_handins],
             "handins": len(self.handins),
             "completed": self.completed_count,
             "anonymous": self.assignment.anonymous
@@ -387,8 +370,9 @@ class Question(object):
         return hdata
 
     @require_resource()
-    def get_random_handin(self, user):
-        ''' start grading a random handin '''
+    def get_random_handin(self, user: User) -> Optional[Handin]:
+        ''' start grading a random handin, or return None if there aren't
+        any left to grade '''
 
         if not isinstance(user, User):
             raise TypeError('html_data user must be a User instance')
@@ -397,8 +381,8 @@ class Question(object):
         # in case someone else has extracted in the meantime
         self.load_handins()
 
-        ndxs = range(len(self.handins))
-        gradeable = filter(lambda h: h.gradeable_by(user.uname), self.handins)
+        ndxs = list(range(len(self.handins)))
+        gradeable = [h for h in self.handins if h.gradeable_by(user.uname)]
         if gradeable == []: # no gradeable handins for this TA
             return None
         else:
@@ -409,7 +393,10 @@ class Question(object):
             return handin
 
     @require_resource()
-    def start_ident_handin(self, anon_id, user):
+    def start_ident_handin(self,
+                           anon_id: int,
+                           user: User) -> Union[str, Handin]:
+        # TODO : Fix this output union to be Optional[Handin]
         self.load_handins()
 
         handin = self.get_handin_by_sid(anon_id, user)
@@ -422,37 +409,40 @@ class Question(object):
         handin.start_grading(ta=user.uname)
         return handin
 
-    def get_handin_by_sid(self, anon_id, user):
+    def get_handin_by_sid(self, anon_id: int, user: User) -> Handin:
         ''' given a anonymous identity (i.e. 23) and the user, return
         the handin if the user is the grader of that handin or the
         user is an HTA '''
         for handin in self.handins:
             if int(handin.id) == int(anon_id):
-                if user.hta or handin.grader == user.uname or not self.assignment.anonymous:
+                if (user.hta or
+                      handin.grader == user.uname or
+                      (not self.assignment.anonymous)):
                     return handin
                 else:
-                    base = 'Handin on anonymous assignment only viewable by HTA or %s'
-                    raise IOError(base % handin.grader)
+                    base = (
+                            f'Handin on anonymous assignment only viewable '
+                            f'by HTA or {handin.grader}'
+                           )
+                    raise IOError(base)
 
-        raise ValueError('No handin with id %s' % anon_id)
+        raise ValueError(f'No handin with id {anon_id}')
 
-    def add_handin_to_log(self, id):
+    def add_handin_to_log(self, id: int) -> None:
         ''' add a new handin to the question's log file '''
+        # TODO : standardize id param names
         with locked_file(self.log_filepath) as f:
             data = json.load(f)
-            # lines = map(str.strip, f.read().strip().split('\n')) # DEL
         
         new_data = {'id': id, 'flag_reason': None,
                     'complete': False, 'grader': None}
         data.append(new_data)
-        # lines.append(','.join([str(id), '', '1', '1', ''])) # DEL
         with locked_file(self.log_filepath, 'w') as f:
-            # f.write('%s' % '\n'.join(lines)) # DEL
             json.dump(data, f, indent=2, sort_keys=True)
 
-        self.load_handins() # ugh idk concurrency is annoying
+        self.load_handins()  # ugh idk concurrency is annoying
 
-    def copy_rubric(self):
+    def copy_rubric(self) -> dict:
         ''' return the json rubric '''
         with locked_file(self.rubric_filepath) as f:
             return json.load(f)
@@ -491,16 +481,16 @@ class Question(object):
             try:
                 rubric[category]['comments'].append(comment_data)
             except TypeError:
-                print self
+                print(self)
                 raise
 
         with locked_file(self.rubric_filepath, 'w') as f:
             json.dump(rubric, f, indent=2, sort_keys=True)
 
     def __repr__(self):
-        return 'Question(file=[%s])' % self.code_filename
+        return f'Question(file=[{self.code_filename}])'
 
-class Handin(object):
+class Handin:
     def __init__(self, question, id, complete, grader, flag_reason):
         self.question = question
         self.id       = id
@@ -511,16 +501,13 @@ class Handin(object):
         self.flag_reason = flag_reason
 
         self.grade_path = os.path.join(question.grade_path,
-                                       'student-%s.json' % self.id)
+                                       f'student-{self.id}.json')
         self.handin_path = os.path.join(self.question.assignment.s_files_path,
-                                        'student-%s' % self.id)
+                                        f'student-{self.id}')
         self.filepath = os.path.join(self.handin_path,
                                      self.question.code_filename)
         if not self.question.assignment.anonymous:
             self.login = self.question.assignment.id_to_login(self.id)
-
-    def read_line(self, *args, **kwargs):
-        raise NotImplementedError('Do not use read_line method')
 
     def raw_data(self):
         ''' read the handin's data from the question's logfile '''
@@ -531,51 +518,19 @@ class Handin(object):
             if handin['id'] == self.id:
                 return handin
 
-    def update_attrs(self):
-        raise NotImplementedError("Don't use this method")
-        # status can be:
-        # 1 <- either unextracted or in progress
-        # 2 <- complete
-        try:
-            self.complete = int(self.line[2]) == 2
-        except ValueError:
-            raise ValueError('Invalid status in log %s' % question.log_filepath)
-
-        # flagged can be:
-        # 1 <- TA has not flagged handin
-        # 2 <- TA has requested help
-        try:
-            self.flagged = int(self.line[3]) == 2
-        except ValueError:
-            raise('Invalid flag in log %s' % question.log_filepath)
-
-        # TA in second column
-        self.grader = self.line[1]
-        # not extracted if no allocated TA
-        self.extracted = (self.grader != '')
-
-        if self.extracted != os.path.exists(self.grade_path):
-            time.sleep(0.5)
-            e = 'extracted handin for student %s missing grade file'
-            e += ' or incorrectly has grade file'
-            assert self.extracted and os.path.exists(self.grade_path), e % self.id
-            assert not(self.extracted or os.path.exists(self.grade_path)), e % self.id
-
-    def get_rubric(self):
+    def get_rubric(self) -> Rubric:
         ''' get the rubric for this handin only; must be extracted '''
         if os.path.exists(self.grade_path):
             with locked_file(self.grade_path) as f:
                 d = json.load(f)
                 return d
         else:
-            base = 'Attempting to get rubric of unextracted handin %s'
-            raise ValueError(base % self)
+            base = f'Attempting to get rubric of unextracted handin {self}'
+            raise ValueError(base)
 
-    def get_rubric_data(self): # DEL
+    def get_rubric_data(self) -> Dict[str, Any]:
         ''' collect information about the student's grade rubric '''
-        # self.line = self.read_line() # DEL
-        # self.update_attrs(self.line) # DEL
-        rdata = {}
+        rdata: Dict[str, Any] = {}
         rdata['functionality'] = 3
         rdata['id'] = self.id
         asgn = self.question.assignment
@@ -594,18 +549,20 @@ class Handin(object):
         rdata['rubric'] = self.get_rubric()
         rdata['filename'] = self.question.code_filename
         rdata['student-code'] = self.get_code()
-        rdata['sfile-link'] = '%s' % self.handin_path
+        rdata['sfile-link'] = self.handin_path
         return rdata
 
-    def get_code(self):
+    def get_code(self) -> str:
         ''' right now, this returns the code as raw text from the
         file the student submitted; this could be updated to be more
         complex (depending on filename, etc.), and would need to be
         updated in /ta/grading/static/main.js to handle those updates '''
         filepath = os.path.join(self.handin_path, self.question.code_filename)
         if not os.path.exists(filepath):
-            msg = 'No submission (or code issue). Check %s to make sure'
-            return msg % self.handin_path
+            return (
+                    f'No submission (or code issue). '
+                    f'Check {self.handin_path} to make sure'
+                   )
         elif os.path.splitext(filepath)[1] == '.zip':
             msg = 'Submission is a zip file; open in file viewer'
             return msg
@@ -623,7 +580,7 @@ class Handin(object):
             return code
 
 
-    def write_line(self, **kwargs):
+    def write_line(self, **kwargs) -> None:
         ''' update the log file for this handin
         kwargs:
             - grader : login str of the handin grader
@@ -655,7 +612,7 @@ class Handin(object):
             json.dump(data, f, indent=2, sort_keys=True)
 
     @require_resource('/course/cs0111/ta/question_extract_resource')
-    def start_grading(self, ta):
+    def start_grading(self, ta: str) -> None:
         ''' given a TA username, start grading this handin '''
         assert not self.extracted, 'cannot start grading on extracted handin'
         self.write_line(grader=ta, flag_reason=None, complete=False)
@@ -665,7 +622,7 @@ class Handin(object):
         self.extracted = True
 
     @require_resource()
-    def unextract(self):
+    def unextract(self) -> None:
         ''' unextract handin; gets rid of grade rubric '''
         self.write_line(grader=None, extracted=False, flag_reason=None)
         os.remove(self.grade_path)
@@ -673,32 +630,33 @@ class Handin(object):
         self.extracted = False
         self.complete = False
 
-    def flag(self, msg=''):
+    def flag(self, msg: str = '') -> None:
         ''' flag a handin with an optional message '''
-        if not isinstance(msg, (str, unicode)):
-            raise TypeError('flag msg must be str, got %s' % msg)
+        if not isinstance(msg, str):
+            raise TypeError(f'flag msg must be str, got {msg}')
 
         self.write_line(flag_reason=msg)
         self.flagged = True
 
-    def unflag(self):
+    def unflag(self) -> None:
         ''' unflag handin, reset flag message if there was one '''
         self.write_line(flag_reason=None)
         self.flagged = False
 
-    def set_complete(self):
+    def set_complete(self) -> None:
         ''' handin grading complete '''
         self.write_line(complete=True)
         self.complete = True
 
-    def write_grade(self, json_data):
+    def write_grade(self, json_data: Rubric) -> None:
         ''' write the grade rubric '''
         with locked_file(self.grade_path, 'w') as f:
             json.dump(json_data, f, indent=2, sort_keys=True)
 
-    def save_data(self, data, new_comments, force_complete=False):
+    def save_data(self, data: dict, new_comments: dict,
+                  force_complete: bool = False) -> bool:
         rubric = self.get_rubric()
-        def check_rubric_complete():
+        def check_rubric_complete() -> bool:
             ''' makes sure there's no empty data cells in the rubric '''
             for key in data:
                 if data[key][0] is None or data[key][0] == 'None':
@@ -706,12 +664,12 @@ class Handin(object):
 
             return True
 
-        def update_comments(old_comments, new_comment_texts):
+        def update_comments(old_comments: List[dict],
+                           new_comment_texts: List[str]) -> None:
             ''' given the original comments (dict list) and a list of new
             comments to add, update the matching old_comments to the "value"
             key be True. (potential break point should be fine tho) '''
-            final_comments = []
-            print old_comments, new_comment_texts
+            print(old_comments, new_comment_texts)
             for i, comment in enumerate(old_comments):
                 if comment['comment'] in new_comment_texts:
                     new_comment_texts.remove(comment['comment'])
@@ -721,7 +679,7 @@ class Handin(object):
 
             # do i want to add the remaining idk instead of assertionerror
             assert new_comment_texts == [], \
-                'c not empty (%s)' % new_comment_texts 
+                f'c not empty ({new_comment_texts})'
 
         # update general comments
         update_comments(rubric['_COMMENTS'], new_comments['General'])
@@ -747,7 +705,7 @@ class Handin(object):
         self.write_grade(rubric)
         return True
 
-    def add_comment(self, category, comment):
+    def add_comment(self, category: str, comment: str) -> None:
         ''' add comment to the handin's json grade rubric, with 
         value of False. must save with the comment in the list of
         comments selected under the dropdown to have the value be True '''
@@ -763,13 +721,13 @@ class Handin(object):
         with locked_file(self.grade_path, 'w') as f:
             json.dump(rubric, f, indent=2, sort_keys=True)
 
-    def gradeable_by(self, uname):
+    def gradeable_by(self, uname: str) -> bool:
         ''' is this handin gradeable by input uname (str);
         checks if the student is blocklisted by the TA or if the 
         handin has already been extracted (False if so) '''
         return not (self.blocklisted_by(uname) or self.extracted)
 
-    def blocklisted_by(self, ta):
+    def blocklisted_by(self, ta: str) -> bool:
         ''' returns True if the student is blocklisted by ta (str) '''
         student_id = self.id
         bl_path = self.question.assignment.blocklist_path
@@ -778,7 +736,7 @@ class Handin(object):
 
         return ta in data and int(self.id) in data[ta]
 
-    def generate_report_str(self, rubric=None):
+    def generate_report_str(self, rubric: Optional[Rubric] = None) -> str:
         ''' return a report string for this handin (this question only)
         will format so that no lines are over 74 characters, indentation
         is all pretty, etc. uses rubric if provided, otherwise loads
@@ -786,8 +744,7 @@ class Handin(object):
         def get_comments(comments):
             ''' helper that gets the comment text from comments that
             were assigned to this student's handin '''
-            return map(lambda c: c['comment'],
-                       filter(lambda c: c['value'], comments))
+            return [c['comment'] for c in comments if c['value']]
 
         if rubric is None:
             rubric = self.get_rubric()
@@ -799,7 +756,7 @@ class Handin(object):
             else:
                 comments[key] = get_comments(rubric[key]['comments'])
 
-        report_str = '%s\n' % self.question.code_filename
+        report_str = f'{self.question.code_filename}\n'
         pre_string = '  '  # each problem is nested by pre_string in email
         for key in comments:
             # if GENERAL comments or if there are no comments for that section,
@@ -807,26 +764,25 @@ class Handin(object):
             if key == 'GENERAL' or comments[key] == []:
                 continue
 
-            report_str += '%s%s:\n' % (pre_string, key)
+            report_str += f'{pre_string}{key}:\n'
             # have longest comment at the top
             for comment in sorted(comments[key], key=lambda s: -len(s)):
-                comment = comment.replace('%s: ' % key, '')
-                comment_lines = fill('%s' % comment, 74,
+                comment = comment.replace(f'{key}: ', '')
+                comment_lines = fill(comment, 74,
                                      initial_indent=(pre_string * 2 + '- '),
                                      subsequent_indent=(pre_string * 3))
-                report_str += '%s\n\n' % comment_lines
+                report_str += f'{comment_lines}\n\n'
 
         for comment in sorted(comments['GENERAL'], key=lambda s: -len(s)):
             comment_lines = fill(comment, 74,
                                  initial_indent=(pre_string + '- '))
-            report_str += '%s\n\n' % comment_lines
+            report_str += f'{comment_lines}\n\n'
         
-        ta_em = '%s@cs.brown.edu' % self.grader
-        report_str += 'Grader: %s (%s)' % (self.grader, ta_em)
-        report_str += '\n\n%s\n' % ('-' * 74)
+        report_str += f'Grader: {self.grader} ({self.grader}@cs.brown.edu)'
+        report_str += f'\n\n{"-" * 74}\n'
         return report_str
 
-    def generate_grade_report(self):
+    def generate_grade_report(self) -> Tuple[str, Dict[str, int]]:
         ''' return a report_str (all comments collected and formatted nicely)
         and a dictionary with one key per theme, values being the numeric score
         the student received in that category for this question only 
@@ -847,8 +803,8 @@ class Handin(object):
                 except KeyError:
                     print('PROBABLY REPEATED ITEM NAME: LOOKING AT ')
                     print(key)
-                    print rubric_item
-                    print(rubric[key].keys())
+                    print(rubric_item)
+                    print((list(rubric[key].keys())))
                     raise
                 except ValueError:
                     raise ValueError('Generating grade from incomplete rubric')
@@ -860,7 +816,7 @@ class Handin(object):
 
         return report_str, grade
 
-    def run_test(self):
+    def run_test(self) -> str:
         test_type = self.question.json['test-ext']
         if test_type == 'arr':
             return self.pyret_test()
@@ -869,14 +825,14 @@ class Handin(object):
         else:
             return 'Invalid test extension (contact HTA)'
 
-    def python_test(self):
+    def python_test(self) -> str:
         test_filepath = self.question.test_path
         cmd = [os.path.join(BASE_PATH, 'tabin', 'python-test'),
                test_filepath, self.filepath]
         return subprocess.check_output(cmd)
         
 
-    def pyret_test(self):
+    def pyret_test(self) -> str:
         filepath = os.path.join(self.handin_path, self.question.code_filename)
         if not os.path.exists(filepath):
             return 'No handin or missing handin'
@@ -896,7 +852,7 @@ class Handin(object):
             with locked_file(test_filepath, 'r') as f:
                 lines = f.readlines()
                 relpath = os.path.relpath(filepath, test_dir)
-                lines.insert(0, 'import file("%s") as SC\n' % relpath)
+                lines.insert(0, 'import file("{relpath}") as SC\n')
 
             with locked_file(test_filepath, 'w') as f:
                 f.writelines(lines)
@@ -907,17 +863,32 @@ class Handin(object):
         return subprocess.check_output(cmd)
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.question.assignment.anonymous:
-            vals = (self.id, self.extracted, self.complete)
-            base = 'Handin(id=%s, extracted=%s, complete=%s' % vals
+            base = (
+                    f'Handin(id={self.id}, extracted={self.extracted}, '
+                    f'complete={self.complete}'
+                   )
         else:
-            vals = (self.id, self.login, self.extracted, self.complete)
-            base = 'Handin(id=%s, login=%s, extracted=%s, complete=%s' %  vals
+            base = (
+                    f'Handin(id={self.id}, login={self.login}, '
+                    f'extracted={self.extracted}, complete={self.complete}'
+                   )
 
         if self.extracted:
-            base += ', grader=%s)' % self.grader
+            base += f', grader={self.grader})'
         else:
             base += ')'
 
         return base
+
+def started_asgns() -> List[Assignment]:
+    assignments: List[Assignment] = []
+    for key in data['assignments']:
+        asgn = Assignment(key)
+        if asgn.started:
+            assignments.append(asgn)
+
+    return assignments
+
+
