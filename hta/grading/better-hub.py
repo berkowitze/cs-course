@@ -1,4 +1,4 @@
-import cProfile, pstats, io
+import cProfile, pstats, StringIO
 # pr = cProfile.Profile()
 # pr.enable()
 import json
@@ -16,18 +16,18 @@ def get_opt(prompt, options, first=True):
     if first=True, the options will be displayed to the user. '''
     if first:
         for i, opt in enumerate(options):
-            print(('%s. %s' % (i + 1, opt)))
+            print '%s. %s' % (i + 1, opt)
 
-    choice = eval(input(prompt))
+    choice = raw_input(prompt)
     try:
         numb_choice = int(choice) - 1
         if numb_choice in range(len(options)):
             return numb_choice
         else:
-            print('Invalid input...')
+            print 'Invalid input...'
             return get_opt(prompt, options, first=False)
     except ValueError:
-        print('Enter a number...')
+        print 'Enter a number...'
         return get_opt(prompt, options, first=False)
 
 def send_asgn_emails(asgn, handins):
@@ -37,20 +37,17 @@ def send_asgn_emails(asgn, handins):
     # what kind of issues come up; will make it better
     # during semester (maybe)
     yag = yagmail.SMTP('csci0111@brown.edu')
-    for student in list(handins.keys()):
-        if student == 'csci0111':
-            continue
-
+    for student in handins.keys():
         asgn.send_email(student, login_to_email(student), yag)
 
     asgn.set_emails_sent()
     return
     tosend = asgn.login_handin_list[:] # make copy of login list
-    for student in list(handins.keys()):
+    for student in handins.keys():
         hpath = os.path.join(BASE_PATH, 'hta/handin/students',
                              student, asgn.mini_name)
         if not os.path.exists(hpath): # if no submission for hw...
-            print(('no submission for %s, not sending email' % student))
+            print 'no submission for %s, not sending email' % student
             continue
 
         try:
@@ -58,13 +55,13 @@ def send_asgn_emails(asgn, handins):
             em = login_to_email(student)
             asgn.send_email(student, em, yag)
         except ValueError:
-            print(('%s has handin but no grade. Not sending email.' % student))
+            print '%s has handin but no grade. Not sending email.' % student
             continue
 
     if tosend:
-        print('Graded students that will not receive email:')
-        print(('\t%s' % tosend))
-        print('This is likely because they are not in student list.')
+        print 'Graded students that will not receive email:'
+        print '\t%s' % tosend
+        print 'This is likely because they are not in student list.'
 
     asgn.set_emails_sent()
 
@@ -85,7 +82,7 @@ def get_student_labcount(student):
                 continue
             fp = os.path.join(lab_fold, f)
             with open(fp) as fo:
-                students = list(map(str.strip, fo.read().strip().split('\n')))
+                students = map(str.strip, fo.read().strip().split('\n'))
                 if student in students:
                     labc = True
                     break
@@ -99,22 +96,22 @@ opt = get_opt('> ', ['Generate gradebook', 'Work with assignment'])
 asgns = get_full_asgn_list()
 if opt == 0:
     path = os.path.join(BASE_PATH, 'hta', 'gradebook.tsv')
-    print(('gradebook will be saved as "%s".' % path))
-    print('Press enter to continue, or enter custom path (absolute)')
-    res = eval(input('> '))
+    print 'gradebook will be saved as "%s".' % path
+    print 'Press enter to continue, or enter custom path (absolute)'
+    res = raw_input('> ')
     if res != '':
         dirname, fname = os.path.split(res)
         assert os.path.exists(dirname), \
             'directory %s does not exist' % dirname
-        print(fname)
+        print fname
         if not fname.endswith('.tsv'):
-            print('Warning: gradebook should end with .tsv.')
-            print('Enter to continue or ctrl-c to cancel.')
-            eval(input())
+            print 'Warning: gradebook should end with .tsv.'
+            print 'Enter to continue or ctrl-c to cancel.'
+            raw_input()
 
         path = res
 
-    print('Collecting grades for:')
+    print 'Collecting grades for:'
     # i hope there's a better way to do this...
     # there is! todo
     students = os.listdir(os.path.join(BASE_PATH, 'hta', 'grades'))
@@ -134,12 +131,12 @@ if opt == 0:
 
             string = string[:-2]
             string += ')'
-            print(('\t%s %s' % (asgn.full_name, string)))
+            print '\t%s %s' % (asgn.full_name, string)
 
     header.append('Labs attended')
     rows = []
     for student in students:
-        row = list(range(len(header)))
+        row = range(len(header))
         row[0] = student
         spath = os.path.join(BASE_PATH, 'hta', 'grades', student)
         for asgn in asgns:
@@ -159,7 +156,7 @@ if opt == 0:
                         student_grade = json.load(f)
                 except IOError:
                     student_grade = {}
-                    for key in list(egrade.keys()):
+                    for key in egrade.keys():
                         student_grade[key] = "No handin"
 
             for key in egrade:
@@ -168,7 +165,7 @@ if opt == 0:
                 try:
                     row[ndx] = student_grade[key]
                 except:
-                    print((student_grade, key, asgn, student))
+                    print student_grade, key, asgn, student
                     raise
         
         row.append(get_student_labcount(student))
@@ -182,7 +179,7 @@ if opt == 0:
         for row in rows:
             f.write('\t'.join(map(str, row)) + '\n')
 
-    print(('Gradebook outputted to %s' % path))
+    print 'Gradebook outputted to %s' % path
     sys.exit(0)
 
 else:
@@ -194,39 +191,39 @@ else:
     for i, Asgn in enumerate(asgns):
         row = [i + 1, Asgn.full_name, Asgn.due, Asgn.started,
                Asgn.grading_completed, False]
-        row = list(map(str, row))
+        row = map(str, row)
         rm = len(max(row)) + 3
         maxlen = rm if rm > maxlen else maxlen
         rows.append(row)
 
-    print((tabulate.tabulate(rows, header)))
-    print('')
-    print('Which assignment # would you like to work on?')
-    ndx = get_opt('> ', list(range(1, len(asgns) + 1)), False)
+    print tabulate.tabulate(rows, header)
+    print ''
+    print 'Which assignment # would you like to work on?'
+    ndx = get_opt('> ', range(1, len(asgns) + 1), False)
     asgn = asgns[ndx]
-    x = (80 - len(asgn.full_name) - 2) // 2
-    print('')
-    print((('-' * x) + ' ' + asgn.full_name + ' ' + ('-' * x)))
-    print('')
+    x = (80 - len(asgn.full_name) - 2) / 2
+    print ''
+    print ('-' * x) + ' ' + asgn.full_name + ' ' + ('-' * x)
+    print ''
     if not asgn.started:
-        print(('%s grading unstarted. Start it?' % asgn.full_name))
+        print '%s grading unstarted. Start it?' % asgn.full_name
         if get_opt('> ', ['Yes', 'No']) == 0:
             if not asgn.due:
                 s = 'Students can still hand in for this assignment.'
-                print((s + ' Continue anyway?'))
+                print s + ' Continue anyway?'
                 choice = get_opt('> ', ['Yes', 'No'])
                 if choice != 0:
-                    print('Exiting...')
+                    print 'Exiting...'
                     sys.exit(0)
             try:
                 asgn.init_grading()
             except:
                 asgn.reset_grading(True)
-                print('Error starting assignment:')
+                print 'Error starting assignment:'
                 raise
-            print('Grading started...')
+            print 'Grading started...'
         else:
-            print('Cancelling...')
+            print 'Cancelling...'
     else:
         new_header = ["Problem #", "# Handins", "# Graded", "# Flagged"]
         opts = []
@@ -239,10 +236,10 @@ else:
 
             rows.append(row)
 
-        print((tabulate.tabulate(rows, new_header)))
-        print('')
+        print tabulate.tabulate(rows, new_header)
+        print ''
 
-        print('What would you like to do?')
+        print 'What would you like to do?'
         opt = get_opt('> ', ['Reset Assignment Grading',
                              'Generate [and email] Grade Reports',
                              'Email Grade Report(s)',
@@ -250,36 +247,36 @@ else:
                              'Add handin',
                              'Deanonymize (for regrading)'])
         if opt == 0:
-            print('Resetting the assignment will delete any grades given.')
-            if input('Confirm [y/n]: ').lower() != 'y':
-                print('Exiting...')
+            print 'Resetting the assignment will delete any grades given.'
+            if raw_input('Confirm [y/n]: ').lower() != 'y':
+                print 'Exiting...'
                 sys.exit(0)
 
             asgn.reset_grading(True)
 
         elif opt == 1:
             if asgn.emails_sent:
-                print('Emails have already been sent. Generate override reports? [y/n]')
-                if input('> ').lower() != 'y':
-                    print('Exiting...')
+                print 'Emails have already been sent. Generate override reports? [y/n]'
+                if raw_input('> ').lower() != 'y':
+                    print 'Exiting...'
                     sys.exit(0)
 
             import getpass
             username = getpass.getuser()
             user = User(username)
-            print('Generating grade reports...')
+            print 'Generating grade reports...'
             logins = student_list()
 
             handins = asgn.get_handin_dict(logins, user)
-            for student in list(handins.keys()):
+            for student in handins.keys():
                 asgn.generate_report(handins[student],
                                      student_id=student,
                                      soft=False,
                                      overrides=asgn.emails_sent)
-            print('Assignments generated.\n')
-            print('Send report emails? [yes/n]')
-            if input('> ').lower() != 'yes':
-                print('Exiting... Run cs111-asgn-hub again to send emails.')
+            print 'Assignments generated.\n'
+            print 'Send report emails? [yes/n]'
+            if raw_input('> ').lower() != 'yes':
+                print 'Exiting... Run cs111-asgn-hub again to send emails.'
                 sys.exit(0)
             else:
                 send_asgn_emails(asgn, handins)
@@ -294,9 +291,9 @@ else:
                          'Send to all students'])
             if r == 0 or r == 1:
                 if r == 0:
-                    l = eval(input('Enter student login: '))
+                    l = raw_input('Enter student login: ')
                 elif r == 1:
-                    i = eval(input('Enter anonymous id: '))
+                    i = raw_input('Enter anonymous id: ')
                     l = asgn.id_to_login(i)
                 else:
                     raise Exception('whut')
@@ -304,8 +301,8 @@ else:
                 handin_list = handins[l]
                 
                 if asgn.report_already_generated(l):
-                    print('A grade report has already been generated for this student.')
-                    print('Re-generate report or email existing report?')
+                    print 'A grade report has already been generated for this student.'
+                    print 'Re-generate report or email existing report?'
                     s = get_opt('> ', ['Regenerate report', 'Send existing report'])
                     if s == 0:
                         asgn.generate_report(handin_list,
@@ -329,7 +326,7 @@ else:
         elif opt == 3:
             header = ['Anon ID', 'Login', 'Grader', 'Flag Reason']
             for q in asgn.questions:
-                print(q)
+                print q
                 full_data = []
                 for h in q.handins:
                     if h.flagged:
@@ -340,17 +337,17 @@ else:
 
                 table = tabulate.tabulate(full_data, header)
                 lines = table.split('\n')
-                indented = ['  ' + l for l in lines]
-                print(('\n'.join(indented)))
+                indented = map(lambda l: '  ' + l, lines)
+                print '\n'.join(indented)
 
-            print('')
-            print(('To unflag, go to %s' % asgn.log_path))
+            print ''
+            print 'To unflag, go to %s' % asgn.log_path
 
 
         elif opt == 4:
-            login = eval(input('Enter student login: '))
+            login = raw_input('Enter student login: ')
             asgn.add_new_handin(login)
 
         elif opt == 5:
             asgn.deanonymize()
-            print('Assignment deanonymized')
+            print 'Assignment deanonymized'

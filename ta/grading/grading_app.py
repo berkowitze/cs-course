@@ -3,11 +3,11 @@ import sys
 import random
 import flask
 import json
+import getpass
+import argparse
 from flask import Flask, session, redirect, url_for, request, render_template
 from functools import wraps
 from passlib.hash import sha256_crypt
-import getpass
-import argparse
 from typing import Callable, List, Tuple, Any, NewType, Dict, Optional
 from classes import started_asgns, Assignment, ta_path, hta_path, User
 
@@ -82,7 +82,7 @@ def load_asgn():
     except KeyError: # assignment not found
         return json.dumps("None")
     else: # no exceptions raised
-        lst = [f'Question {q+1}' for q in workflow['assignment'].questions]
+        lst = [f'Question {q.qnumb}' for q in workflow['assignment'].questions]
         return json.dumps(lst)
 
 @app.route('/load_prob')
@@ -126,7 +126,7 @@ def extract_handin():
 @is_logged_in
 def load_handin():
     sid = int(request.args['sid'])
-    workflow['handin'] = workflow['question'].get_handin_by_sid(sid, user)
+    workflow['handin'] = workflow['question'].handin_by_id(sid)
     return json.dumps(workflow['handin'].get_rubric_data())
 
 @app.route('/flag_handin')
@@ -153,38 +153,37 @@ def unextract_handin():
         'trying to unextract inactive handin'
 
     workflow['handin'].unextract()
+    print(workflow['handin'].grade_path)
     return str(ident)
 
 @app.route('/save_handin')
 @is_logged_in
 def save_handin():
     ident = request.args['id']
-    data = json.loads(request.args['formData'])
     assert workflow['handin'].id == int(ident), \
         'trying to unextract inactive handin'
 
-    comments = json.loads(request.args['comments'])
+    data = json.loads(request.args['formData'])
+    comments = tuple(json.loads(request.args['comments'])) # (general, all)
     completed = json.loads(request.args['completed'])
     # don't force a completely filled out form unless completing
-    result = workflow['handin'].save_data(data, comments, force_complete=completed)
+    result = workflow['handin'].save_data(data, comments,
+                                          force_complete=completed)
     return json.dumps(result)
 
-@app.route('/add_comment')
+@app.route('/add_global_comment')
 @is_logged_in
-def add_comment():
+def add_global_comment():
     ident = request.args['id']
-    app.logger.info(ident)
     assert workflow['handin'].id == int(ident), \
-        'trying to unextract inactive handin'
+        'trying to comment on inactive handin'
 
-    student_only = json.loads(request.args['student-only'])
-    category     = request.args['category']
-    comment      = request.args['comment']
-    if student_only:
-        workflow['handin'].add_comment(category, comment)
-    else:
-        workflow['question'].add_comment(category, comment)
+    category = request.args['category']
+    if category == '':
+        category = None
 
+    comment = request.args['comment']
+    workflow['question'].add_ungiven_comment(category, comment)
     return 'true'
 
 # handin complete; don't save it though, that should be done separately

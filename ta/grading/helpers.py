@@ -75,7 +75,7 @@ def json_file_with_check(path: str):
 
     with locked_file(path) as f:
         try:
-            data: JSON = json.load(f)
+            data = json.load(f)
         except ValueError:
             raise AssertionError(f'JSON invalid ({path})')
         else:
@@ -95,7 +95,6 @@ def rubric_check(path: str) -> None:
 
     def check_item(ri: RubricItem) -> bool:
         assert isinstance(ri['descr'], str)
-        assert isinstance(ri['default'], (type(None), int))
         assert isinstance(ri['selected'], (type(None), int))
         assert isinstance(ri['items'], list)
         assert all(map(check_opt, ri['items']))
@@ -143,4 +142,26 @@ def bracket_check(path: str) -> None:
     assert isinstance(data, dict)
     assert all(map(check_bracket_cat, data.values()))
 
+
+def update_comments(comments: Comments, new_given: List[str]) -> None:
+    '''
+    inputs:
+        - comments, a Comments dictionary (given and un_given keys)
+        - new_given, a list of comments that the TA has assigned to
+          be the new given key of this Comments block
+    output: None
+    effect: modify `comments` to update given comments to match new_given
+    and un_given comments to have all un_given comments '''
+
+    # all comments that had been given but are not being given now
+    # are added to the un_given list
+    new_ungiven = [c for c in comments['given'] if c not in new_given]
+    comments['un_given'].extend(new_ungiven)
+
+    # reset given comments to the new_given comments
+    comments['given'] = new_given
+
+    sv = set(comments['given'])  # local variable to speed up contains checking
+    # comments in un_given that are now being given are removed
+    comments['un_given'] = [c for c in comments['un_given'] if c not in sv]
 

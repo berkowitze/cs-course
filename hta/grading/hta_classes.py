@@ -1,22 +1,24 @@
 from classes import *
 import zipfile
 from hta_helpers import *
+from typing import Any
+from custom_types import *
 import numpy as np
 import subprocess
 from collections import defaultdict
 
-anon_map_path = os.path.join(BASE_PATH, 'hta/grading/anonymization')
-handin_base_path = os.path.join(BASE_PATH, 'hta/handin/students')
+anon_map_path: str = os.path.join(BASE_PATH, 'hta/grading/anonymization')
+handin_base_path: str = os.path.join(BASE_PATH, 'hta/handin/students')
 
 # TA's blocklisting students
-blocklist_path_1 = os.path.join(BASE_PATH, 'ta', 't-s-blocklist.txt')
+blocklist_path_1: str = os.path.join(BASE_PATH, 'ta', 't-s-blocklist.json')
 
 # Student's blocklisting TA's (private to TA's)
-blocklist_path_2 = os.path.join(BASE_PATH, 'hta', 's-t-blocklist.txt')
+blocklist_path_2: str = os.path.join(BASE_PATH, 'hta', 's-t-blocklist.json')
 
-grade_base_path = os.path.join(BASE_PATH, 'hta/grades')
+grade_base_path: str = os.path.join(BASE_PATH, 'hta/grades')
 
-final_grade_path = os.path.join(BASE_PATH, 'ta', 'grading', 'grades')
+final_grade_path: str = os.path.join(BASE_PATH, 'ta', 'grading', 'grades')
 
 class HTA_Assignment(Assignment):
     ''' HTA version of Assignment (TA version is just Assignment)
@@ -38,7 +40,7 @@ class HTA_Assignment(Assignment):
             with locked_file(self.anon_path) as f:
                 d = json.load(f)
 
-            self.login_handin_list = d.keys()
+            self.login_handin_list = list(d.keys())
 
         self.handin_path = handin_base_path
         self.bracket_path = os.path.join(rubric_base_path,
@@ -51,7 +53,7 @@ class HTA_Assignment(Assignment):
         self.bracket_exists = os.path.exists(self.bracket_path)
         self.groups_loaded = False
 
-    def init_grading(self):
+    def init_grading(self) -> None:
         assert not self.started, \
             'Cannot init_grading on started %s' % repr(self)
         self.check_startable()
@@ -64,8 +66,6 @@ class HTA_Assignment(Assignment):
         self.transfer_handins()
         self.blocklist_map = self.setup_blocklist() # set up blocklist
         self.record_start() # update assignments.json
-
-        # self.load_questions() # load questions after all else is set up
 
     def check_startable(self):
         ''' raise an error if the proper files do not exist for
@@ -84,33 +84,25 @@ class HTA_Assignment(Assignment):
             base = '%s does not have bracket file (should be in %s)'
             raise OSError(base % (self, self.bracket_path))
             
-    def get_blocklists(self):
-        tas = np.loadtxt(ta_path, dtype=str)
-        htas = np.loadtxt(hta_path, dtype=str)
-        # combine list of TAs
-        all_tas = np.append(tas, htas)
-        # dictionary with [] as default for students blacklisted by each TA
-        mapping = dict((ta, []) for ta in all_tas)
+    def get_blocklists(self) -> Dict[str, List[str]]:
+        mapping = defaultdict(set)
         with locked_file(blocklist_path_1) as f:
-            lines = f.read().strip().split('\n')
-            bl1 = map(lambda l: map(str.strip, l),
-                      map(lambda a: a.split(','), lines))
+            bl1 = json.load(f)
 
         with locked_file(blocklist_path_2) as f:
-            lines = f.read().strip().split('\n')
-            bl2 = map(lambda l: map(str.strip, l),
-                      map(lambda a: a.split(','), lines))
+            bl2 = json.load(f)
         
-        # combine the two blocklists, get rid of empty rows
-        bl = [l for l in bl1 + bl2 if len(l) == 2]
-        for row in bl:
-            mapping[row[0]].append(row[1]) # add student to TA's list
+        for k in bl1:
+            [mapping[k].add(login) for login in bl1[k]]
+
+        for k in bl2:
+            [mapping[k].add(login) for login in bl2[k]]
 
         return mapping
 
     def setup_blocklist(self):
         mapping = self.get_blocklists()
-        data = defaultdict(lambda: [])
+        data = defaultdict(list)
         for ta in mapping:
             for student in mapping[ta]:
                 try:
@@ -122,16 +114,15 @@ class HTA_Assignment(Assignment):
         with locked_file(self.blocklist_path, 'w') as f:
             json.dump(data, f, indent=2, sort_keys=True)
 
-    def login_to_id(self, login):
+    def login_to_id(self, login: str) -> int:
         with locked_file(self.anon_path) as f:
             data = json.load(f)
         try:
-            return data[login]
+            return int(data[login])
         except KeyError:
-            e = 'login %s does not exist in map for %s'
-            raise ValueError(e % (login, self)) 
+            raise ValueError(f'login {login} does not exist in map for {self}')
 
-    def id_to_login(self, id):
+    def id_to_login(self, id: int) -> str:
         with locked_file(self.anon_path) as f:
             data = json.load(f)
 
@@ -139,8 +130,7 @@ class HTA_Assignment(Assignment):
             if data[k] == id:
                 return str(k)
         
-        e = 'id %s does not exist in map for %s'
-        raise ValueError(e % (id, self))
+        raise ValueError(f'id {id} does not exist in map for {self}')
 
     def transfer_handins(self):
         ''' takes handins from the handin folder, anonymizes them,
@@ -150,7 +140,7 @@ class HTA_Assignment(Assignment):
 
         file_sys = os.walk(self.handin_path)
         students = next(file_sys)[1]
-        ids = random.sample(range(len(students)), len(students))
+        ids = random.sample(list(range(len(students))), len(students))
         for i, student in enumerate(students):
             final_path = latest_submission_path(self.handin_path,
                                                 student,
@@ -163,8 +153,6 @@ class HTA_Assignment(Assignment):
 
             sub_paths.append((student, ids[i], final_path))
         
-        # get a random id for every student
-        ids = random.sample(range(len(students)), len(students))
         # set up a file that maps anon id back to student id, 
         # and copy over student files
 
@@ -175,15 +163,6 @@ class HTA_Assignment(Assignment):
         with locked_file(self.anon_path, 'w') as f:
             json.dump(data, f, sort_keys=True, indent=2)
         
-        # if not self.anonymous: # make a link in the HTA folder as well
-        #     try:
-        #         os.symlink(self.ta_anon_path, self.anon_path)
-        #     except OSError:
-        #         if not os.path.isdir(self.anon_path):
-        #             print '/hta/anonymization probably doesn\'t exist'
-
-        #         raise
-
         for student, id, path in sub_paths:
             dest = os.path.join(self.s_files_path, 'student-%s' % id)
             shutil.copytree(path, dest)
@@ -201,13 +180,13 @@ class HTA_Assignment(Assignment):
             for question in self.questions:
                 question.add_handin_to_log(id)
 
-    def add_new_handin(self, login):
+    def add_new_handin(self, login: str) -> None:
         try:
             ident = self.login_to_id(login)
             has_graded_handin = False
             for q in self.questions:
                 try:
-                    h = q.get_handin_by_sid(ident, User('eberkowi'))
+                    h = q.handin_by_id(ident)
                     if h.complete:
                         has_graded_handin = True
 
@@ -257,7 +236,7 @@ class HTA_Assignment(Assignment):
         for question in self.questions:
             question.add_handin_to_log(rand_id)
 
-    def get_new_id(self):
+    def get_new_id(self) -> int:
         with locked_file(self.anon_path) as f:
             data = json.load(f)
         
@@ -266,28 +245,23 @@ class HTA_Assignment(Assignment):
         else:
             return 0
 
-    def delete_student_handin(self, login, override=False):
+    def delete_student_handin(self, login: str,
+                              override: bool = False) -> None:
         if not override:
-            print 'Confirm removal of %s handin from grading app [y/n]' % login
-            if raw_input('> ').lower() != 'y':
+            print('Confirm removal of %s handin from grading app [y/n]' % login)
+            if input('> ').lower() != 'y':
                 return
 
         try:
             ident = self.login_to_id(login)
-            print 'DELETING %s' % ident
+            print('DELETING %s' % ident)
         except ValueError:
             e = '%s does not have a handin that\'s being graded' % login
             raise ValueError(e)
-        
-        dest = os.path.join(self.s_files_path, 'student-%s' % ident)
+
+        dest = os.path.join(self.s_files_path, f'student-{ident}')
         if os.path.exists(dest):
             shutil.rmtree(dest)
-        
-        # if not self.anonymous:
-        #     assert os.path.exists(self.ta_anon_path)
-        #     p = self.ta_anon_path
-        # else:
-        #     p = self.anon_path
         
         with locked_file(self.anon_path) as f:
             data = json.load(f)
@@ -301,16 +275,16 @@ class HTA_Assignment(Assignment):
             data = json.load(f)
 
         for k in data:
-            data[k] = filter(lambda i: i != ident, data[k])
+            data[k] = [i for i in data[k] if i != ident]
         
         with locked_file(self.blocklist_path, 'w') as f:
             json.dump(data, f, indent=2, sort_keys=True)
 
         for q in self.questions:
             try:
-                h = q.get_handin_by_sid(ident, User('eberkowi'))
+                h = q.handin_by_id(ident)
             except ValueError:
-                print "Could not delete %s" % q
+                print("Could not delete %s" % q)
                 continue
             if os.path.exists(h.grade_path):
                 os.remove(h.grade_path)
@@ -318,7 +292,7 @@ class HTA_Assignment(Assignment):
             with locked_file(q.log_filepath) as f:
                 data = json.load(f)
 
-            data = filter(lambda d: d['id'] != ident, data)
+            data = [d for d in data if d['id'] != ident]
             with locked_file(q.log_filepath, 'w') as f:
                 json.dump(data, f, indent=2, sort_keys=True)
 
@@ -335,21 +309,6 @@ class HTA_Assignment(Assignment):
             os.makedirs(q.grade_path) # probably shouldnt do this here
             with locked_file(q.log_filepath, 'w') as f:
                 json.dump([], f, indent=2, sort_keys=True)
-
-    def get_empty_grade(self, set_to=0):
-        ''' create a dictionary with one key for every theme on this assignment,
-        with values of set_to (0 by default)'''
-        empty_grade = {}
-        for q in self.questions:
-            rubric = q.copy_rubric()
-            for k in rubric.keys(): # for each category/theme
-                if k == '_COMMENTS' or k in empty_grade:
-                    # ignore already-added keys
-                    continue
-
-                empty_grade[k] = set_to
-
-        return empty_grade
     
     def load_groups(self):
         with locked_file(self.proj_dir) as f:
@@ -375,8 +334,7 @@ class HTA_Assignment(Assignment):
         # str wrapping all d[student] because a mix of unicode and str
         # is annoying
         d = defaultdict(lambda: [])
-        handin_logins = map(lambda h: self.id_to_login(h.id),
-                            self.questions[0].handins)
+        handin_logins = [self.id_to_login(h.id) for h in self.questions[0].handins]
         for student in handin_logins:
             if self.group_asgn:
                 ohs = handin_logins[:]
@@ -411,10 +369,10 @@ class HTA_Assignment(Assignment):
 
             for q in self.questions:
                 try:
-                    handin = q.get_handin_by_sid(anon_id, user)
+                    handin = q.handin_by_id(anon_id)
                 except ValueError:
                     # student didn't hand in this question
-                    print 'No %s handin for %s' % (self.full_name, student)
+                    print('No %s handin for %s' % (self.full_name, student))
                     handin = None
 
                 d[str(student)].append(handin)
@@ -431,7 +389,7 @@ class HTA_Assignment(Assignment):
         logins = student_list()
         handins = self.get_handin_dict(logins, user)
         data = []
-        for student in handins.keys():
+        for student in handins:
             d = self.generate_report(handins[student],
                                  student_id=student,
                                  soft=True,
@@ -459,7 +417,7 @@ class HTA_Assignment(Assignment):
         ps = []
         for q in self.questions:
             try:
-                ps.append(q.get_handin_by_sid(id, user))
+                ps.append(q.handin_by_id(id))
             except ValueError:
                 pass
         
@@ -510,7 +468,7 @@ class HTA_Assignment(Assignment):
             grade_path = override_g_p
             if os.path.exists(report_path):
                 # if making overrides would overwrite an override...
-                print 'Copying existing override for %s to backup files' % student_id
+                print('Copying existing override for %s to backup files' % student_id)
                 shutil.copy(report_path,
                             os.path.join(grade_dir, 'report-override-backup.txt'))
                 shutil.copy(grade_path,
@@ -546,26 +504,20 @@ class HTA_Assignment(Assignment):
             summary_str += '-' * 20
 
         # make this more rigorous later
-        grade = self.get_empty_grade(set_to=0)
-        full_string = '%s grade report for %s\n\n' % (self.full_name, student_id)
-        if all(map(lambda p: p is None, problems)):
-            # if no problems were handed in for the assignment
-            # full_string += 'No handin.\n\n'
-            for key in grade:
-                grade[key] = None
-        else:
-            for i, handin in enumerate(problems):
-                if handin is None:
-                    full_string += 'Question %s: No handin\n\n' % (i + 1)
-                    continue
+        grade = get_empty_raw_grade(self)
+        full_string = f'{self.full_name} grade report for {student_id}\n\n'
+        for i, handin in enumerate(problems):
+            if handin is None:
+                full_string += 'Question %s: No handin\n\n' % (i + 1)
+                continue
 
-                report_text, report_grade = handin.generate_grade_report()
-                full_string += report_text
-                for key in report_grade:
-                    if key in grade:
-                        grade[key] += report_grade[key]
-                    else:
-                        grade[key] = report_grade[key]
+            report_text, report_grade = handin.generate_grade_report()
+            full_string += report_text
+            for key in report_grade:
+                if key in grade:
+                    grade[key] += report_grade[key]
+                else:
+                    grade[key] = report_grade[key]
 
         final_grades = self.use_brackets(grade, late=late)
 
@@ -604,63 +556,6 @@ class HTA_Assignment(Assignment):
 
         return student_id, final_grades, full_string
 
-    def use_brackets(self, grade, late=False):
-        ''' given a grade dictionary with numeric grades, determine the
-        text grades from the possibilities list (defined in function) '''
-        def use_bracket(bracket, grade):
-            bounds = map(lambda k: k['upper_bound_inclusive'], bracket)
-            if not increasing(bounds):
-                raise ValueError('Bounds must increase throughout bracket')
-            for i, item in enumerate(bracket):
-                if grade <= item['upper_bound_inclusive']:
-                    cg = item['grade']
-                    if not late:
-                        return cg
-                    else:
-                        if i == 0:
-                            # lowest grade anyway...
-                            return cg
-                        else:
-                            ng = bracket[i - 1]['grade']
-                            return "%s -> %s" % (cg, ng)
-
-            g = bracket[-1]['grade']
-            print 'Warning: grade above uppermost bound. Giving %s' % g
-            return g
-
-        # "No Handin" ONLY comes from a None in the grade dictionary
-        with locked_file(self.bracket_path) as f:
-            brackets = json.load(f)
-
-        # makes sure brackets is a valid bracket file
-        for key in grade:
-            if key == '_COMMENTS':
-                continue
-
-            if key not in brackets:
-                base = '%s bracket file does not have key %s, only has %s'
-                raise OSError(base % (self.mini_name, key, brackets.keys()))
-
-        for key in brackets:
-            assert key in grade, \
-                '%s brackets file has extra grade category (%s)' % (self.mini_name, key)
-
-        final_grade = {}
-        for key in brackets:
-            if grade[key] is None:
-                final_grade[key] = "No handin"
-            else:
-                if brackets[key] == "Numeric":
-                    if late:
-                        g = "%s -> %s" % (grade[key], grade[key] - 1)
-                        final_grade[key] = g
-                    else:
-                        final_grade[key] = str(grade[key])
-                else:
-                    final_grade[key] = use_bracket(brackets[key], grade[key])
-
-        return final_grade
-
     def send_email(self, student_id, student_email, yag):
         ''' takes in a student_id and a yag instance
         (yag = yagmail.SMTP(...)), and sends a report email to the student '''
@@ -672,7 +567,7 @@ class HTA_Assignment(Assignment):
         else:
             f = os.path.join(gb, 'report.txt')
 
-        print 'Report sent to %s' % student_id
+        print('Report sent to %s' % student_id)
         with locked_file(f) as fl:
             grade = fl.read()
     
@@ -689,22 +584,22 @@ class HTA_Assignment(Assignment):
             raise("Must call reset_grading with boolean confirm argument")
         try:
             shutil.rmtree(self.log_path)
-            print 'Removed log path...'
+            print('Removed log path...')
         except:
             pass
         try:
             shutil.rmtree(self.grade_path)
-            print 'Removed grade path...'
+            print('Removed grade path...')
         except:
             pass
         try:
             shutil.rmtree(self.s_files_path)
-            print 'Removed student files path...'
+            print('Removed student files path...')
         except:
             pass
         try:
             os.remove(self.blocklist_path)
-            print 'Removed blocklists...'
+            print('Removed blocklists...')
         except:
             pass
         try:
@@ -716,7 +611,7 @@ class HTA_Assignment(Assignment):
             except OSError:
                 pass
 
-            print 'Removed anonymization mapping...'
+            print('Removed anonymization mapping...')
         except:
             pass
 
@@ -729,7 +624,7 @@ class HTA_Assignment(Assignment):
             json.dump(data, f, indent=2, sort_keys=True)
 
         self.started = False
-        print 'Assignment records removed.'
+        print('Assignment records removed.')
 
     def record_start(self):
         with locked_file(asgn_data_path) as f:
@@ -796,7 +691,7 @@ def get_full_asgn_list():
     with locked_file(asgn_data_path) as f:
         data = json.load(f)
 
-    return map(HTA_Assignment, sorted(data['assignments'].keys()))
+    return list(map(HTA_Assignment, sorted(data['assignments'].keys())))
 
 
 def magic_update(question, func):

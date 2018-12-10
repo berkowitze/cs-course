@@ -4,7 +4,7 @@ import sys
 import json
 
 if len(sys.argv) != 2:
-    print 'Usage: clean-json <json-file>'
+    print('Usage: clean-json <json-file>')
     sys.exit(1)
 
 fname = sys.argv[1]
