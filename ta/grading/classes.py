@@ -1,3 +1,10 @@
+# import cProfile, pstats, io
+# from pstats import SortKey
+# pr = cProfile.Profile()
+# pr.enable()
+# # ... do something ...
+
+
 # written by Eli Berkowitz (eberkowi) 2018
 import json
 import csv
@@ -7,15 +14,14 @@ import grp
 import shutil
 import sys
 import subprocess
-from textwrap import wrap, fill
 from typing import List, Tuple, Callable, Optional, Any, Union, Dict, NewType
 from datetime import datetime as dt
-from helpers import locked_file, require_resource, bracket_check, rubric_check
+from helpers import locked_file, require_resource, bracket_check, \
+                    rubric_check, update_comments
 from custom_types import Rubric, RubricCategory, RubricItem, \
-                         RubricOption, Comments
-
-# TODO : improve rubric format so this is more specific
-Rubric = NewType('Rubric', dict)
+                         RubricOption, Comments, Log, LogItem
+from course_customization import full_asgn_name_to_dirname, determine_grade, \
+                                 get_handin_report_str, get_empty_raw_grade
 
 ## READ BEFORE EDITING THIS FILE ##
 # do not use the builtin `open` function; instead use the
@@ -121,7 +127,7 @@ class Assignment:
     Takes in a key like "Homework 4" which must match a key in the
     /course/course/ta/assignments.json file.
     '''
-    def __init__(self, key: str) -> None:
+    def __init__(self, key: str, full_load: bool = False) -> None:
         # ex "Homework 2"
         self.full_name = key
 
@@ -129,11 +135,7 @@ class Assignment:
         self.mini_name = key.strip().lower().replace(' ', '')
 
         # gives due date, questions, expected filenames, etc.
-        try:
-            self.json = data['assignments'][self.full_name]
-        except KeyError:
-            base = f'No assignment key "{self.full_name}" in assignments.json'
-            raise KeyError(base)
+        self.json = data['assignments'][self.full_name]
 
         self.due_date = dt.strptime(self.json['due'], '%m/%d/%Y %I:%M%p')
         self.due = self.due_date < current_time # may be unnecessary
@@ -150,6 +152,7 @@ class Assignment:
         if self.group_asgn:
             group_dir = self.json['group_dir']
             self.proj_dir = os.path.join(proj_base_path, group_dir + '.json')
+
         try:
             self.anonymous = self.json['anonymous']
             jpath = f'{self.mini_name}.json'
@@ -200,9 +203,11 @@ class Assignment:
         self.load_questions()  # TODO : make this only happen if desired
 
     def check_rubric(self) -> bool:
-        passed, msg = rubric_check(self.rubric_path)
-        if not passed:
-            print(f'{self.mini_name} has invalid rubric:\n\t{msg}')
+        ''' checks if rubric is valid, using rubric_check helper '''
+        try:
+            rubric_check(self.rubric_path)
+        except AssertionError as e:
+            print(f'Invalid rubric, with error {e}')
             return False
         else:
             return True
@@ -220,7 +225,7 @@ class Assignment:
         self.questions = questions
 
     @is_started
-    def get_question(self, ndx: int) -> Question:
+    def get_question(self, ndx: int) -> 'Question':
         ''' get a question by index, won't work if grading isn't started '''
         return self.questions[ndx]
     
@@ -293,7 +298,7 @@ class Question:
                                          f'q{qn}.json')
 
         self.code_filename = self.json['filename']
-        test_filename = f'q{qn}.{self.json["text-ext"]}'
+        test_filename = f'q{qn}.{self.json["test-ext"]}'
         self.test_path = os.path.join(parent_assignment.test_path,
                                       test_filename)
 
@@ -333,7 +338,7 @@ class Question:
         self.completed_count = len([x for x in self.handins if x.complete])
         self.flagged_count = len([x for x in self.handins if x.flagged])
 
-    def ta_handins(self, user: User) -> List[Handin]:
+    def ta_handins(self, user: User) -> List['Handin']:
         ''' return all handins for the given user (User class) '''
         if not isinstance(user, User):
             raise TypeError('html_data user must be a User instance')
@@ -370,7 +375,7 @@ class Question:
         return hdata
 
     @require_resource()
-    def get_random_handin(self, user: User) -> Optional[Handin]:
+    def get_random_handin(self, user: User) -> Optional['Handin']:
         ''' start grading a random handin, or return None if there aren't
         any left to grade '''
 
@@ -395,11 +400,11 @@ class Question:
     @require_resource()
     def start_ident_handin(self,
                            anon_id: int,
-                           user: User) -> Union[str, Handin]:
+                           user: User) -> Union[str, 'Handin']:
         # TODO : Fix this output union to be Optional[Handin]
         self.load_handins()
 
-        handin = self.get_handin_by_sid(anon_id, user)
+        handin = self.handin_by_id(anon_id)
         if not handin.gradeable_by(user.uname):
             return "student blacklisted"
 
@@ -409,22 +414,13 @@ class Question:
         handin.start_grading(ta=user.uname)
         return handin
 
-    def get_handin_by_sid(self, anon_id: int, user: User) -> Handin:
+    def handin_by_id(self, anon_id: int) -> 'Handin':
         ''' given a anonymous identity (i.e. 23) and the user, return
         the handin if the user is the grader of that handin or the
         user is an HTA '''
         for handin in self.handins:
             if int(handin.id) == int(anon_id):
-                if (user.hta or
-                      handin.grader == user.uname or
-                      (not self.assignment.anonymous)):
-                    return handin
-                else:
-                    base = (
-                            f'Handin on anonymous assignment only viewable '
-                            f'by HTA or {handin.grader}'
-                           )
-                    raise IOError(base)
+                return handin
 
         raise ValueError(f'No handin with id {anon_id}')
 
@@ -459,33 +455,30 @@ class Question:
             json.dump(rubric, f, indent=2, sort_keys=True)
     
     @require_resource() # using this here is definitely important
-    def add_comment(self, category, comment):
-        ''' add a comment to the rubric AND all extracted students '''
-        # if you're getting weird errors, this may be where they're from
-        # (I'm relatively confident this method won't be a problem
-        # though; do some printing if you think it is). alternative is
-        # loading global comments from only the question rubric file and
-        # not copying them into the students rubric file, but that's messy
-        # for different reasons
-        for handin in self.handins:
+    def add_ungiven_comment(self, category: Optional[str], comment: str):
+        ''' add a comment to the rubric & all extracted students '''
+        def add_comment(path):
+            ''' helper to take in a path and add the global comment to
+            the rubric in that file '''
+            with locked_file(path) as f:
+                rubric = json.load(f)
+
+            if category is None:
+                rubric['comments']['un_given'].append(comment)
+            else:
+                comments = rubric['rubric'][category]['comments']
+                comments['un_given'].append(comment)
+
+            with locked_file(path, 'w') as f:
+                json.dump(rubric, f, indent=2, sort_keys=True)
+
+
+        add_comment(self.rubric_filepath)  # add to main rubric
+
+        for handin in self.handins:        # add to all extracted handins
             if handin.extracted:
-                handin.add_comment(category, comment)
+                add_comment(handin.grade_path)
 
-        with locked_file(self.rubric_filepath) as f:
-            rubric = json.load(f)
-
-        comment_data = {'comment': comment, 'value': False}
-        if category == 'General':
-            rubric['_COMMENTS'].append(comment_data)
-        else:
-            try:
-                rubric[category]['comments'].append(comment_data)
-            except TypeError:
-                print(self)
-                raise
-
-        with locked_file(self.rubric_filepath, 'w') as f:
-            json.dump(rubric, f, indent=2, sort_keys=True)
 
     def __repr__(self):
         return f'Question(file=[{self.code_filename}])'
@@ -588,8 +581,8 @@ class Handin:
             - complete : boolean whether or not handin is complete
         '''
         with locked_file(self.question.log_filepath) as f:
-            data = json.load(f)
-           
+            data: Log = json.load(f)
+
         for handin in data:
             found = False
             if handin['id'] == self.id:
@@ -653,74 +646,43 @@ class Handin:
         with locked_file(self.grade_path, 'w') as f:
             json.dump(json_data, f, indent=2, sort_keys=True)
 
-    def save_data(self, data: dict, new_comments: dict,
+    def save_data(self,
+                  data: Dict[str, Dict[str, Optional[int]]],
+                  new_comments: Tuple[List[str], Dict[str, List[str]]],
                   force_complete: bool = False) -> bool:
-        rubric = self.get_rubric()
         def check_rubric_complete() -> bool:
-            ''' makes sure there's no empty data cells in the rubric '''
+            ''' check if rubric is complete (any unfilled rubric options) '''
             for key in data:
-                if data[key][0] is None or data[key][0] == 'None':
+                if any(map(lambda descr: data[key][descr] is None, data[key])):
                     return False
 
             return True
 
-        def update_comments(old_comments: List[dict],
-                           new_comment_texts: List[str]) -> None:
-            ''' given the original comments (dict list) and a list of new
-            comments to add, update the matching old_comments to the "value"
-            key be True. (potential break point should be fine tho) '''
-            print(old_comments, new_comment_texts)
-            for i, comment in enumerate(old_comments):
-                if comment['comment'] in new_comment_texts:
-                    new_comment_texts.remove(comment['comment'])
-                    old_comments[i]['value'] = True
-                else:
-                    old_comments[i]['value'] = False
 
-            # do i want to add the remaining idk instead of assertionerror
-            assert new_comment_texts == [], \
-                f'c not empty ({new_comment_texts})'
+        rubric: Rubric = self.get_rubric()
+        rub_complete = check_rubric_complete()
 
-        # update general comments
-        update_comments(rubric['_COMMENTS'], new_comments['General'])
-        for key in new_comments:
-            if key == 'General':
-                continue
-            else:
-                update_comments(rubric[key]['comments'], new_comments[key])
-
-        if force_complete and not check_rubric_complete():
+        # update comments irregardless of whether rubric is complete
+        update_comments(rubric['comments'], new_comments[0])
+        for cat in new_comments[1]:
+            update_comments(rubric['rubric'][cat]['comments'],
+                            new_comments[1][cat])
+        
+        if force_complete and not rub_complete:
             # attempting to finish grading but has empty rubric cells
             return False
 
-        for description in data:
-            value = data[description][0]
-            category = data[description][1]
-            for rubric_item in rubric[category]['rubric_items']:
-                if description == rubric_item['name']:
-                    rubric_item['value'] = value
-                else:
-                    continue
+        for cat in data:
+            for descr in data[cat]:
+                val = data[cat][descr]
+                for ri in rubric['rubric'][cat]['rubric_items']:
+                    if ri['descr'] == descr:
+                        ri['selected'] = val
+                        break
 
         self.write_grade(rubric)
         return True
-
-    def add_comment(self, category: str, comment: str) -> None:
-        ''' add comment to the handin's json grade rubric, with 
-        value of False. must save with the comment in the list of
-        comments selected under the dropdown to have the value be True '''
-        assert self.extracted, 'cannot add comment to unextracted handin'
-        with locked_file(self.grade_path) as f:
-            rubric = json.load(f)
-
-        comment_data = {'comment': comment, 'value': False}
-        if category == 'General':
-            rubric['_COMMENTS'].append(comment_data)
-        else:
-            rubric[category]['comments'].append(comment_data)
-        with locked_file(self.grade_path, 'w') as f:
-            json.dump(rubric, f, indent=2, sort_keys=True)
-
+    
     def gradeable_by(self, uname: str) -> bool:
         ''' is this handin gradeable by input uname (str);
         checks if the student is blocklisted by the TA or if the 
@@ -741,74 +703,34 @@ class Handin:
         will format so that no lines are over 74 characters, indentation
         is all pretty, etc. uses rubric if provided, otherwise loads
         the handins' rubric '''
-        def get_comments(comments):
-            ''' helper that gets the comment text from comments that
-            were assigned to this student's handin '''
-            return [c['comment'] for c in comments if c['value']]
-
         if rubric is None:
             rubric = self.get_rubric()
 
-        comments = {}
-        for key in rubric:
-            if key == '_COMMENTS':
-                comments['GENERAL'] = get_comments(rubric['_COMMENTS'])
-            else:
-                comments[key] = get_comments(rubric[key]['comments'])
-
-        report_str = f'{self.question.code_filename}\n'
-        pre_string = '  '  # each problem is nested by pre_string in email
-        for key in comments:
-            # if GENERAL comments or if there are no comments for that section,
-            # do nothing...
-            if key == 'GENERAL' or comments[key] == []:
-                continue
-
-            report_str += f'{pre_string}{key}:\n'
-            # have longest comment at the top
-            for comment in sorted(comments[key], key=lambda s: -len(s)):
-                comment = comment.replace(f'{key}: ', '')
-                comment_lines = fill(comment, 74,
-                                     initial_indent=(pre_string * 2 + '- '),
-                                     subsequent_indent=(pre_string * 3))
-                report_str += f'{comment_lines}\n\n'
-
-        for comment in sorted(comments['GENERAL'], key=lambda s: -len(s)):
-            comment_lines = fill(comment, 74,
-                                 initial_indent=(pre_string + '- '))
-            report_str += f'{comment_lines}\n\n'
+        return get_handin_report_str(rubric, self.grader, self.question)
         
-        report_str += f'Grader: {self.grader} ({self.grader}@cs.brown.edu)'
-        report_str += f'\n\n{"-" * 74}\n'
-        return report_str
 
     def generate_grade_report(self) -> Tuple[str, Dict[str, int]]:
         ''' return a report_str (all comments collected and formatted nicely)
         and a dictionary with one key per theme, values being the numeric score
         the student received in that category for this question only 
         NOTE: no grades can below a 0; as such, any negative grades will
-        be rounded up to 0'''
-        rubric = self.get_rubric()
+        be rounded up to 0 '''
+        rubric: Rubric = self.get_rubric()
         report_str = self.generate_report_str(rubric)
         grade = {}
-        for key in rubric:
-            if key == '_COMMENTS':
-                continue
-
+        for key in rubric['rubric']:
             # set grade for this category
             grade[key] = 0
-            for rubric_item in rubric[key]['rubric_items']:
-                try:
-                    ndx = rubric_item['options'].index(rubric_item['value'])
-                except KeyError:
-                    print('PROBABLY REPEATED ITEM NAME: LOOKING AT ')
-                    print(key)
-                    print(rubric_item)
-                    print((list(rubric[key].keys())))
-                    raise
-                except ValueError:
-                    raise ValueError('Generating grade from incomplete rubric')
-                grade[key] += rubric_item['point-val'][ndx]
+            for rubric_item in rubric['rubric'][key]['rubric_items']:
+                sel_ndx = rubric_item['selected']
+                if sel_ndx is None:
+                    e = (
+                         f'Invalid generate_grade_report call on '
+                         f'{self}'
+                        )
+                    raise ValueError(e)
+
+                grade[key] += rubric_item['items'][sel_ndx]['point_val']
 
         for key in grade:
             if grade[key] < 0:
@@ -892,3 +814,9 @@ def started_asgns() -> List[Assignment]:
     return assignments
 
 
+# pr.disable()
+# s = io.StringIO()
+# sortby = SortKey.CUMULATIVE
+# ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+# ps.print_stats()
+# print(s.getvalue())

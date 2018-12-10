@@ -15,11 +15,11 @@ if len(sys.argv) != 2:
 
 group = sys.argv[1]
 
-def todict(l):
+def todict(s):
     ''' given a string like a=3,b=hello,key=value, turn into a
     dictionary like {'a': '3', 'b': 'hello', 'key': 'value'} '''
     d = {}
-    kvs = l.split(',')
+    kvs = s.split(',')
     for kv in kvs:
         k, v = kv.split('=')
         d[k] = v

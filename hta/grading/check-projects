@@ -1,7 +1,8 @@
-#!/course/cs0111/ta/grading/venv/bin/python2.7
+#!/course/cs0111/ta/grading/venv/bin/python
 
 import os
 from hta_classes import *
+import sys
 
 asgn_path = os.path.join(BASE_PATH, 'ta/assignments.json')
 group_dir = os.path.join(BASE_PATH, 'ta/grading/data/projects')
@@ -11,11 +12,15 @@ for key in data['assignments']:
     if data['assignments'][key]['group_asgn']:
         group_projs.append(key)
 
-for i, p in enumerate(group_projs):
-    print '%s. %s' % (i + 1, p)
+if not group_projs:
+    print('No projects to check')
+    sys.exit(0)
 
-print 'Which project would you like to check?'
-i = int(raw_input('> '))
+for i, p in enumerate(group_projs):
+    print('%s. %s' % (i + 1, p))
+
+print('Which project would you like to check?')
+i = int(input('> '))
 check_p = group_projs[i - 1]
 
 asgn = HTA_Assignment(check_p)

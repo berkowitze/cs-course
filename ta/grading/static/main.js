@@ -248,36 +248,31 @@ function sidebarById(id) {
 
 function rubricToForm(rubric) {
     var container = $('<div class="container">'); // container with entire rubric for student
-    var keys = Object.keys(rubric);
+    var keys = Object.keys(rubric['rubric']);
     keys.sort();
     for (var i = 0; i < keys.length; i++) {          // **for each category...
-        var key = keys[i];
-        if (key == '_COMMENTS') {
-            continue;
-        }
+        var cat = keys[i];
         var catDiv = $('<div class="category-div">'); // div for this category
         var catName = $('<div class="category-name">'); // category div headre
-        catName.text(key)
+        catDiv.data('category', cat);
+        catName.text(cat);
         catDiv.append(catName);
-        a = rubric[key];
-        var category = rubric[key]['rubric_items']; // list of rubric items
+        var category = rubric['rubric'][cat]['rubric_items']; // list of rubric items
         for (var j = 0; j < category.length; j++) {   // **for each rubric item...
             rubric_item = category[j];
             // generate description of rubric item (left side of HTML)
             var rubric_desc = $('<div class="rubric-desc">');
-            rubric_desc.text(rubric_item['name']);
+            rubric_desc.text(rubric_item['descr']);
             // just in case text is somehow modified, add the name as data too
-            rubric_desc.data('json_key', rubric_item['name']);
-            rubric_desc.data('cat_id', i);
-            rubric_desc.data('item_id', j);
             catDiv.append(rubric_desc);
 
             // generate select dropdown for the rubric item options
             var rubric_select = $('<select class="rubric-sel browser-default">');
-            for (var k = 0; k < rubric_item['options'].length; k++) { // for each option of each rubric item
+            rubric_select.data('description', rubric_item['descr']);
+            for (var k = 0; k < rubric_item['items'].length; k++) { // for each option of each rubric item
                 var opt = $('<option>');
-                opt.val(rubric_item['options'][k]);
-                opt.text(rubric_item['options'][k]);
+                opt.val(k);
+                opt.text(rubric_item['items'][k]['descr']);
                 opt.data('index', k);
                 rubric_select.append(opt);
             }
@@ -290,15 +285,13 @@ function rubricToForm(rubric) {
             else {
                 rubric_select.val(''); // set no value if null default & no value
             }
-            rubric_select.data('cat_id', i);
-            rubric_select.data('item_id', j);
             catDiv.append(rubric_select);
         }
         // add comment row for this category...
         var commentDivDescription = $('<div class="rubric-desc-column">');
-        commentDivDescription.text('Enter comments for ' + key + ': ');
+        commentDivDescription.text('Enter comments for ' + cat + ': ');
 
-        var commentDiv = generateCommentSection(key, rubric[key]['comments']);
+        var commentDiv = generateCommentSection(cat, rubric['rubric'][cat]['comments'], cat);
         commentDiv.addClass('rubric-sel-column');
 
         catDiv.append(commentDivDescription);
@@ -309,7 +302,7 @@ function rubricToForm(rubric) {
 
     }
     a = rubric;
-    genCommentSel  = generateCommentSection('General', rubric['_COMMENTS']);
+    genCommentSel  = generateCommentSection('General', rubric['comments'], null);
     genCommentHead = $('<div class="general-name">');
     genCommentHead.text('General Comments');
     container.append(genCommentHead);
@@ -327,18 +320,25 @@ function rubricToForm(rubric) {
     return container;
 }
 
-function generateCommentSection(category, comments) {
+function generateCommentSection(category, comments, send_cat) {
     var sel = $('<select multiple="multiple" class="form-control">');
     sel.addClass('comment-select');
     var data = [];
-    for (var i = 0; i < comments.length; i++) {
-        var comment = comments[i];
-        var new_comment = {'id': comment['comment'],
-                           'text': comment['comment'],
-                           'selected': comment['value']};
+    for (var i = 0; i < comments['given'].length; i++) {
+        var comment = comments['given'][i];
+        var new_comment = {'id': comment,
+                           'text': comment,
+                           'selected': true};
         data.push(new_comment);
     }
+    for (var i = 0; i < comments['un_given'].length; i++) {
+        var comment = comments['un_given'][i];
+        var new_comment = {'id': comment,
+                           'text': comment,
+                           'selected': false};
+    }
     sel.prop('id', category);
+    sel.data('category', category);
     sel.select2({data: data,
                  tags: true
                  }).on('select2:select',
@@ -346,7 +346,7 @@ function generateCommentSection(category, comments) {
                             console.log(e);
                             if (e.params.data.isNew) {
                                 term = e.params.data.text;
-                                CommentDialog("Make comment useable by all TA's?", category, term);
+                                CommentDialog("Make comment useable by all TA's?", send_cat, term);
                             }
                         });
     return sel;
@@ -363,11 +363,10 @@ function CommentDialog(message, category, comment) {
             },
         buttons: {
             No: function () {
-                addGlobalComment(category, comment, true);
                 $(this).dialog("close");
             },
             Yes: function () {
-                addGlobalComment(category, comment, false);
+                addGlobalComment(category, comment);
                 $(this).dialog("close");
             }
         },
@@ -377,21 +376,19 @@ function CommentDialog(message, category, comment) {
     });
 };
 
-function addGlobalComment(category, comment, studentOnly) {
+function addGlobalComment(category, comment) {
+    c = category;
     $.ajax({
-        url: '/add_comment',
+        url: '/add_global_comment',
         data:
         {
             'id': $('main').data('active-id'),
             'category': category,
             'comment': comment,
-            'student-only': studentOnly,
         },
         success: function() {
-            if (!studentOnly) {
-                M.toast({'html': 'Global comment added.',
-                         'displayLength': 2000});
-            }
+            M.toast({'html': 'Global comment added.',
+                     'displayLength': 2000});
             $('#handin-save').click();
         }
     });
@@ -456,51 +453,46 @@ function handinUnextracted(data) {
 }
 
 function fetchFormInfo() {
-    // helper to get all the description/option pairs since i was too
-    // lazy to fix the html (css grid was messing it up :( )
-    // is this awful? well... yes it's awful. but... like..... ya know...
-    // go nested functions! im gonna shut up hi future hta
-    getPairs = function() {
-        selects = $('.rubric-sel');
-        descs  = $('.rubric-desc');
-        pairs = [];
-        for (i = 0; i < selects.length; i++) {
-            sel = selects.eq(i);
-            for (j = 0; j < descs.length; j++) {
-                desc = descs.eq(j);
-                if ((sel.data('item_id') == desc.data('item_id')) &&
-                    (sel.data('cat_id') == desc.data('cat_id'))) {
-                    cat = sel.siblings('.category-name').text();
-                    pairs.push({'select': sel, 'description': desc, 'category': cat});
-                    break;
-                }
+    var rubric = {};
+    r = rubric;
+    var cats = $('.container .category-div');
+    for (var i = 0; i < cats.length; i++) {
+        var cat = cats.eq(i);
+        var cname = cat.data('category');
+
+        rubric[cname] = {}
+        var sels = cat.find('select.rubric-sel');
+        for (var j = 0; j < sels.length; j++) {
+            var sel = sels.eq(j);
+            var descr = sel.data('description');
+            var v = sel.val();
+            if (v != null) {
+                rubric[cname][descr] = Number(v);
             }
+            else {
+                rubric[cname][descr] = null;
+            }
+            
         }
-        return pairs;
     }
-    pairs = getPairs();
-    data = {};
-    for (i = 0; i < pairs.length; i++) {
-        pair = pairs[i];
-        keyval = pair['select'].val();
-        key = pair['description'].data('json_key');
-        data[key] = [keyval, pair['category']];
-    }
-    return data;
+    return rubric;
 }
 
 function getComments() {
-    data = {};
-    commentDivs = $('.category-div .comment-select, #General');
+    data = [];
+    commentDivs = $('.category-div .comment-select');
+    data.push($('#General').val());
+    data.push({});
     for (i = 0; i < commentDivs.length; i++) {
         commentDiv = commentDivs.eq(i);
-        data[commentDiv.prop('id')] = commentDiv.val();
+        data[1][commentDiv.data('category')] = commentDiv.val();
     }
     return data;
 }
 
 function saveHandin(x, complete=false) {
     formData = fetchFormInfo();
+    comments = getComments();
     activeId = $('main').data('active-id');
     $.ajax({
         url: '/save_handin', // returns false if there was no error
@@ -509,7 +501,7 @@ function saveHandin(x, complete=false) {
                 'formData': JSON.stringify(formData),
                 'id': JSON.stringify(activeId),
                 'completed': JSON.stringify(complete),
-                'comments': JSON.stringify(getComments())
+                'comments': JSON.stringify(comments)
             },
         success: function(data) {
             if (!JSON.parse(data)) {

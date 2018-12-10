@@ -1,19 +1,11 @@
 import os
 import csv
 import datetime
-import numpy as np
+from helpers import locked_file
+from typing import List, Optional, Union
+from numpy import argmax
 
 base = '/course/cs0111'
-
-def increasing(lst):
-    ''' returns true if the input list is increasing (non-decreasing)
-    (all numbers larger or equal to than previous numbers) '''
-    while lst[1:]:
-        if lst[0] > lst[1]:
-            return False
-        lst.pop(0)
-
-    return True
 
 def load_students():
     ''' reads students from the hta/groups/students.csv file '''
@@ -40,16 +32,31 @@ def login_to_email(login):
 
 def student_list():
     ''' gets a list of the student logins '''
-    return map(lambda l: l[0], load_students())
+    return [l[0] for l in load_students()]
 
 def latest_submission_path(base, login, assignment):
     sub_path = os.path.join(base, login, assignment)
     if not os.path.exists(sub_path):
         return None
 
-    submissions = filter(lambda f: 'submission' in f,
-                         os.listdir(sub_path))
-    sub_numbs = map(lambda f: int(f.split('-')[0]), submissions)
-    latest = submissions[np.argmax(sub_numbs)]
+    submissions = [f for f in os.listdir(sub_path) if 'submission' in f]
+    sub_numbs = [int(f.split('-')[0]) for f in submissions]
+    latest = submissions[argmax(sub_numbs)]
     return os.path.join(sub_path, latest)
+
+def line_read(filename: str, delim: Optional[str] = None) -> list:
+    ''' read lines from a file. returns list of strings with whitespace
+    right-stripped with delim=None, or list of lists of strings with
+    whitespace stripped with delim=str
+    '''
+    with locked_file(filename) as f:
+        raw: str = f.read()
+
+    lines = [line.rstrip() for line in raw.strip().split('\n')]
+    if delim is not None:
+        return [line.split(delim) for line in lines]
+    else:
+        return lines
+
+
 

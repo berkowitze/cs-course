@@ -58,3 +58,5 @@ hta/summaries/*.txt
 old
 *.log
 hta/*.csv
+*.mypycache
+*.mypy_cache/
