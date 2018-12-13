@@ -1,11 +1,10 @@
 {
-  "_README1": "under assignments, all keys must be the same as the Google Form option, case insensitive.",
+  "_README1": "under assignments, all keys must be the same as the Google Form option (for question one), case sensitive.",
   "_README2": "dates are mm/dd/yyyy HH:MM_M format (i.e. 11/29/2018 05:00PM)",
-  "_README3": "if you're getting an error, it may be because of the end_col key; check that first",
-  "_README4": "the available key is useless with the way the website's set up, but may be used in classes.py; get rid of it with care at some point",
+  "_README3": "if you're getting an error, it may be because of the end_col key; check that first (you may need to increase it)",
   "_README5": "projects/group assignments: if group_asgn is true, there must be another key-value which contains the directory in ta/grading/data/projects to put group information in (see Project 1/Project 1 Design Check)",
   "assignments": {
-    "Drill 14": {
+    "Testing Assignment": {
       "anonymous": true,
       "due": "11/05/2018 09:00PM",
       "due_late": "11/06/2018 04:00PM",
@@ -15,8 +14,8 @@
       "partner_data": null,
       "questions": [
         {
-          "col": "Y",
-          "filename": "drill14.py",
+          "col": "F",
+          "filename": "testing.py",
           "test-ext": "py"
         }
       ],
