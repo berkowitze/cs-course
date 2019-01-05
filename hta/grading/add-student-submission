@@ -1,12 +1,13 @@
-#!/course/cs0111/ta/grading/venv/bin/python
+#!/course/cs0111/ta/venv/bin/python
 
 # don't move this script since it needs access to hta_classes.py
 
-from hta_classes import *
 import sys
 
+from hta_classes import *
+
 if len(sys.argv) != 3:
-    print 'Usage: add-student-submission <assignment full name> <login>'
+    print('Usage: add-student-submission <assignment full name> <login>')
     sys.exit(1)
 
 hw = HTA_Assignment(sys.argv[1])

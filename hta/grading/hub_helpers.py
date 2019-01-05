@@ -1,10 +1,12 @@
-import os
-import json
 import csv
-import yagmail
+import json
+import os
 from collections import defaultdict
+
+import yagmail
+
+from hta_classes import locked_file
 from hta_helpers import load_students
-from hta_classes import HTA_Assignment, locked_file
 
 # WARNING:
 # summary script currently assumes:
@@ -29,6 +31,7 @@ for asgn in asgn_data['assignments']:
     if asgn_data['assignments'][asgn]['grading_completed']:
         asgns.append(asgn)
 
+
 def get_full_grade_dict(students=None):
     if students is None:
         students = map(lambda s: s[0], load_students())
@@ -38,6 +41,7 @@ def get_full_grade_dict(students=None):
         data[student] = get_student_grade_dict(student)
 
     return data
+
 
 def get_student_grade_dict(login):
     full_grade = {}
@@ -67,6 +71,7 @@ def get_student_grade_dict(login):
         full_grade[asgn] = grade
 
     return full_grade
+
 
 def get_drill_data():
     email_to_user = lambda u: u.replace('@brown.edu', '')
@@ -167,8 +172,9 @@ def generate_grade_summaries(write=False, to_return=True):
         tot = len(complete) + len(incomplete)
         drill_sum = '%s/%s drills completed\n' % (len(complete), tot)
         if incomplete:
-            sorter = lambda s: int(s.replace('drill', ''))
-            un_tup = str(tuple(sorted(list(incomplete), key=sorter)))
+            sorted_drills = sorted(list(incomplete),
+                                   key=lambda s: int(s.replace('drill', '')))
+            un_tup = str(tuple(sorted_drills))
             drill_sum += 'Drills not completed: %s\n' % un_tup
 
         S += drill_sum
@@ -181,6 +187,7 @@ def generate_grade_summaries(write=False, to_return=True):
 
     if to_return:
         return summs
+
 
 def generate_gradebook(path=None):
     if path is None:
@@ -197,16 +204,14 @@ def generate_gradebook(path=None):
         for key in s_data.keys():
             cats = s_data[key].keys()
             for cat in cats:
-                descr = '%s %s' % (key, cat)
+                descr = f'{key} {cat}'
                 categories.add(descr)
                 gradebook[descr][student] = s_data[key][cat]
     
     students = sorted(data.keys())
-    col1 = sorted(data.keys())
     sorted_cats = sorted(categories)
-    final_book_unt = [sorted_cats]
-    book = [['Student']]
-    book[0].extend(sorted_cats)
+    book = [['Student', *sorted_cats]]
+
     for student in students:
         summary = [student]
         for descr in sorted_cats:
@@ -227,10 +232,11 @@ def generate_gradebook(path=None):
     with locked_file(path, 'w') as f:
         f.write(S)
 
+
 def send_summaries(resummarize=None):
     if resummarize is None:
         print('Regenerate summaries? [y/n]')
-        resp = raw_input('> ').lower()
+        resp = input('> ').lower()
         if resp == 'y':
             resummarize = True
         elif resp == 'n':

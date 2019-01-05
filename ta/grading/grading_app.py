@@ -76,28 +76,32 @@ def main():
 def load_asgn():
     try:
         asgn_key = request.args['asgn']
-        workflow['assignment'] = Assignment(asgn_key)
-        assert workflow['assignment'].started, \
-            'attempting to load unstarted assignment'
+        asgn = Assignment(asgn_key)
+        asgn.load()
+        workflow['assignment'] = asgn
     except KeyError: # assignment not found
         return json.dumps("None")
     else: # no exceptions raised
-        lst = [f'Question {q.qnumb}' for q in workflow['assignment'].questions]
+        lst = [f'Question {q._qnumb}' for q in workflow['assignment'].questions]
         return json.dumps(lst)
 
 @app.route('/load_prob')
 @is_logged_in
 def load_prob():
     try:
-        prob_ndx = int(request.args['prob']) - 1
-    except:
+        q_ndx = int(request.args['prob']) - 1
+    except IndexError:
         # received something that wasnt a question index, like the
         # default "Select Problem" option
-        return json.dumps("None")
+        raise
+        # return json.dumps("None")
+    except ValueError:
+        raise
+        # return json.dumps("None")
     else:
         asgn = workflow['assignment']
         assert asgn.started, 'grading unstarted assignment %s' % asgn.full_name
-        question = asgn.get_question(prob_ndx)
+        question = asgn.get_question(q_ndx)
         workflow['question'] = question
         d = question.html_data(user)
         return json.dumps(d)
@@ -107,11 +111,11 @@ def load_prob():
 def extract_handin():
     if 'handin_login' in request.args:
         asgn = workflow['assignment']
-        if user.hta or (not asgn.anonymous):
-            ident = asgn.login_to_id(request.args['handin_login'])
-            handin = workflow['question'].start_ident_handin(ident, user)
-        else:
+        if not user.hta and asgn.anonymous:
             return "permission error"
+        else:
+            ident = asgn.login_to_id(request.args['handin_login'])
+            handin = workflow['question'].get_handin_by_id(ident)
     else:
         handin = workflow['question'].get_random_handin(user)
 
@@ -119,6 +123,7 @@ def extract_handin():
         # keep old handin loaded
         return json.dumps("None")
     else:
+        handin.start_grading(user.uname)
         workflow['handin'] = handin
         return json.dumps(handin.get_rubric_data())
 
@@ -126,8 +131,9 @@ def extract_handin():
 @is_logged_in
 def load_handin():
     sid = int(request.args['sid'])
-    workflow['handin'] = workflow['question'].handin_by_id(sid)
-    return json.dumps(workflow['handin'].get_rubric_data())
+    handin = workflow['question'].get_handin_by_id(sid)
+    workflow['handin'] = handin
+    return json.dumps(handin.get_rubric_data())
 
 @app.route('/flag_handin')
 @is_logged_in
@@ -153,7 +159,6 @@ def unextract_handin():
         'trying to unextract inactive handin'
 
     workflow['handin'].unextract()
-    print(workflow['handin'].grade_path)
     return str(ident)
 
 @app.route('/save_handin')

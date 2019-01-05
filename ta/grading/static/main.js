@@ -24,6 +24,13 @@ function asgnLoaded(x) {
     });
 }
 
+function stopConfetti() {
+    var cf = $('#confetti').get(0);
+    var context = cf.getContext('2d');
+    context.clearRect(0, 0, cf.width, cf.height);
+    confetti.stop();
+}
+
 function loadProb(x) {
     sel = $(x);
     probNumb = sel.val();
@@ -34,13 +41,6 @@ function loadProb(x) {
     });
 }
 
-function stopConfetti() {
-    var cf = $('#confetti').get(0);
-    var context = cf.getContext('2d');
-    context.clearRect(0, 0, cf.width, cf.height);
-    confetti.stop();
-}
-
 function probLoaded(x) {
     data = JSON.parse(x);
     if (data == "None") {
@@ -49,14 +49,15 @@ function probLoaded(x) {
         $('div#handin-options').addClass('hidden');
         return;
     }
-    if (Number(data['handins']) != 0) {
+    if (Number(data['handin_count']) != 0) {
         $('div#problem-status').removeClass('hidden');
-        frac = Number(data["completed"]) / Number(data["handins"]);
+        frac = data['complete_count'] /data['handin_count'];
         bar.animate(frac);
-        $(bar.text).text(data['completed'] + '/' + data['handins'] + ' completed.');
+        $(bar.text).text(`${data['complete_count']}/${data['handin_count']} graded`);
+        // $(bar.text).text(data['complete_count'] + '/' + data['handin_count'] + ' completed.');
     }
     try {
-        if (data['completed'] == data['handins']) {
+        if (data['handin_count'] == data['complete_count']) {
             // don't you dare delete this person reading this code
             confetti.start();
         }
@@ -64,13 +65,15 @@ function probLoaded(x) {
             stopConfetti();
         }
     }
-    catch(err) {console.log("Confetti Error, talk to HTA")}
+    catch(err) {
+        console.log("Confetti Error, talk to HTA!")
+    }
     $('div#handin-options').removeClass('hidden');
     clearSidebar();
-    populateSidebar(data['handin_data']);
+    populateSidebar(data['ta_handins']);
     $('footer').removeClass('nodisp');
     if (!data['anonymous']) {
-        populateStudentList(data['students']);
+        populateStudentList(data['unextracted_logins']);
     }
 }
 
@@ -161,7 +164,6 @@ function extract(x) {
 
 function extractByLogin(x) {
     s = $('#student-select').val();
-    console.log(s);
     if (s == 'NONE') {
         M.toast({'html': 'Select a student...',
                  'displayLength': 2000})
@@ -228,7 +230,7 @@ function handinLoaded(problemData) {
     }
     var gradingForm = rubricToForm(problemData['rubric']);
     var codeButton = $('<button onclick="openCode(this)" class="btn">');
-    codeButton.text('View student code (' + problemData['filename'] + ')');
+    codeButton.text(`View student code (${problemData['filename']})`);
     gradingForm.prepend(codeButton);
     $('main .container').html(gradingForm);
     $('pre code').each(function(i, block) {
@@ -247,6 +249,7 @@ function sidebarById(id) {
 }
 
 function rubricToForm(rubric) {
+    r = rubric;
     var container = $('<div class="container">'); // container with entire rubric for student
     var keys = Object.keys(rubric['rubric']);
     keys.sort();

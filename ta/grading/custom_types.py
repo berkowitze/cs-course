@@ -1,20 +1,23 @@
+from typing import Dict, List, Optional, Union
+
 from mypy_extensions import TypedDict
-from typing import Optional, Any, Dict, List, NewType, Union
-from dataclasses import dataclass
 
 
 class Comments(TypedDict):
     given: List[str]
     un_given: List[str]
 
+
 class RubricOption(TypedDict):
     point_val: int
     descr: str
+
 
 class RubricItem(TypedDict):
     descr: str
     selected: Optional[int]
     items: List[RubricOption]
+
 
 class RubricCategory(TypedDict):
     comments: Comments
@@ -34,7 +37,8 @@ class BracketItem(TypedDict):
 Bracket = Dict[str, List[BracketItem]]
 
 RawGrade = Dict[str, Optional[Union[int, float]]]
-Grade = Union[int, float, Dict[str, str], Dict[str, int]]
+Grade = Union[int, float, str, Dict[str, str], Dict[str, int]]
+
 
 class LogItem(TypedDict):
     id: int
@@ -42,8 +46,16 @@ class LogItem(TypedDict):
     flag_reason: Optional[bool]
     grader: Optional[str]
 
-Log = List[LogItem]
 
+class HTMLData(TypedDict):
+    ta_handins: List[dict]
+    handin_count: int
+    complete_count: int
+    anonymous: bool
+    unextracted_logins: Optional[List[str]]
+
+
+Log = List[LogItem]
 
 if __name__ == '__main__':
     # example of Comments
@@ -70,4 +82,3 @@ if __name__ == '__main__':
 
     # example of Bracket
     b1: Bracket = {"Functionality": [bi1, bi2]}
-

@@ -1,6 +1,5 @@
-#!/course/cs0111/ta/grading/venv/bin/python2
+#!/course/cs0111/ta/venv/bin/python
 
-import sys
 import argparse
 from collections import defaultdict
 
@@ -8,19 +7,21 @@ parser = argparse.ArgumentParser()
 parser.add_argument('asgn', help='Name of assignment (i.e. "Homework 4")')
 parser.add_argument('-v', '--verbose')
 args = parser.parse_args()
+
 from hta_classes import *
 
 
 asgn = HTA_Assignment(args.asgn)
+asgn.load()
 data = asgn.get_report_data(User('eberkowi'))
 
-grades = map(lambda grade: grade[1], data)
+grades = [grade[1] for grade in data]
 for k in asgn.get_empty_grade():
-    print k
+    print(k)
     d = defaultdict(lambda: 0)
     for grade in grades:
         g = asgn.use_brackets(grade)
         d[g[k]] += 1
 
     for k2 in d:
-        print '\t%s: %s' % (k2, d[k2])
+        print(f'\t{k2}: {d[k2]}')
