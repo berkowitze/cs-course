@@ -7,11 +7,6 @@ hta/gradebook.tsv
 hta/grades/*
 hta/handin/students/*
 www
-ta/grading/data/sfiles/*
-ta/grading/data/rubrics/*
-ta/grading/data/blocklists/*
-ta/grading/data/grades/*
-ta/grading/data/logs/*
 ta/grading/data-backup
 ta/grading/venv
 handin-archive
