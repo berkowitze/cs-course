@@ -1,15 +1,15 @@
 #!/course/cs0111/ta/grading/venv/bin/python
 
-import os
-from hta_classes import *
 import sys
+
+from hta_classes import *
 
 asgn_path = os.path.join(BASE_PATH, 'ta/assignments.json')
 group_dir = os.path.join(BASE_PATH, 'ta/grading/data/projects')
 
 group_projs = []
-for key in data['assignments']:
-    if data['assignments'][key]['group_asgn']:
+for key in asgn_data['assignments']:
+    if asgn_data['assignments'][key]['group_asgn']:
         group_projs.append(key)
 
 if not group_projs:

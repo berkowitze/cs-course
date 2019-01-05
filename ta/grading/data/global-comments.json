@@ -1,5 +1,0 @@
-{
-    "Code Clarity": ["No lines over 80 characters",
-                     "Helper functions require docstrings"],
-    "Testing": ["Helper functions require test cases"]
-}

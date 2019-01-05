@@ -1,48 +1,45 @@
-__author__  = 'Eli Berkowitz'
-__email__   = 'eliberkowitz@gmail.com' # email with any questions
+# Author: 'Eli Berkowitz'
+# Email:  'eliberkowitz@gmail.com'
 
 import json
-from filelock import Timeout, FileLock
+import os
 from contextlib import contextmanager
 from functools import wraps
-import os
-from typing import Tuple, Callable, Optional, List, TextIO, Generator
+from typing import Generator
+
+from filelock import FileLock
+
 from custom_types import *
-from threading import Thread
 
 BASE_PATH: str = '/course/cs0111'
 def_res_path: str = os.path.join(BASE_PATH, 'resource-lock.lock')
 
+
 @contextmanager
-def locked_file(filename: str, mode: str = 'r', hta: bool = False) -> Generator:
-    ''' this will ensure no file is opened across different processes '''
-    # todo: should probably make write mode threaded, not sure how to easily
-    # though. so if the program halts while a file is open in write mode,
-    # the contents of the file won't be removed. one option is havng user
-    # pass in a function that does the work if they are using 'w' mode, but
-    # that's a hassle. will implement if it becomes an issue (.snapshots until
-    # then if necessary)
+def locked_file(filename: str, mode: str = 'r') -> Generator:
+    """ this will ensure no file is opened across different processes """
     if not (mode == 'r' or mode == 'a' or mode == 'w'):
         base = 'Can only open locked file in r, w, or a mode (just in case)'
         raise ValueError(base)
     
     lock_path = filename + '.lock'
-    lock = FileLock(lock_path, timeout=10) # throw error after 5 seconds
+    lock = FileLock(lock_path, timeout=10)  # throw error after 10 seconds
     with lock, open(filename, mode) as f:
         yield f
 
         # after file is closed, attempt to remove the .lock
         # file; the file is only clutter, it won't have an impact
-        # on anything, so don't try too hard.
+        # on anything, so don't try too hard
         try:
             os.unlink(lock_path)
         except NameError:
             raise
-        except:
+        except FileNotFoundError:
             pass
 
+
 def require_resource(resource: str = def_res_path):
-    ''' use require_resource as a decorator when writing a function that you
+    """ use require_resource as a decorator when writing a function that you
     don't want to be run simultaneously; for example, if you don't want to run
     extract_handin at the same time on two different TA's computers
     you'd do something like:
@@ -51,12 +48,11 @@ def require_resource(resource: str = def_res_path):
     def extract_handin(...):
         ...
 
-    see example at end of file (/ta/grading/helpers.py)
-    '''
+    """
     def decorator(f):
         @wraps(f)
         def magic(*args, **kwargs):
-            ''' run the wrapped functions while a lock is acquired '''
+            """ runs the wrapped functions while a lock is acquired """
             with FileLock(resource):
                 return f(*args, **kwargs)
 
@@ -64,14 +60,18 @@ def require_resource(resource: str = def_res_path):
 
     return decorator
 
+
 def json_file_with_check(path: str):
-    ''' given a path to a json file, return the data in that json file
+    """
+    given a path to a json file, return the data in that json file
     also checking that the path exists (with AssertionErrors raised
     for invalid input, so that they can be caught along with other
     AssertionErrors raised in rubric/bracket checking functions below
-    if necessary). works for Rubrics and Brackets '''
-    assert os.path.exists(path)
-    assert os.path.splitext(path)[1] == '.json'
+    if necessary). works for Rubrics and Brackets
+    """
+    assert os.path.exists(path), f'json path {path} does not exist'
+    assert os.path.splitext(path)[1] == '.json', \
+        f'json path {path} has invalid extension'
 
     with locked_file(path) as f:
         try:
@@ -81,12 +81,13 @@ def json_file_with_check(path: str):
         else:
             return data
 
+
 def rubric_check(path: str) -> None:
-    ''' given a path to a rubric JSON file
+    """ given a path to a rubric JSON file
         /course/.../ta/grading/data/rubrics/.../q1.json
     determines whether or not the rubric is valid (should follow spec in
     custom_types). raises assertion error if invalid
-    '''
+    """
     def check_rubric_category(rc: RubricCategory) -> bool:
         assert check_comments(rc['comments'])
         assert isinstance(rc['rubric_items'], list)
@@ -107,15 +108,14 @@ def rubric_check(path: str) -> None:
         return True
 
     def check_comments(comments: Comments) -> bool:
-        assert isinstance(data['comments'], dict)
-        assert isinstance(data['comments']['given'], list)
-        assert isinstance(data['comments']['un_given'], list)
+        assert isinstance(comments, dict)
+        assert isinstance(comments['given'], list)
+        assert isinstance(comments['un_given'], list)
         assert all(map(lambda s: isinstance(s, str),
-                       data['comments']['given']))
+                       comments['given']))
         assert all(map(lambda s: isinstance(s, str),
-                       data['comments']['un_given']))
+                       comments['un_given']))
         return True
-
 
     data: Rubric = json_file_with_check(path)
     assert isinstance(data, dict)  # loaded rubric is a dictionary
@@ -124,9 +124,10 @@ def rubric_check(path: str) -> None:
     assert isinstance(data['rubric'], dict)  # rubric key exists
     assert all(map(check_rubric_category, data['rubric'].values()))
 
+
 def bracket_check(path: str) -> None:
-    ''' given path to a bracket file, checks that it is a valid bracket
-    file, raising an assertion error if it is not '''
+    """ given path to a bracket file, checks that it is a valid bracket
+    file, raising an assertion error if it is not """
     def check_bracket_item(bi: BracketItem) -> bool:
         assert isinstance(bi, dict)
         assert isinstance(bi['grade'], str)
@@ -144,14 +145,14 @@ def bracket_check(path: str) -> None:
 
 
 def update_comments(comments: Comments, new_given: List[str]) -> None:
-    '''
+    """
     inputs:
         - comments, a Comments dictionary (given and un_given keys)
         - new_given, a list of comments that the TA has assigned to
           be the new given key of this Comments block
     output: None
     effect: modify `comments` to update given comments to match new_given
-    and un_given comments to have all un_given comments '''
+    and un_given comments to have all un_given comments """
 
     # all comments that had been given but are not being given now
     # are added to the un_given list
@@ -164,4 +165,3 @@ def update_comments(comments: Comments, new_given: List[str]) -> None:
     sv = set(comments['given'])  # local variable to speed up contains checking
     # comments in un_given that are now being given are removed
     comments['un_given'] = [c for c in comments['un_given'] if c not in sv]
-

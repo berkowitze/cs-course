@@ -1,21 +1,21 @@
 from __future__ import annotations
 from custom_types import *
-from typing import Dict, TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING, Sequence
 from textwrap import wrap, fill
 from helpers import locked_file
 import json
 
 if TYPE_CHECKING:
     from classes import Question, Assignment
-    from hta_classes import HTA_Assignment
 
-def increasing(lst: List[Union[int, float]]) -> bool:
+def increasing(lst: Sequence[float]) -> bool:
     ''' returns true if the input list is increasing (non-decreasing)
     (all numbers larger or equal to than previous numbers) '''
-    while lst[1:]:
+    rst = lst[1:]
+    while rst:
         if lst[0] > lst[1]:
             return False
-        lst.pop(0)
+        rst = lst[1:]
 
     return True
 
@@ -72,7 +72,7 @@ def get_handin_report_str(rubric: Rubric, grader_login: str,
     report_str += f'\n\n{"-" * 74}\n'
     return report_str
 
-def get_empty_raw_grade(asgn: HTA_Assignment) -> RawGrade:
+def get_empty_raw_grade(asgn: Assignment) -> RawGrade:
     ''' create a dictionary with one key for every theme on this assignment,
     with values of set_to (set_to = None by default) '''
     with locked_file(asgn.bracket_path) as f:
@@ -82,7 +82,7 @@ def get_empty_raw_grade(asgn: HTA_Assignment) -> RawGrade:
     return empty_grade
 
 def raw_grade_to_grade(raw_grade: RawGrade, late: bool,
-                       asgn: HTA_Assignment) -> Grade:
+                       asgn: Assignment) -> Grade:
     ''' given a grade dictionary with numeric grades, determine the
     text grades from the possibilities list (defined in function) '''
     def use_bracket(b_item: List[BracketItem], score: Union[int, float]) -> str:

@@ -6,6 +6,22 @@ function dir-make {
     fi;
 }
 
+read -p "Enter a Python 3.7 path (i.e. /local/bin/python3.7): " PYTHONPATH;
+
+if [ -x $PYTHONPATH ]; then
+    res=`$PYTHONPATH -c "import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))"`
+    if [[ $res != "3.7" ]]; then
+        echo "invalid python executable (got version $res, needed 3.7)"
+        exit 1;
+    fi;
+else
+    echo "got non-executable path for python installation"
+    exit 1;
+fi;
+virtualenv -p $PYTHONPATH "./ta/venv";
+./ta/venv/bin/pip install -r ./ta/requirements.txt;
+exit 0;
+
 if [ ! -e ./tabin ];
 then
     echo "in invalid directory, run from cs-course root"
@@ -38,3 +54,7 @@ if [ ! -e ./ta/grading/data/logs/testingassignment/q1.json ]; then
 else
     echo "testingassignment log file already exists, skipping..."
 fi;
+
+virtualenv -p `which python3.7` "./ta/grading/venv"
+soruce ./ta/grading/venv/bin/activate
+pip install -r "./ta/grading/requirements.txt"

@@ -1,6 +1,3 @@
-import cProfile, pstats, io
-# pr = cProfile.Profile()
-# pr.enable()
 import json
 import os
 from hta_classes import get_full_asgn_list, asgn_data_path, \
@@ -10,29 +7,9 @@ import tabulate
 import yagmail
 import subprocess
 
-def get_opt(prompt, options, first=True):
-    ''' given a prompt (to display to the user), and a list of options,
-    this will collect a valid index (0-indexed) from the options.
-    if first=True, the options will be displayed to the user. '''
-    if first:
-        for i, opt in enumerate(options):
-            print(('%s. %s' % (i + 1, opt)))
-
-    choice = eval(input(prompt))
-    try:
-        numb_choice = int(choice) - 1
-        if numb_choice in range(len(options)):
-            return numb_choice
-        else:
-            print('Invalid input...')
-            return get_opt(prompt, options, first=False)
-    except ValueError:
-        print('Enter a number...')
-        return get_opt(prompt, options, first=False)
-
 def send_asgn_emails(asgn, handins):
-    ''' this needs to be cleaned up for project groups
-    (send to groups that handed in only, including partners) '''
+    """ this needs to be cleaned up for project groups
+    (send to groups that handed in only, including partners) """
     # this is convoluted logic but it's so that I can see
     # what kind of issues come up; will make it better
     # during semester (maybe)
@@ -232,7 +209,7 @@ else:
         opts = []
         rows = []
         for question in asgn.questions:
-            row = ['%s (%s)' % (question.qnumb, question.code_filename),
+            row = ['%s (%s)' % (question._qnumb, question.code_filename),
                    question.handin_count,
                    question.completed_count,
                    question.flagged_count]

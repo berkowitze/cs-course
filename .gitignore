@@ -60,3 +60,7 @@ old
 hta/*.csv
 *.mypycache
 *.mypy_cache/
+.DS_Store
+.dmypy.json
+.idea
+venv

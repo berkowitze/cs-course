@@ -6,6 +6,7 @@
     <link rel="/static/atom-one-dark.min.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.ico">
     <link href="/static/prism.css" rel="stylesheet" type="text/css">
+    <script src="/static/clipboard.min.js"></script>
     <script>
       function copyCode(x) {
         $(x).siblings('input').select();
@@ -16,10 +17,16 @@
   <body>
     <script src="/static/prism.js"></script>
     <h4>Code directory is: <input style="width: 40%;" type="text" value="{{ code_dir }}"/> <button data-link="{{ code_dir }}" onclick="copyCode(this)">(click here to copy)</button></h4>
+    <button class='btn' data-clipboard-target='#code-content'>Copy code to clipboard</button>
     <pre class="line-numbers"><code id="code-content" class='language-python'>{{ code }}</code></pre>
     <script>
       $('pre code').each(function(i, block) {
         Prism.highlightElement(block);
+      });
+      new ClipboardJS('.btn', {
+        text: function(trigger) {
+          return $('#code-content').text();
+        }
       });
     </script>
   </body>
