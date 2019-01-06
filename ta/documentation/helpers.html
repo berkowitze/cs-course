@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>helpers module &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">helpers module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>helpers module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/helpers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-helpers">
+<span id="helpers-module"></span><h1>helpers module<a class="headerlink" href="#module-helpers" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="helpers.bracket_check">
+<code class="descclassname">helpers.</code><code class="descname">bracket_check</code><span class="sig-paren">(</span><em>path: str</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/helpers.html#bracket_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.bracket_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>given path to a bracket file, checks that it is a valid bracket
+file, raising an assertion error if it is not</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="helpers.json_file_with_check">
+<code class="descclassname">helpers.</code><code class="descname">json_file_with_check</code><span class="sig-paren">(</span><em>path: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/helpers.html#json_file_with_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.json_file_with_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns data in JSON file after checking that it contains valid JSON</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> – the path of the JSON file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the data in the JSON file</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>AssertionError</strong> – invalid JSON file (filename or data in file)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="helpers.loaded_rubric_check">
+<code class="descclassname">helpers.</code><code class="descname">loaded_rubric_check</code><span class="sig-paren">(</span><em>rubric: importlib._bootstrap.Rubric</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/helpers.html#loaded_rubric_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.loaded_rubric_check" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<em>Rubric</em>) – rubric to check</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">nothing if the rubric is valid</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>AssertionError</strong> – invalid rubric</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="helpers.locked_file">
+<code class="descclassname">helpers.</code><code class="descname">locked_file</code><span class="sig-paren">(</span><em>filename: str</em>, <em>mode: str = 'r'</em><span class="sig-paren">)</span> &#x2192; Generator[T_co, T_contra, V_co]<a class="reference internal" href="_modules/helpers.html#locked_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.locked_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield a locked file to be used for safe, one at a time reading/writing</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> – filename of path to open</li>
+<li><strong>mode</strong> – mode to open in (should only be read append or write)
+opens in read mode by default (“r”)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">locked file to use</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="s1">&#39;hello.txt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="helpers.require_resource">
+<code class="descclassname">helpers.</code><code class="descname">require_resource</code><span class="sig-paren">(</span><em>resource: str = '/course/cs0111/resource-lock.lock'</em><span class="sig-paren">)</span> &#x2192; Callable[[Callable], Any]<a class="reference internal" href="_modules/helpers.html#require_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.require_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>use require_resource as a decorator when writing a function that you
+shouldn’t be run simultaneously</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource</strong> – resource to lock while the function is being run
+(set by default, but can be overrided if needed)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a decorator to be used around a function/method as required</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@require_resource</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">extract_handin</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="helpers.rubric_check">
+<code class="descclassname">helpers.</code><code class="descname">rubric_check</code><span class="sig-paren">(</span><em>path: str</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/helpers.html#rubric_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.rubric_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check validity of rubric by path
+:param path: path of rubric to check
+:return: None as long as rubric is valid
+:raises AssertionError: invalid rubric</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="helpers.update_comments">
+<code class="descclassname">helpers.</code><code class="descname">update_comments</code><span class="sig-paren">(</span><em>comments: importlib._bootstrap.Comments, new_given: List[str]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/helpers.html#update_comments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.update_comments" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>inputs:</dt>
+<dd><ul class="first last simple">
+<li>comments, a Comments dictionary (given and un_given keys)</li>
+<li>new_given, a list of comments that the TA has assigned to
+be the new given comments of this Comments block</li>
+</ul>
+</dd>
+</dl>
+<p>output: None
+effect: modify <cite>comments</cite> to update given comments to match new_given
+and un_given comments to have all un_given comments</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

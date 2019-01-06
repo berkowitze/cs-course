@@ -1,23 +1,32 @@
-#!/usr/bin/env python2
+#!/course/cs0111/ta/venv/bin/python
+
+# Author: Eli Berkowitz
+# Email: eliberkowitz@gmail.com
 
 # uses ldapsearch to get members of a group, rather than
-# some weird caching system that frequently breaks
-__author__ = 'Eli Berkowitz'
-__email__  = 'elias_berkowitz@brown.edu'
+# the department's weird caching system that frequently breaks
 
 import re
 import subprocess
 import sys
+from typing import Dict
 
 if len(sys.argv) != 2:
-    print 'Usage: better-members <group>'
+    print('Usage: better-members <group>')
     sys.exit(1)
 
 group = sys.argv[1]
 
-def todict(s):
-    ''' given a string like a=3,b=hello,key=value, turn into a
-    dictionary like {'a': '3', 'b': 'hello', 'key': 'value'} '''
+def todict(s: str) -> Dict[str, str]:
+    """given a string like a=3,b=hello,key=value, turn into a
+    dictionary like {'a': '3', 'b': 'hello', 'key': 'value'} 
+    
+    Args:
+        s (str): String of form "key=value,key2=value2,..."
+    
+    Returns:
+        Dict[str, str]: A (key, value) dictionary extracted from s
+    """
     d = {}
     kvs = s.split(',')
     for kv in kvs:
@@ -27,7 +36,7 @@ def todict(s):
     return d
 
 # get obfuscated group code
-o1 = subprocess.Popen(['ldapsearch', '-Q', 'cn=%s' % group],
+o1 = subprocess.Popen(['ldapsearch', '-Q', f'cn={group}'],
                      stdout=subprocess.PIPE)
 o2 = subprocess.Popen(['grep', 'member'],
                       stdin=o1.stdout, stdout=subprocess.PIPE)
@@ -38,7 +47,7 @@ o2.wait()
 group_data = todict(output)
 
 o1 = subprocess.Popen(['ldapsearch', '-Q', '-LLL', '-E',
-                      'pr=500/noprompt', 'cn=%s' % group_data['CN']],
+                      'pr=500/noprompt', f'cn={group_data["CN"]}'],
                      stdout=subprocess.PIPE)
 o2 = subprocess.Popen(['grep', 'member: '],
                       stdin=o1.stdout, stdout=subprocess.PIPE)
@@ -48,7 +57,6 @@ o2.wait()
 
 members = output.strip().split('\n')
 
-
-data = map(todict, members)
-unames = map(lambda d: d['CN'], data)
-print ' '.join(list(sorted(unames)))
+data = list(map(todict, members))
+unames = [d['CN'] for d in data]
+print(' '.join(list(sorted(unames))))

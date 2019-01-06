@@ -660,7 +660,8 @@ class HTA_Assignment(Assignment):
             json.dump(d, f, sort_keys=True, indent=2)
 
     def __repr__(self):
-        return f'HTA-{repr(super(HTA_Assignment, self))}'
+        return f'HTA-{super().__repr__()}'
+
 
 class Course:
     def __init__(self, base_path: str = '/course/cs0111') -> None:
@@ -818,7 +819,7 @@ def get_full_asgn_list():
 
     return list(map(HTA_Assignment, sorted(data['assignments'].keys())))
 
-def magic_update(question, func):
+def magic_update(question: Question, func: Callable[[Rubric], None]) -> None:
     """ given a Question and a function that takes in a rubric (dictionary)
     and mutates it. changes a) the base rubric, and b) each
     extracted rubric by applying func to those rubrics """
@@ -829,17 +830,15 @@ def magic_update(question, func):
 
     question.load_handins()
     d = question.copy_rubric()
-    new_data = func(d)
-    with locked_file(question.rubric_filepath, 'w') as f:
-        json.dump(new_data, f, indent=2, sort_keys=True)
+    func(d)
+    loaded_rubric_check(d)
+    question.rewrite_rubric(d)
 
     for handin in question.handins:
         if not handin.extracted:
             continue
+
         d = handin.get_rubric()
         func(d)
-        if d is None:
-            raise ValueError('Rubric was replaced with non-rubric')
-
         handin.write_grade(d)
 

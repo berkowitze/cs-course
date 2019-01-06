@@ -1,71 +1,91 @@
-#!/course/cs0111/ta/grading/venv/bin/python
+#!/course/cs0111/ta/venv/bin/python
 
 # Notes: 
 #  - if running from ssh/fastx, make sure to run "kinit" first
 # 
-# @author zkirsche Aug 2018
+# author: zkirsche Aug 2018
 # edited by eberkowi Aug 2018
 #   - reduced terminal output
 #   - reorganized functions to take group names instead of login CSV files
+#   email: eliberkowitz@gmail.com
 
+import sys
 import cgi
-import csv
-from StringIO import StringIO
 import re
 import os
 import smtplib
 import subprocess
-import sys
+from typing import Tuple, List
+from io import StringIO
 from helpers import locked_file
 
 if len(sys.argv) != 4:
-    print 'Usage: group-data <group> <csv | txt> <path-to-output>'
+    print('Usage: group-data <group> <csv | txt> <path-to-output>')
     sys.exit(1)
 
-csv = sys.argv[2] == 'csv'
+csv = (sys.argv[2] == 'csv')
 
-def login_to_email(login):
+def login_to_email(login: str) -> Tuple[str, bool]:
     '''
-    Input: the brown cs login to query
-    Output: the brown email, or an error string that the email can't be found
-            and a boolaen indicating if the search succeeded
+    Args:
+        login (str): the brown cs login to query
+    
+    Returns:
+        Tuple[str, bool]: the brown email, or an error string that 
+        the email can't be found and a boolaen indicating if the
+        search succeeded
     '''
     try:
         login = login.lower().strip()
-        userdata = subprocess.check_output(["ldapsearch", "-Q", "cn=" + login])
+        userdata = subprocess.check_output(["ldapsearch", "-Q", f"cn={login}"])
         ldap_email = re.search("mail:(.*)", userdata, re.MULTILINE)
         if ldap_email:
-            email = ldap_email.group(1).strip()
+            email: str = ldap_email.group(1).strip()
             return email, True
         else:
             if login == 'qa0111':
                 return 'elias_berkowitz@brown.edu', True
             else:
-                return "Unknown login %s (email HTAs)" % login, False
+                return f'Unknown login {login} (email HTAs)', False
 
     except subprocess.CalledProcessError:
-        return "Warning: ldap search for %s failed" % login, False
+        return f'Warning: ldap search for {login} failed', False
 
-def login_to_name(login):
+def login_to_name(login: str) -> Tuple[str, bool]:
+    """Convert CS login to full name
+    
+    Args:
+        login (str): CS login
+    
+    Returns:
+        Tuple[str, bool]: Name of the student with that CS login and
+        whether or not the conversion succeeded
+    """
     login = login.lower().strip()
     try:
-        userdata = subprocess.check_output(['ldapsearch', '-Q', 'cn=' + login])
+        userdata = subprocess.check_output(['ldapsearch', '-Q', f'cn={login}'])
         ldap_name = re.search('gecos:(.*)', userdata, re.MULTILINE)
         if ldap_name:
             return ldap_name.group(1).strip().split(',')[0].strip(), True
         else:
-            return 'No name for %s (email HTAs)' % login, False
+            return f'No name for {login} (email HTAs)', False
     except:
-        return 'Warning: ldap search for %s failed' % login, False
+        return f'Warning: ldap search for {login} failed', False
 
-def get_logins_from_group(group_name):
-    '''
-    Input: a group name (i.e. cs-0111ta)
-    Output: A list of the usernames of the members of that group 
-    (uses the members command)
-
-    repeated usernames are deleted
-    '''
+def get_logins_from_group(group_name: str) -> List[str]:
+    """Get all the logins of the members of the input group
+    Args:
+        group_name (str): a group name (i.e. cs-0111ta)
+    
+    Returns:
+        List[str]: A list of the usernames of the members of that group 
+        (uses the better-members command)
+        repeated usernames are deleted
+    
+    Raises:
+        subprocess.CalledProcessError: Error calling better-members
+        or invalid group name
+    """
     cmd = ['better-members', group_name]
     sp = subprocess.Popen(cmd,
                           stdout=subprocess.PIPE,
@@ -91,14 +111,14 @@ if csv:
     
     S = ''
     for d in data:
-        S += '%s,%s,%s\n' % (d[0], d[1], d[2])
+        S += f'{d[0]},{d[1]},{d[2]}\n'
 
     with locked_file(sys.argv[3], 'w') as f:
         f.write(S)
 else:
     S = ''
     for l in logins:
-        S += '%s\n' % l
+        S += f'{l}\n'
     with locked_file(sys.argv[3], 'w') as f:
         f.write(S)
 

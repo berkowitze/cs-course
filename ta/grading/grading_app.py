@@ -28,27 +28,28 @@ args = parser.parse_args()
 # intro course (don't assume TAs/HTAs know how databases work)
 # but i also suppose that all these files arent exactly convenient
 
-# set up the web app
-app = Flask(__name__)
+if __name__ == '__main__':
+    # set up the web app
+    app = Flask(__name__)
 
-# i have no idea what this is for but i just button mashed
-# (not sure if/how this can be used to hack the program)
-app.secret_key = '815tu28g78h8934tgju2893t0j83u2tfjt'
+    # i have no idea what this is for but i just button mashed
+    # (not sure if/how this can be used to hack the program)
+    app.secret_key = '815tu28g78h8934tgju2893t0j83u2tfjt'
 
-# this dictionary will be used to track what the user is doing;
-# which assignment, question, and handin they are working on.
-# it's reset if you edit grading_app.py or classes.py while grading
-# so you need to refresh the page
-# todo: make this better. a lot better. if it's a problem.
-workflow = {}
+    # this dictionary will be used to track what the user is doing;
+    # which assignment, question, and handin they are working on.
+    # it's reset if you edit grading_app.py or classes.py while grading
+    # so you need to refresh the page
+    # todo: make this better. a lot better. if it's a problem.
+    workflow = {}
 
-# get logged in username
-username = getpass.getuser()
-user = User(username)
-if user.hta and args.user is not None:
-    user = User(args.user)
+    # get logged in username
+    username = getpass.getuser()
+    user = User(username)
+    if user.hta and args.user is not None:
+        user = User(args.user)
 
-print(user)
+    print(user)
 
 def is_logged_in(f: Callable) -> Callable:
     ''' this decorator ensures that the user is logged in when attempting

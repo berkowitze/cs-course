@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hta_helpers module &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="classes.html">classes module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_types.html">custom_types module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">ta/grading</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>hta_helpers module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/hta_helpers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-hta_helpers">
+<span id="hta-helpers-module"></span><h1>hta_helpers module<a class="headerlink" href="#module-hta_helpers" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="hta_helpers.argmax">
+<code class="descclassname">hta_helpers.</code><code class="descname">argmax</code><span class="sig-paren">(</span><em>lst: List[int]</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/hta_helpers.html#argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.argmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get index of maximum integer of input list</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>lst (List[int]): list of non-negative integers</dd>
+<dt>Returns:</dt>
+<dd>int: Index of maximum integer in lst</dd>
+<dt>Raises:</dt>
+<dd>ValueError: Cannot input a list with repeated values</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.email_to_login">
+<code class="descclassname">hta_helpers.</code><code class="descname">email_to_login</code><span class="sig-paren">(</span><em>email: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/hta_helpers.html#email_to_login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.email_to_login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts brown email to CS login</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>email (str): Student’s Brown email (aliases will not work)</dd>
+<dt>Returns:</dt>
+<dd>str: Student’s CS login</dd>
+<dt>Raises:</dt>
+<dd>ValueError: when email not found</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.latest_submission_path">
+<code class="descclassname">hta_helpers.</code><code class="descname">latest_submission_path</code><span class="sig-paren">(</span><em>base: str</em>, <em>login: str</em>, <em>mini_name: str</em><span class="sig-paren">)</span> &#x2192; Optional[str]<a class="reference internal" href="_modules/hta_helpers.html#latest_submission_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.latest_submission_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns None if no submission for this student on this assignment,
+and the path of the student’s latest submission if they did submit</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>base (str): base path (i.e. /course/cs0111/hta/handin/students)
+login (str): cs login of student
+mini_name (str): directory name of assignment (i.e. homework2)</dd>
+<dt>Returns:</dt>
+<dd>Optional[str]: None if login has no handin for mini_name, and
+the path of the latest submission for login if they do</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.line_read">
+<code class="descclassname">hta_helpers.</code><code class="descname">line_read</code><span class="sig-paren">(</span><em>filename: str</em>, <em>delim: Optional[str] = None</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/hta_helpers.html#line_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.line_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>read lines from a file. returns list of strings with whitespace
+right-stripped with delim=None, or list of lists of strings with
+whitespace stripped with delim=str
+(I don’t use csv module because I’m unsure exactly how it parses lines
+and it sometimes has weird results; this way there’s full control)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>filename (str): name of file to open
+delim (Optional[str], optional): if None, reads filename as
+list of strings, otherwise will split each line on delim
+i.e. delim=’,’ a line ‘hi,there’ -&gt; [‘hi’, ‘there’]</dd>
+<dt>Returns:</dt>
+<dd>list: if delim is None, a list of strings (one string for each
+line). if delim is not None, a list of lists of strings, one
+list for each line in the file and that list contains the split
+up line based on delim</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.load_students">
+<code class="descclassname">hta_helpers.</code><code class="descname">load_students</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[List[str]]<a class="reference internal" href="_modules/hta_helpers.html#load_students"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.load_students" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads students from the hta/groups/students.csv file</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>List[str]: list of (login, email, name)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.login_to_email">
+<code class="descclassname">hta_helpers.</code><code class="descname">login_to_email</code><span class="sig-paren">(</span><em>login: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/hta_helpers.html#login_to_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.login_to_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert CS login to full Brown email</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>login (str): CS login of student</dd>
+<dt>Returns:</dt>
+<dd>str: Brown email of student (no aliases)</dd>
+<dt>Raises:</dt>
+<dd>ValueError: Student with input login not found</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.student_list">
+<code class="descclassname">hta_helpers.</code><code class="descname">student_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[str]<a class="reference internal" href="_modules/hta_helpers.html#student_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.student_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of student logins from hta/groups/students.txt</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>List[str]: list of logins of students in the class</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

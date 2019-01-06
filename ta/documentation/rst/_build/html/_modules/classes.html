@@ -1,0 +1,1401 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>classes &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../classes.html">classes module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../custom_types.html">custom_types module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">ta/grading</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>classes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for classes</h1><div class="highlight"><pre>
+<span></span><span class="c1"># written by Eli Berkowitz (eberkowi) 2018</span>
+<span class="c1"># TODO: formalize docstring format</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">pjoin</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span> <span class="k">as</span> <span class="n">dt</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">course_customization</span> <span class="k">import</span> <span class="n">full_asgn_name_to_dirname</span><span class="p">,</span> \
+    <span class="n">get_handin_report_str</span>
+<span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="n">HTMLData</span><span class="p">,</span> <span class="n">Log</span><span class="p">,</span> <span class="n">LogItem</span><span class="p">,</span> <span class="n">Rubric</span>
+<span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="n">locked_file</span><span class="p">,</span> <span class="n">require_resource</span><span class="p">,</span> \
+    <span class="n">rubric_check</span><span class="p">,</span> <span class="n">update_comments</span><span class="p">,</span> <span class="n">loaded_rubric_check</span>
+
+<span class="c1"># READ BEFORE EDITING THIS FILE #</span>
+<span class="c1"># do not use the builtin `open` function; instead use the</span>
+<span class="c1"># locked_file function (or the require_resource function)</span>
+<span class="c1"># see the bottom of /ta/grading/helpers.py for an explanation</span>
+<span class="c1"># of what these functions are; you should be able to safely use:</span>
+<span class="c1"># with locked_file(filename, mode) as f:</span>
+<span class="c1">#     ...</span>
+
+<span class="n">BASE_PATH</span> <span class="o">=</span> <span class="s1">&#39;/course/cs0111&#39;</span>
+<span class="n">DATA_PATH</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta&#39;</span><span class="p">,</span> <span class="s1">&#39;grading&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<span class="n">proj_base_path</span>    <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;projects&#39;</span><span class="p">)</span>
+<span class="n">asgn_data_path</span>    <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta&#39;</span><span class="p">,</span> <span class="s1">&#39;assignments.json&#39;</span><span class="p">)</span>
+<span class="n">ta_path</span>           <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/groups&#39;</span><span class="p">,</span> <span class="s1">&#39;tas.txt&#39;</span><span class="p">)</span>
+<span class="n">hta_path</span>          <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/groups&#39;</span><span class="p">,</span> <span class="s1">&#39;htas.txt&#39;</span><span class="p">)</span>
+<span class="n">student_path</span>      <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/groups&#39;</span><span class="p">,</span> <span class="s1">&#39;students.txt&#39;</span><span class="p">)</span>
+<span class="n">log_base_path</span>     <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;logs&#39;</span><span class="p">)</span>
+<span class="n">test_base_path</span>    <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;tests&#39;</span><span class="p">)</span>
+<span class="n">rubric_base_path</span>  <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;rubrics&#39;</span><span class="p">)</span>
+<span class="n">grade_base_path</span>   <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;grades&#39;</span><span class="p">)</span>
+<span class="n">s_files_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;sfiles&#39;</span><span class="p">)</span>
+<span class="n">anon_base_path</span>    <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;anonymization&#39;</span><span class="p">)</span>
+<span class="n">blocklist_path</span>    <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;blocklists&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">),</span> <span class="s1">&#39;No data file &quot;</span><span class="si">{asgn_data_path}</span><span class="s1">&quot;&#39;</span>
+
+<span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">asgn_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+
+<span class="c1"># function that checks if an assignment has been started</span>
+<span class="c1"># func is the function the wrapper will be wrapped around</span>
+<div class="viewcode-block" id="is_started"><a class="viewcode-back" href="../classes.html#classes.is_started">[docs]</a><span class="k">def</span> <span class="nf">is_started</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;decorator that checks if assignment has been started before</span>
+<span class="sd">    calling the appropriate method</span>
+
+<span class="sd">    :param func: method for Assignments (should take in assignment as first</span>
+<span class="sd">                 argument)</span>
+<span class="sd">    :return: decorated method</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">magic</span><span class="p">(</span><span class="n">asgn</span><span class="p">:</span> <span class="s1">&#39;Assignment&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">asgn</span><span class="o">.</span><span class="n">started</span><span class="p">:</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="p">(</span>
+                 <span class="n">f</span><span class="s1">&#39;attempting to call method on unstarted &#39;</span>
+                 <span class="n">f</span><span class="s1">&#39;assignment </span><span class="si">{asgn.full_name}</span><span class="s1">&#39;</span>
+                <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># run as normal if grading has started</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">asgn</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">magic</span></div>
+
+
+<div class="viewcode-block" id="is_extracted"><a class="viewcode-back" href="../classes.html#classes.is_extracted">[docs]</a><span class="k">def</span> <span class="nf">is_extracted</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Ensures a handin is extracted (to be used as a decorator)</span>
+<span class="sd">    raises ValueError if method called on unextracted handin</span>
+<span class="sd">    </span>
+<span class="sd">    :param func: any Handin method</span>
+<span class="sd">    :type func: Callable</span>
+<span class="sd">    :returns: decorated method that checks if handin is extracted</span>
+<span class="sd">    :rtype: Callable</span>
+<span class="sd">    :raises ValueError: when decorated method called on unextracted handin</span>
+
+<span class="sd">    **Example:**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        class Handin:</span>
+<span class="sd">            ...</span>
+
+<span class="sd">            @is_extracted</span>
+<span class="sd">            def unextract(self, ...):</span>
+<span class="sd">                ...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">magic</span><span class="p">(</span><span class="n">handin</span><span class="p">:</span> <span class="s1">&#39;Handin&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">handin</span><span class="o">.</span><span class="n">extracted</span><span class="p">:</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">f</span><span class="s1">&#39;attempting to call method on unextracted &#39;</span>
+                <span class="n">f</span><span class="s1">&#39;handin </span><span class="si">{handin}</span><span class="s1">&#39;</span>
+                <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># run method as usual if it is extracted</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">handin</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">magic</span></div>
+
+
+<div class="viewcode-block" id="User"><a class="viewcode-back" href="../classes.html#classes.User">[docs]</a><span class="k">class</span> <span class="nc">User</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    </span>
+<span class="sd">    User class to give an interface to the user and their permissions.</span>
+
+<span class="sd">    :ivar uname: The user&#39;s login</span>
+<span class="sd">    :vartype uname: str</span>
+<span class="sd">    :ivar hta: Whether or not the user is an HTA</span>
+<span class="sd">    :vartype hta: bool</span>
+<span class="sd">    :ivar ta: Whether or not the user is a TA</span>
+<span class="sd">    :vartype ta: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="User.__init__"><a class="viewcode-back" href="../classes.html#classes.User.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        make a new User</span>
+
+<span class="sd">        :param uname: CS login of user</span>
+<span class="sd">        :type uname: str</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">ta_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">,</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">hta_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">h</span><span class="p">:</span>
+            <span class="n">tas</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">htas</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">uname</span> <span class="o">=</span> <span class="n">uname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ta</span> <span class="o">=</span> <span class="n">uname</span> <span class="ow">in</span> <span class="n">tas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hta</span> <span class="o">=</span> <span class="n">uname</span> <span class="ow">in</span> <span class="n">htas</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hta</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ta</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="s1">&#39;HTA-and-TA&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">hta</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="s1">&#39;HTA&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">ta</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="s1">&#39;TA&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="s1">&#39;No-Permission-User&#39;</span>
+
+        <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;&lt;</span><span class="si">{f}</span><span class="s1">(</span><span class="si">{self.uname}</span><span class="s1">)&gt;&#39;</span></div>
+
+
+<div class="viewcode-block" id="Assignment"><a class="viewcode-back" href="../classes.html#classes.Assignment">[docs]</a><span class="k">class</span> <span class="nc">Assignment</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Provides interface with logs, grades, and rubrics, files, etc.</span>
+<span class="sd">    </span>
+<span class="sd">    :ivar proj_dir: If group_asgn is False, None. If group_asgn is True,</span>
+<span class="sd">                    the name of the common directory to use</span>
+<span class="sd">                    (for multi-assignment projects). For example, &quot;project3&quot;</span>
+<span class="sd">    :vartype proj_dir: Optional[str]</span>
+<span class="sd">    :ivar full_name: Full name of assignment (i.e. &quot;Homework 2&quot;)</span>
+<span class="sd">    :vartype full_name: str</span>
+<span class="sd">    :ivar mini_name: Directory name of assignment (i.e. &quot;homework2&quot;)</span>
+<span class="sd">    :vartype mini_name: str</span>
+<span class="sd">    :ivar due_date: Datetime of the assignment&#39;s due date</span>
+<span class="sd">    :vartype due_date: datetime</span>
+<span class="sd">    :ivar due: Whether or not the assignment deadline has passed</span>
+<span class="sd">    :vartype due: bool</span>
+<span class="sd">    :ivar started: Whether or not grading has started for this assignment</span>
+<span class="sd">    :vartype started: bool</span>
+<span class="sd">    :ivar group_asgn: Whether or not the assignment is a group</span>
+<span class="sd">                      assignment (i.e. True for projects)</span>
+<span class="sd">    :vartype group_asgn: bool</span>
+<span class="sd">    :ivar anonymous: True if the assignment is being graded anonymously</span>
+<span class="sd">    :vartype anonymous: bool</span>
+<span class="sd">    :ivar log_path: Directory path for log files</span>
+<span class="sd">    :vartype log_path: str</span>
+<span class="sd">    :ivar rubric_path: Directory path for rubric files</span>
+<span class="sd">    :vartype rubric_path: str</span>
+<span class="sd">    :ivar grade_path: Directory path for grade files</span>
+<span class="sd">    :vartype grade_path: str</span>
+<span class="sd">    :ivar files_path: Directory path where students&#39; handins will be copied</span>
+<span class="sd">    :vartype files_path: str</span>
+<span class="sd">    :ivar test_path: JSON path where anonymization information for this</span>
+<span class="sd">                     assignment will be stored.</span>
+<span class="sd">    :vartype test_path: str</span>
+<span class="sd">    :ivar blocklist_path: JSON parth where blocklist information for this</span>
+<span class="sd">                          assignment will be stored</span>
+<span class="sd">    :vartype blocklist_path: str</span>
+<span class="sd">    :ivar _json: JSON data for this assignment from assignments.json</span>
+<span class="sd">    :vartype _json: dict</span>
+<span class="sd">    </span>
+<span class="sd">    :ivar __login_to_id_map: a map from login to anonymous ID for this asgn</span>
+<span class="sd">    :vartype __login_to_id_map: Dict[str, int]</span>
+<span class="sd">    :ivar __id_to_login_map: a map from anonymous ID to login for this asgn</span>
+<span class="sd">    :vartype __id_to_login_map: Dict[int, str]</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Assignment.__init__"><a class="viewcode-back" href="../classes.html#classes.Assignment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">full_load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Create a new assignment based on the key from /ta/assignments.json</span>
+
+<span class="sd">        :param key: Key of assignment to load (i.e. &#39;Homework 4&#39;)</span>
+<span class="sd">        :type key: str</span>
+<span class="sd">        :param full_load: whether or not to fully load the</span>
+<span class="sd">                          assignment and all its Questions, defaults to False</span>
+<span class="sd">        :type full_load: bool, optional</span>
+<span class="sd">        :raises: ValueError if attempting to load unstarted assignment</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mini_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">full_asgn_name_to_dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">due_date</span><span class="p">:</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;due&#39;</span><span class="p">],</span> <span class="s1">&#39;%m/</span><span class="si">%d</span><span class="s1">/%Y %I:%M%p&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">due</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">due_date</span> <span class="o">&lt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;grading_started&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">group_asgn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;group_asgn&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_asgn</span><span class="p">:</span>
+            <span class="n">group_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;group_dir&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">proj_base_path</span><span class="p">,</span> <span class="n">group_dir</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proj_dir</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;anonymous&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">log_base_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mini_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rubric_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">rubric_base_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mini_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">grade_base_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mini_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">s_files_base_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mini_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">test_base_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mini_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">anon_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">anon_base_path</span><span class="p">,</span>
+                                    <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.mini_name}</span><span class="s1">.json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocklist_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">blocklist_path</span><span class="p">,</span>
+                                         <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.mini_name}</span><span class="s1">.json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bracket_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">rubric_base_path</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">mini_name</span><span class="p">,</span>
+                                       <span class="s1">&#39;bracket.json&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span> <span class="ow">and</span> <span class="n">full_load</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span> <span class="ow">and</span> <span class="n">full_load</span><span class="p">:</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;Attempting to fully load unstarted assignment </span><span class="si">{self}</span><span class="s1">&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Assignment.load"><a class="viewcode-back" href="../classes.html#classes.Assignment.load">[docs]</a>    <span class="nd">@is_started</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Loads the assignment (checks all paths are proper and </span>
+<span class="sd">        loads all assignment questions)</span>
+<span class="sd">        :raises AssertionError: invalid assignment</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># checking that assignment has correct paths</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_path</span><span class="p">),</span> \
+            <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no log directory&#39;</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rubric_path</span><span class="p">),</span> \
+            <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no rubric directory&#39;</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">),</span> \
+            <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no grade directory&#39;</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocklist_path</span><span class="p">),</span> \
+            <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no blocklist file&#39;</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files_path</span><span class="p">),</span> \
+            <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no student code directory&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anon_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">__login_to_id_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__id_to_login_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">data</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__load_questions</span><span class="p">()</span></div>
+
+    <span class="nd">@is_started</span>
+    <span class="k">def</span> <span class="nf">__load_questions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;load all log files, creating Question instances stored into</span>
+<span class="sd">        self.questions.  </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">questions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">qnumb</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;questions&#39;</span><span class="p">]):</span>
+            <span class="n">question</span> <span class="o">=</span> <span class="n">Question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qnumb</span><span class="p">)</span>
+            <span class="n">questions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">questions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Question</span><span class="p">]</span> <span class="o">=</span> <span class="n">questions</span>
+
+<div class="viewcode-block" id="Assignment.get_question"><a class="viewcode-back" href="../classes.html#classes.Assignment.get_question">[docs]</a>    <span class="nd">@is_started</span>
+    <span class="k">def</span> <span class="nf">get_question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ndx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Question&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        get a question by index (0 indexed)</span>
+
+<span class="sd">        :param ndx: Index of question (0 index)</span>
+<span class="sd">        :type ndx: int</span>
+<span class="sd">        :returns: Question corresponding to that index</span>
+<span class="sd">        :rtype: Question</span>
+<span class="sd">        :raises: IndexError if no question with corresponding index</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">questions</span><span class="p">[</span><span class="n">ndx</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="p">(</span>
+                 <span class="n">f</span><span class="s1">&#39;Trying to get qn </span><span class="si">{ndx}</span><span class="s1"> from assignment with &#39;</span>
+                 <span class="n">f</span><span class="s1">&#39;{len(self.questions)} qns&#39;</span>
+                <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Assignment.login_to_id"><a class="viewcode-back" href="../classes.html#classes.Assignment.login_to_id">[docs]</a>    <span class="nd">@is_started</span>
+    <span class="k">def</span> <span class="nf">login_to_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Get anonymous ID of student by login</span>
+
+<span class="sd">        :param login: Student CS login</span>
+<span class="sd">        :type login: str</span>
+<span class="sd">        :returns: Anonymous ID for student by login</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        :raises: ValueError: Student has no anonymous ID for this assignment</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot get login on anonymous assignment&#39;</span><span class="p">)</span>
+
+        <span class="c1">#  first try using cached info</span>
+        <span class="k">if</span> <span class="n">login</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__login_to_id_map</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__login_to_id_map</span><span class="p">[</span><span class="n">login</span><span class="p">]</span>
+
+        <span class="c1">#  next try reloading anonymization information</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anon_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__login_to_id_map</span><span class="p">[</span><span class="n">login</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__id_to_login_map</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]]</span> <span class="o">=</span> <span class="n">login</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="c1">#  then fail</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;login </span><span class="si">{login}</span><span class="s1"> does not exist in map for </span><span class="si">{self}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Assignment.id_to_login"><a class="viewcode-back" href="../classes.html#classes.Assignment.id_to_login">[docs]</a>    <span class="nd">@is_started</span>
+    <span class="k">def</span> <span class="nf">id_to_login</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ident</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Get anonymous ID of student by login</span>
+
+<span class="sd">        :param ident: Student anonymous ID for this assignment</span>
+<span class="sd">        :type ident: int</span>
+<span class="sd">        :returns: Login of student with ident id</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        :raises: ValueError: No student with anon ID for this assignment</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot get login on anonymous assignment&#39;</span><span class="p">)</span>
+
+        <span class="c1">#  first try using cached info</span>
+        <span class="k">if</span> <span class="n">ident</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__id_to_login_map</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__id_to_login_map</span><span class="p">[</span><span class="n">ident</span><span class="p">]</span>
+
+        <span class="c1">#  next try reloading anonymization information</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anon_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">login</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]</span> <span class="o">==</span> <span class="n">ident</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__id_to_login_map</span><span class="p">[</span><span class="n">ident</span><span class="p">]</span> <span class="o">=</span> <span class="n">login</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__login_to_id_map</span><span class="p">[</span><span class="n">login</span><span class="p">]</span> <span class="o">=</span> <span class="n">ident</span>
+                <span class="k">return</span> <span class="n">login</span>
+
+        <span class="c1">#  then fail</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;id </span><span class="si">{ident}</span><span class="s1"> does not exist in map for </span><span class="si">{self}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot; representation of instance (i.e. for printing) &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;Assignment(name=&quot;</span><span class="si">{self.full_name}</span><span class="s1">&quot;)&#39;</span></div>
+
+
+<div class="viewcode-block" id="Question"><a class="viewcode-back" href="../classes.html#classes.Question">[docs]</a><span class="k">class</span> <span class="nc">Question</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    </span>
+<span class="sd">    Class for questions (Assignments are made up of a list of questions)</span>
+<span class="sd">    </span>
+<span class="sd">    :ivar completed_count: number of handins graded</span>
+<span class="sd">    :vartype completed_count: int</span>
+<span class="sd">    :ivar flagged_count: number of handins flagged for review</span>
+<span class="sd">    :vartype flagged_count: int</span>
+<span class="sd">    :ivar grading_started: whether or not grading has started (TODO: remove?)</span>
+<span class="sd">    :vartype grading_started: bool</span>
+<span class="sd">    :ivar has_flagged: whether or not there are flagged handins</span>
+<span class="sd">                       for this question</span>
+<span class="sd">    :vartype has_flagged: bool</span>
+<span class="sd">    :ivar has_incomplete: whether or not there are incomplete handins</span>
+<span class="sd">                          for this question</span>
+<span class="sd">    :vartype has_incomplete: bool</span>
+<span class="sd">    :ivar assignment: assignment this question is from</span>
+<span class="sd">    :vartype assignment: Assignment</span>
+<span class="sd">    :ivar code_filename: string of the filename of this question (i.e. maze.arr)</span>
+<span class="sd">    :vartype code_filename: str</span>
+<span class="sd">    :ivar grade_path: path that grades of this question will be stored in</span>
+<span class="sd">    :vartype grade_path: str</span>
+<span class="sd">    :ivar handin_count: total number of handins for this question</span>
+<span class="sd">    :vartype handin_count: int</span>
+<span class="sd">    :ivar handins: list of handins for this question</span>
+<span class="sd">    :vartype handins: List[Handin]</span>
+<span class="sd">    :ivar log_filepath: filepath for the log file for this question</span>
+<span class="sd">    :vartype log_filepath: str</span>
+<span class="sd">    :ivar _qnumb: question number</span>
+<span class="sd">    :vartype _qnumb: int</span>
+<span class="sd">    :ivar rubric_filepath: filepath for the base rubric for this question</span>
+<span class="sd">    :vartype rubric_filepath: str</span>
+<span class="sd">    :ivar test_path: base filepath for the testsuite for this question</span>
+<span class="sd">    :vartype test_path: str</span>
+<span class="sd">    :ivar _json: JSON for this question from /ta/assignments.json</span>
+<span class="sd">    :vartype _json: dict</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Question.__init__"><a class="viewcode-back" href="../classes.html#classes.Question.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_assignment</span><span class="p">:</span> <span class="n">Assignment</span><span class="p">,</span> <span class="n">q_ndx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        makes a Question instance. I highly recommend against direct</span>
+<span class="sd">        instantiation (let Assignment class</span>
+<span class="sd">        do it)</span>
+
+<span class="sd">        Todo: make :code:`Question` nested class of :code:`Assignment`?</span>
+<span class="sd">        would probably allow for :code:`HTA_Question` and :code:`HTA_Handin`</span>
+<span class="sd">        classes which could be helpful</span>
+
+<span class="sd">        :param parent_assignment: assignment corresponding to this question</span>
+<span class="sd">        :type parent_assignment: Assignment</span>
+<span class="sd">        :param q_ndx: question number (used to get info from assignments.json)</span>
+<span class="sd">        :type q_ndx: int</span>
+<span class="sd">        :raises: ValueError</span>
+
+<span class="sd">        **Example:**</span>
+
+<span class="sd">        &gt;&gt;&gt; Question(Assignment(&quot;Homework 4&quot;), 0)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cdata</span> <span class="o">=</span> <span class="n">parent_assignment</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;questions&#39;</span><span class="p">][</span><span class="n">q_ndx</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>  <span class="c1"># no question with this index on this assignment</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">f</span><span class="s1">&#39;</span><span class="si">{parent_assignment}</span><span class="s1"> does not have problem &#39;</span>
+                    <span class="n">f</span><span class="s1">&#39;indexed </span><span class="si">{q_ndx}</span><span class="s1">&#39;</span>
+                   <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># this is a valid question, so continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_json</span> <span class="o">=</span> <span class="n">cdata</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assignment</span><span class="p">:</span> <span class="n">Assignment</span> <span class="o">=</span> <span class="n">parent_assignment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_qnumb</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_qnumb</span> <span class="o">=</span> <span class="n">qn</span> <span class="o">=</span> <span class="n">q_ndx</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">parent_assignment</span><span class="o">.</span><span class="n">grade_path</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;q</span><span class="si">{qn}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rubric_filepath</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">parent_assignment</span><span class="o">.</span><span class="n">rubric_path</span><span class="p">,</span>
+                                          <span class="n">f</span><span class="s1">&#39;q</span><span class="si">{qn}</span><span class="s1">.json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_filepath</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">parent_assignment</span><span class="o">.</span><span class="n">log_path</span><span class="p">,</span>
+                                       <span class="n">f</span><span class="s1">&#39;q</span><span class="si">{qn}</span><span class="s1">.json&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">code_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span>
+        <span class="n">test_filename</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;q</span><span class="si">{qn}</span><span class="s1">.</span><span class="si">{self._json[&quot;test-ext&quot;]}</span><span class="s1">&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">parent_assignment</span><span class="o">.</span><span class="n">test_path</span><span class="p">,</span>
+                                    <span class="n">test_filename</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_handins</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Question.load_handins"><a class="viewcode-back" href="../classes.html#classes.Question.load_handins">[docs]</a>    <span class="nd">@require_resource</span><span class="p">(</span><span class="s1">&#39;/course/cs0111/handin-loading-lock.lock&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">load_handins</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        set self.handins based on the questions log file </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        
+        <span class="n">handins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">raw_handin</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">handins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Handin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_handin</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">),</span> <span class="o">**</span><span class="n">raw_handin</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;Handin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">handins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handin_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">)</span>
+
+        <span class="c1"># now set some boolean attributes</span>
+        <span class="k">def</span> <span class="nf">has_incomplete</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">handin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">handin</span><span class="o">.</span><span class="n">complete</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">def</span> <span class="nf">has_flagged</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">handin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">handin</span><span class="o">.</span><span class="n">flagged</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grading_started</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">started</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_incomplete</span> <span class="o">=</span> <span class="n">has_incomplete</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_flagged</span> <span class="o">=</span> <span class="n">has_flagged</span><span class="p">()</span>
+
+        <span class="c1"># how many handins for this question have been completed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">complete</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagged_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">flagged</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Question.ta_handins"><a class="viewcode-back" href="../classes.html#classes.Question.ta_handins">[docs]</a>    <span class="k">def</span> <span class="nf">ta_handins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;Handin&#39;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        return all handins for the given user</span>
+
+<span class="sd">        :param user: user for whom to find handins</span>
+<span class="sd">        :type user: User</span>
+<span class="sd">        :returns: handins that user is grading</span>
+<span class="sd">        :rtype: List[Handin]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span> <span class="k">if</span> <span class="n">h</span><span class="o">.</span><span class="n">grader</span> <span class="o">==</span> <span class="n">user</span><span class="o">.</span><span class="n">uname</span> <span class="ow">or</span> <span class="n">h</span><span class="o">.</span><span class="n">grader</span> <span class="o">==</span> <span class="s1">&#39;eberkowi&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Question.html_data"><a class="viewcode-back" href="../classes.html#classes.Question.html_data">[docs]</a>    <span class="k">def</span> <span class="nf">html_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HTMLData</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        given a user, return a dictionary with the data that will be used</span>
+<span class="sd">        to populate that TA&#39;s view of already extracted handins to grade </span>
+
+<span class="sd">        :param user: user for whom to get html data</span>
+<span class="sd">        :type user: User</span>
+<span class="sd">        :returns: the data required by the web app to allow the TA</span>
+<span class="sd">                  to grade handins for this question</span>
+<span class="sd">        :rtype: HTMLData</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># refresh the handins to make sure outdated information isnt loaded</span>
+        <span class="c1"># potentially unnecessary but I think it&#39;s a good idea just in case</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_handins</span><span class="p">()</span>
+
+        <span class="n">user_handins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ta_handins</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>  <span class="c1"># get this users&#39; handins to grade</span>
+
+        <span class="n">unextracted_logins</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span>
+            <span class="n">unextracted_logins</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">extracted</span> <span class="ow">or</span> <span class="n">h</span><span class="o">.</span><span class="n">blocklisted_by</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">uname</span><span class="p">)):</span>
+                    <span class="n">unextracted_logins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">id_to_login</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+
+        <span class="n">hdata</span><span class="p">:</span> <span class="n">HTMLData</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;ta_handins&#39;</span><span class="p">:</span>         <span class="p">[</span><span class="n">h</span><span class="o">.</span><span class="n">get_rubric_data</span><span class="p">()</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">user_handins</span><span class="p">],</span>
+            <span class="s1">&#39;handin_count&#39;</span><span class="p">:</span>       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">),</span>
+            <span class="s1">&#39;complete_count&#39;</span><span class="p">:</span>     <span class="bp">self</span><span class="o">.</span><span class="n">completed_count</span><span class="p">,</span>
+            <span class="s1">&#39;anonymous&#39;</span><span class="p">:</span>          <span class="bp">self</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">anonymous</span><span class="p">,</span>
+            <span class="s1">&#39;unextracted_logins&#39;</span><span class="p">:</span> <span class="n">unextracted_logins</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">hdata</span></div>
+
+<div class="viewcode-block" id="Question.get_random_handin"><a class="viewcode-back" href="../classes.html#classes.Question.get_random_handin">[docs]</a>    <span class="nd">@require_resource</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get_random_handin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;Handin&#39;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Get a random handin gradeable by the user</span>
+
+<span class="sd">        :param user: user for whom to get a handin</span>
+<span class="sd">        :type user: User</span>
+<span class="sd">        :returns: None if there are no more gradeable handins</span>
+<span class="sd">            for this question and user, or a randomly selected Handin otherwise</span>
+<span class="sd">        :rtype: Optional[Handin]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># refresh handins, in case someone else has extracted in the meantime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_handins</span><span class="p">()</span>
+
+        <span class="n">gradeable</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span> <span class="k">if</span> <span class="n">h</span><span class="o">.</span><span class="n">gradeable_by</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">uname</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">gradeable</span><span class="p">:</span>  <span class="c1"># no gradeable handins for this TA</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">gradeable</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Question.get_handin_by_id"><a class="viewcode-back" href="../classes.html#classes.Question.get_handin_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_handin_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ident</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Handin&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        get handin by anon id for this question</span>
+
+<span class="sd">        :param ident: anonymous identifier of student for this assignment</span>
+<span class="sd">        :type ident: int</span>
+<span class="sd">        :returns: the Handin of the relevant student for this question</span>
+<span class="sd">        :rtype: Handin</span>
+<span class="sd">        :raises: ValueError: no handin with anon id ident</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">handin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">handin</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">ident</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">handin</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;No handin with id </span><span class="si">{ident}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Question.add_handin_to_log"><a class="viewcode-back" href="../classes.html#classes.Question.add_handin_to_log">[docs]</a>    <span class="k">def</span> <span class="nf">add_handin_to_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ident</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        add a new handin to the question&#39;s log file</span>
+<span class="sd">        </span>
+<span class="sd">        :param ident: anonymous identifier of the new handin</span>
+<span class="sd">        :type ident: int</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        
+        <span class="n">new_data</span><span class="p">:</span> <span class="n">LogItem</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">ident</span><span class="p">,</span> <span class="s1">&#39;flag_reason&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="s1">&#39;complete&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;grader&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_data</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_handins</span><span class="p">()</span>  <span class="c1"># ugh idk concurrency is annoying</span></div>
+
+<div class="viewcode-block" id="Question.copy_rubric"><a class="viewcode-back" href="../classes.html#classes.Question.copy_rubric">[docs]</a>    <span class="k">def</span> <span class="nf">copy_rubric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rubric</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        return the JSON rubric of this question following the spec from</span>
+<span class="sd">        custom_types.py</span>
+<span class="sd">        </span>
+<span class="sd">        :returns: base rubric for this question</span>
+<span class="sd">        :rtype: Rubric</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rubric_filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Question.rewrite_rubric"><a class="viewcode-back" href="../classes.html#classes.Question.rewrite_rubric">[docs]</a>    <span class="nd">@require_resource</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">rewrite_rubric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rubric</span><span class="p">:</span> <span class="n">Rubric</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        given a new rubric, check the rubric and write it into the questions</span>
+<span class="sd">        rubric file.</span>
+
+<span class="sd">        :param rubric: The updated base rubric for this question.</span>
+<span class="sd">        :type rubric: Rubric</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loaded_rubric_check</span><span class="p">(</span><span class="n">rubric</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rubric_filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">rubric</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Question.add_ungiven_comment"><a class="viewcode-back" href="../classes.html#classes.Question.add_ungiven_comment">[docs]</a>    <span class="nd">@require_resource</span><span class="p">()</span>  <span class="c1"># using this here is definitely important</span>
+    <span class="k">def</span> <span class="nf">add_ungiven_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        add a comment to the rubric &amp; all extracted students </span>
+<span class="sd">        </span>
+<span class="sd">        :param category: the category to give the comment in, or</span>
+<span class="sd">                         None if giving a general comment</span>
+<span class="sd">        :type category: Optional[str]</span>
+<span class="sd">        :param comment: the comment to add to the ungiven comments list</span>
+<span class="sd">        :type comment: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">add_comment</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="sd">&quot;&quot;&quot; helper to take in a path and add the global comment to</span>
+<span class="sd">            the rubric in that file &quot;&quot;&quot;</span>
+            <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">rubric</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">category</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;comments&#39;</span><span class="p">][</span><span class="s1">&#39;un_given&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">comments</span> <span class="o">=</span> <span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">][</span><span class="n">category</span><span class="p">][</span><span class="s1">&#39;comments&#39;</span><span class="p">]</span>
+                <span class="n">comments</span><span class="p">[</span><span class="s1">&#39;un_given&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">rubric</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">add_comment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rubric_filepath</span><span class="p">)</span>  <span class="c1"># add to main rubric</span>
+
+        <span class="k">for</span> <span class="n">handin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">:</span>        <span class="c1"># add to all extracted handins</span>
+            <span class="k">if</span> <span class="n">handin</span><span class="o">.</span><span class="n">extracted</span><span class="p">:</span>
+                <span class="n">add_comment</span><span class="p">(</span><span class="n">handin</span><span class="o">.</span><span class="n">grade_path</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;Question(file=</span><span class="si">{self.code_filename}</span><span class="s1">)&#39;</span></div>
+
+
+<div class="viewcode-block" id="Handin"><a class="viewcode-back" href="../classes.html#classes.Handin">[docs]</a><span class="k">class</span> <span class="nc">Handin</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    </span>
+<span class="sd">    class for individual handin (question specific)</span>
+
+<span class="sd">    :ivar question: the Question this handin is for</span>
+<span class="sd">    :vartype question: Question</span>
+<span class="sd">    :ivar id: anonymous assignment identifier for the handin&#39;s student</span>
+<span class="sd">    :vartype id: int</span>
+<span class="sd">    :ivar complete: whether or not this handin has been graded</span>
+<span class="sd">    :vartype complete: bool</span>
+<span class="sd">    :ivar extracted: whether or not this handin has been extracted</span>
+<span class="sd">    :vartype extracted: bool</span>
+<span class="sd">    :ivar grader: None if unextracted, login of TA if is extracted</span>
+<span class="sd">    :vartype grader: Optional[str]</span>
+<span class="sd">    :ivar flagged: Whether or not the handin is flagged</span>
+<span class="sd">    :vartype flagged: bool</span>
+<span class="sd">    :ivar flag_reason: None if unflagged, the flag reason if flagged</span>
+<span class="sd">    :vartype flag_reason: Optional[str]</span>
+<span class="sd">    :ivar filepath: filepath of the students&#39; code file for this question</span>
+<span class="sd">    :vartype filepath: str</span>
+<span class="sd">    :ivar grade_path: JSON path of this students&#39; grade rubric</span>
+<span class="sd">    :vartype grade_path: str</span>
+<span class="sd">    :ivar handin_path: Directory path of the students&#39; handed in files</span>
+<span class="sd">    :vartype handin_path: str</span>
+<span class="sd">    :ivar login: None if anonymous assignment, student&#39;s login if</span>
+<span class="sd">                 non-anonymous assignment</span>
+<span class="sd">    :vartype login: Optional[str]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="Handin.__init__"><a class="viewcode-back" href="../classes.html#classes.Handin.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">question</span><span class="p">:</span> <span class="n">Question</span><span class="p">,</span> <span class="n">ident</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">complete</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+                 <span class="n">grader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">flag_reason</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Handin class (question specific). Used for managing invdividual handins.</span>
+<span class="sd">        </span>
+<span class="sd">        :param question: Question that this handin is for</span>
+<span class="sd">        :type question: Question</span>
+<span class="sd">        :param ident: anonymous id of the handin</span>
+<span class="sd">        :type ident: int</span>
+<span class="sd">        :param complete: whether or not grading of handin is complete</span>
+<span class="sd">        :type complete: bool</span>
+<span class="sd">        :param grader: None if handin unextracted, and the</span>
+<span class="sd">                       login of the TA grading the handin if it has</span>
+<span class="sd">        :type grader: Optional[str]</span>
+<span class="sd">        :param flag_reason: None if unflagged, and the flag reason</span>
+<span class="sd">                            if flagged</span>
+<span class="sd">        :type flag_reason: Optional[str]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="p">:</span> <span class="n">Question</span> <span class="o">=</span> <span class="n">question</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">ident</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">complete</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="p">(</span><span class="n">grader</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">grader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">flag_reason</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_reason</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">flag_reason</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">question</span><span class="o">.</span><span class="n">grade_path</span><span class="p">,</span>
+                                <span class="n">f</span><span class="s1">&#39;student-</span><span class="si">{self.id}</span><span class="s1">.json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">files_path</span><span class="p">,</span>
+                                 <span class="n">f</span><span class="s1">&#39;student-</span><span class="si">{self.id}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">code_filename</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">login</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">id_to_login</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">login</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Handin.get_rubric"><a class="viewcode-back" href="../classes.html#classes.Handin.get_rubric">[docs]</a>    <span class="nd">@is_extracted</span>
+    <span class="k">def</span> <span class="nf">get_rubric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rubric</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        get the rubric for this handin only; must be extracted </span>
+<span class="sd">        </span>
+<span class="sd">        :returns: rubric of this handin</span>
+<span class="sd">        :rtype: Rubric</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">d</span></div>
+        
+<div class="viewcode-block" id="Handin.get_rubric_data"><a class="viewcode-back" href="../classes.html#classes.Handin.get_rubric_data">[docs]</a>    <span class="nd">@is_extracted</span>
+    <span class="k">def</span> <span class="nf">get_rubric_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        collect information about the student&#39;s grade rubric </span>
+<span class="sd">        </span>
+<span class="sd">        :returns: a dictionary with the rubric for this handin along with some</span>
+<span class="sd">                  other metadata</span>
+<span class="sd">        :rtype: Dict[str, any]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rdata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">rdata</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>           <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">rdata</span><span class="p">[</span><span class="s1">&#39;student-name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">login</span>
+        <span class="n">rdata</span><span class="p">[</span><span class="s1">&#39;flagged&#39;</span><span class="p">]</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flagged</span>
+        <span class="n">rdata</span><span class="p">[</span><span class="s1">&#39;complete&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete</span>
+        <span class="n">rdata</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rubric</span><span class="p">()</span>
+        <span class="n">rdata</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">code_filename</span>
+        <span class="n">rdata</span><span class="p">[</span><span class="s1">&#39;sfile-link&#39;</span><span class="p">]</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span>
+        <span class="k">return</span> <span class="n">rdata</span></div>
+
+<div class="viewcode-block" id="Handin.get_code"><a class="viewcode-back" href="../classes.html#classes.Handin.get_code">[docs]</a>    <span class="k">def</span> <span class="nf">get_code</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        get student&#39;s code for this handin as a string, or an error string</span>
+<span class="sd">        if the code is not JSON decodable (it needs to be for the grading app)</span>
+<span class="sd">        </span>
+<span class="sd">        :returns: student code string or error string if code is not decodable</span>
+<span class="sd">        :rtype: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">code_filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                    <span class="n">f</span><span class="s1">&#39;No submission (or code issue). &#39;</span>
+                    <span class="n">f</span><span class="s1">&#39;Check </span><span class="si">{self.handin_path}</span><span class="s1"> to make sure&#39;</span>
+                   <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filepath</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.zip&#39;</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Submission is a zip file; open in file viewer&#39;</span>
+            <span class="k">return</span> <span class="n">msg</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># only ever reading this file, no need for lock</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="s1">&#39;Students code could not be decoded. Look at&#39;</span>
+                <span class="n">code</span> <span class="o">+=</span> <span class="s1">&#39; original handin &amp; contact an HTA&#39;</span>
+
+            <span class="k">return</span> <span class="n">code</span></div>
+
+<div class="viewcode-block" id="Handin.write_line"><a class="viewcode-back" href="../classes.html#classes.Handin.write_line">[docs]</a>    <span class="k">def</span> <span class="nf">write_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        update the log file for this handin</span>
+
+<span class="sd">        :param \*\*kwargs:</span>
+
+<span class="sd">                         - grader (str): login of the handin grader</span>
+
+<span class="sd">                         - flag_reason (str): explanation why the handin is</span>
+<span class="sd">                           flagged</span>
+
+<span class="sd">                         - complete (bool): whether or not handin is complete</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">log_filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">:</span> <span class="n">Log</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">handin</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">handin</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;grader&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="n">handin</span><span class="p">[</span><span class="s1">&#39;grader&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;grader&#39;</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="s1">&#39;flag_reason&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="n">handin</span><span class="p">[</span><span class="s1">&#39;flag_reason&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;flag_reason&#39;</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="s1">&#39;complete&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="n">handin</span><span class="p">[</span><span class="s1">&#39;complete&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;complete&#39;</span><span class="p">]</span>
+
+                <span class="k">break</span>
+
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">log_filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Handin.start_grading"><a class="viewcode-back" href="../classes.html#classes.Handin.start_grading">[docs]</a>    <span class="nd">@require_resource</span><span class="p">(</span><span class="s1">&#39;/course/cs0111/ta/question_extract_resource&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">start_grading</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ta</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        given a TA username, start grading this handin </span>
+<span class="sd">    </span>
+<span class="sd">        :param ta: login of ta grading this handin</span>
+<span class="sd">        :type ta: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="p">,</span> <span class="s1">&#39;cannot start grading on extracted handin&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_line</span><span class="p">(</span><span class="n">grader</span><span class="o">=</span><span class="n">ta</span><span class="p">,</span> <span class="n">flag_reason</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">complete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">rubric_filepath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grader</span> <span class="o">=</span> <span class="n">ta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Handin.unextract"><a class="viewcode-back" href="../classes.html#classes.Handin.unextract">[docs]</a>    <span class="nd">@require_resource</span><span class="p">()</span>
+    <span class="nd">@is_extracted</span>
+    <span class="k">def</span> <span class="nf">unextract</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        unextract handin; gets rid of grade rubric </span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_line</span><span class="p">(</span><span class="n">grader</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extracted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">flag_reason</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grader</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complete</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Handin.flag"><a class="viewcode-back" href="../classes.html#classes.Handin.flag">[docs]</a>    <span class="nd">@is_extracted</span>
+    <span class="k">def</span> <span class="nf">flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        flag a handin with an optional message </span>
+<span class="sd">        </span>
+<span class="sd">        :param msg: the flag reason, defaults to &#39;&#39;</span>
+<span class="sd">        :type msg: str, optional</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_line</span><span class="p">(</span><span class="n">flag_reason</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagged</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Handin.unflag"><a class="viewcode-back" href="../classes.html#classes.Handin.unflag">[docs]</a>    <span class="nd">@is_extracted</span>
+    <span class="k">def</span> <span class="nf">unflag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        unflag handin, reset flag message if there was one </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_line</span><span class="p">(</span><span class="n">flag_reason</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagged</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Handin.set_complete"><a class="viewcode-back" href="../classes.html#classes.Handin.set_complete">[docs]</a>    <span class="nd">@is_extracted</span>
+    <span class="k">def</span> <span class="nf">set_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        handin grading complete </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_line</span><span class="p">(</span><span class="n">complete</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complete</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Handin.write_grade"><a class="viewcode-back" href="../classes.html#classes.Handin.write_grade">[docs]</a>    <span class="k">def</span> <span class="nf">write_grade</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rubric</span><span class="p">:</span> <span class="n">Rubric</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        write the grade rubric </span>
+
+<span class="sd">        :param rubric: new rubric to write into grade file</span>
+<span class="sd">        :type rubric: Rubric</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loaded_rubric_check</span><span class="p">(</span><span class="n">rubric</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">rubric</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Handin.save_data"><a class="viewcode-back" href="../classes.html#classes.Handin.save_data">[docs]</a>    <span class="nd">@is_extracted</span>
+    <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                  <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]],</span>
+                  <span class="n">new_comments</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
+                  <span class="n">force_complete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Saves new data from grading app to rubric file</span>
+<span class="sd">        </span>
+<span class="sd">        :param data: a dict of category keys and</span>
+<span class="sd">                     (rubric_item -&gt; rubric_value) dict values</span>
+<span class="sd">        :type data: Dict[str, Dict[str, Optional[int]]]</span>
+<span class="sd">        :param new_comments: a tuple of general new comments to give and a</span>
+<span class="sd">                             dictionary of (category -&gt; comments to give)</span>
+<span class="sd">        :type new_comments: Tuple[List[str], Dict[str, List[str]]]</span>
+<span class="sd">        :param force_complete: whether or not the handin is</span>
+<span class="sd">                               marked as complete, defaults to False</span>
+<span class="sd">        :type force_complete: bool, optional</span>
+<span class="sd">        :returns: whether or not the operation was succesfully completed</span>
+<span class="sd">        :rtype: bool</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">check_rubric_complete</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="sd">&quot;&quot;&quot; check if rubric is complete (any unfilled rubric options) &quot;&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">cat</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">descr</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">cat</span><span class="p">][</span><span class="n">descr</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">cat</span><span class="p">])):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="n">rubric</span><span class="p">:</span> <span class="n">Rubric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rubric</span><span class="p">()</span>
+        <span class="n">rub_complete</span> <span class="o">=</span> <span class="n">check_rubric_complete</span><span class="p">()</span>
+
+        <span class="c1"># update comments irregardless of whether rubric is complete</span>
+        <span class="n">update_comments</span><span class="p">(</span><span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;comments&#39;</span><span class="p">],</span> <span class="n">new_comments</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">cat</span> <span class="ow">in</span> <span class="n">new_comments</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">update_comments</span><span class="p">(</span><span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">][</span><span class="n">cat</span><span class="p">][</span><span class="s1">&#39;comments&#39;</span><span class="p">],</span>
+                            <span class="n">new_comments</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">cat</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="n">force_complete</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rub_complete</span><span class="p">:</span>
+            <span class="c1"># attempting to finish grading but has empty rubric cells</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">cat</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">descr</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">cat</span><span class="p">]:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">cat</span><span class="p">][</span><span class="n">descr</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">ri</span> <span class="ow">in</span> <span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">][</span><span class="n">cat</span><span class="p">][</span><span class="s1">&#39;rubric_items&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">ri</span><span class="p">[</span><span class="s1">&#39;descr&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">descr</span><span class="p">:</span>
+                        <span class="n">ri</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+                        <span class="k">break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_grade</span><span class="p">(</span><span class="n">rubric</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Handin.gradeable_by"><a class="viewcode-back" href="../classes.html#classes.Handin.gradeable_by">[docs]</a>    <span class="k">def</span> <span class="nf">gradeable_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        checks if handin is gradeable by input login;</span>
+<span class="sd">        checks if the student is blocklisted by the TA or if the </span>
+<span class="sd">        handin has already been extracted (False if either are true) </span>
+<span class="sd">        </span>
+<span class="sd">        :param uname: login of TA who is attempting to grade</span>
+<span class="sd">        :type uname: str</span>
+<span class="sd">        :returns: whether or not the TA can grade this handin based on</span>
+<span class="sd">                  blocklists and the handin being extracted already</span>
+<span class="sd">        :rtype: bool</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocklisted_by</span><span class="p">(</span><span class="n">uname</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Handin.blocklisted_by"><a class="viewcode-back" href="../classes.html#classes.Handin.blocklisted_by">[docs]</a>    <span class="k">def</span> <span class="nf">blocklisted_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ta</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        determines if a TA can grade this handin</span>
+
+<span class="sd">        :param ta: login of the TA to check</span>
+<span class="sd">        :type ta: str</span>
+<span class="sd">        :returns: whether the handin&#39;s student is blocklisted by TA</span>
+<span class="sd">        :rtype: bool</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bl_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">blocklist_path</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">bl_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ta</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">ta</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Handin.generate_report_str"><a class="viewcode-back" href="../classes.html#classes.Handin.generate_report_str">[docs]</a>    <span class="nd">@is_extracted</span>
+    <span class="k">def</span> <span class="nf">generate_report_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rubric</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Rubric</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        return a report string for this handin (this question only)</span>
+<span class="sd">        formatted so that no lines are over 74 characters, indentation</span>
+<span class="sd">        is all pretty, etc. uses rubric if provided, otherwise loads</span>
+<span class="sd">        the handins&#39; rubric</span>
+
+<span class="sd">        :param rubric: the handins rubric or None (default) if the rubric</span>
+<span class="sd">                       should be loaded</span>
+<span class="sd">        :type rubric: Optional[Rubric], optional</span>
+<span class="sd">        :returns: the report string</span>
+<span class="sd">        :rtype: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">rubric</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rubric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rubric</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">get_handin_report_str</span><span class="p">(</span><span class="n">rubric</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grader</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Handin.generate_grade_report"><a class="viewcode-back" href="../classes.html#classes.Handin.generate_grade_report">[docs]</a>    <span class="nd">@is_extracted</span>
+    <span class="k">def</span> <span class="nf">generate_grade_report</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        get the formatted handin report_str and a dictionary with one key per</span>
+<span class="sd">        category, values being the numeric score the student received in that</span>
+<span class="sd">        category (for this question only)</span>
+<span class="sd">        **Note**: no grades can below a 0; as such, any negative grades will</span>
+<span class="sd">        be rounded up to 0</span>
+
+<span class="sd">        :returns: a tuple with the report string and the comments dictionary</span>
+<span class="sd">        :rtype: Tuple[str, Dict[str, int]]</span>
+<span class="sd">        :raises: ValueError if the handin is incomplete</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rubric</span><span class="p">:</span> <span class="n">Rubric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rubric</span><span class="p">()</span>
+        <span class="n">report_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_report_str</span><span class="p">(</span><span class="n">rubric</span><span class="p">)</span>
+        <span class="n">grade</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">]:</span>
+            <span class="c1"># set grade for this category</span>
+            <span class="n">grade</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">rubric_item</span> <span class="ow">in</span> <span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;rubric_items&#39;</span><span class="p">]:</span>
+                <span class="n">sel_ndx</span> <span class="o">=</span> <span class="n">rubric_item</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">sel_ndx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">e</span> <span class="o">=</span> <span class="p">(</span>
+                         <span class="n">f</span><span class="s1">&#39;Invalid generate_grade_report call on &#39;</span>
+                         <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self}</span><span class="s1">&#39;</span>
+                        <span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+                <span class="n">grade</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rubric_item</span><span class="p">[</span><span class="s1">&#39;items&#39;</span><span class="p">][</span><span class="n">sel_ndx</span><span class="p">][</span><span class="s1">&#39;point_val&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">grade</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">grade</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">grade</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">report_str</span><span class="p">,</span> <span class="n">grade</span></div>
+
+<div class="viewcode-block" id="Handin.run_test"><a class="viewcode-back" href="../classes.html#classes.Handin.run_test">[docs]</a>    <span class="k">def</span> <span class="nf">run_test</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Runs the testsuite for this handin and returns the results</span>
+<span class="sd">        </span>
+<span class="sd">        :returns: testsuite results</span>
+<span class="sd">        :rtype: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">test_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;test-ext&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">test_type</span> <span class="o">==</span> <span class="s1">&#39;arr&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pyret_test</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">test_type</span> <span class="o">==</span> <span class="s1">&#39;py&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">python_test</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;Invalid test extension (contact HTA)&#39;</span></div>
+
+<div class="viewcode-block" id="Handin.python_test"><a class="viewcode-back" href="../classes.html#classes.Handin.python_test">[docs]</a>    <span class="k">def</span> <span class="nf">python_test</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Runs python testsuite for this handin, returning the results</span>
+
+<span class="sd">        :returns: the results of the testsuite as a string</span>
+<span class="sd">        :rtype: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">test_filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;tabin&#39;</span><span class="p">,</span> <span class="s1">&#39;python-test&#39;</span><span class="p">),</span>
+               <span class="n">test_filepath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Handin.pyret_test"><a class="viewcode-back" href="../classes.html#classes.Handin.pyret_test">[docs]</a>    <span class="k">def</span> <span class="nf">pyret_test</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Runs pyret testsuite for this handin, returning the results</span>
+
+<span class="sd">        :returns: the results of the testsuite as a string</span>
+<span class="sd">        :rtype: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">code_filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;No handin or missing handin&#39;</span>
+        
+        <span class="n">test_dir</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span><span class="p">,</span> <span class="s1">&#39;TA_TESTS&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">test_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">test_dir</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;No test file for this question: contact HTA&#39;</span>
+
+        <span class="n">test_filepath</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">test_dir</span><span class="p">,</span>
+                              <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">,</span> <span class="n">test_filepath</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+                <span class="n">relpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">test_dir</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;import file(&quot;</span><span class="si">{relpath}</span><span class="s1">&quot;) as SC</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+        
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;tabin&#39;</span><span class="p">,</span> <span class="s1">&#39;pyret-test&#39;</span><span class="p">),</span>
+               <span class="n">filepath</span><span class="p">,</span> <span class="n">test_filepath</span><span class="p">,</span> <span class="n">test_dir</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">f</span><span class="s1">&#39;Handin(id=</span><span class="si">{self.id}</span><span class="s1">, extracted=</span><span class="si">{self.extracted}</span><span class="s1">, &#39;</span>
+                    <span class="n">f</span><span class="s1">&#39;complete=</span><span class="si">{self.complete}</span><span class="s1">&#39;</span>
+                   <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">f</span><span class="s1">&#39;Handin(id=</span><span class="si">{self.id}</span><span class="s1">, login=</span><span class="si">{self.login}</span><span class="s1">, &#39;</span>
+                    <span class="n">f</span><span class="s1">&#39;extracted=</span><span class="si">{self.extracted}</span><span class="s1">, complete=</span><span class="si">{self.complete}</span><span class="s1">&#39;</span>
+                   <span class="p">)</span>
+
+        <span class="n">base</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;, grader=</span><span class="si">{self.grader}</span><span class="s1">)&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span> <span class="k">else</span> <span class="s1">&#39;)&#39;</span>
+        <span class="k">return</span> <span class="n">base</span></div>
+
+
+<div class="viewcode-block" id="started_asgns"><a class="viewcode-back" href="../classes.html#classes.started_asgns">[docs]</a><span class="k">def</span> <span class="nf">started_asgns</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Assignment</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    </span>
+<span class="sd">    Get list of started assignments</span>
+
+<span class="sd">    :returns: list of started assignments (unloaded)</span>
+<span class="sd">    :rtype: List[Assignment]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]:</span>
+        <span class="n">asgn</span> <span class="o">=</span> <span class="n">Assignment</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">asgn</span><span class="o">.</span><span class="n">started</span><span class="p">:</span>
+            <span class="n">assignments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asgn</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">assignments</span></div>
+
+
+<div class="viewcode-block" id="all_asgns"><a class="viewcode-back" href="../classes.html#classes.all_asgns">[docs]</a><span class="k">def</span> <span class="nf">all_asgns</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Assignment</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    </span>
+<span class="sd">    Get list of all assignments</span>
+
+<span class="sd">    :returns: list of all assignments (unloaded)</span>
+<span class="sd">    :rtype: List[Assignment]</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]:</span>
+        <span class="n">asgn</span> <span class="o">=</span> <span class="n">Assignment</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">assignments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asgn</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">assignments</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
