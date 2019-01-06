@@ -1,50 +1,31 @@
 import json
 import sys
-from custom_types import *
-from mypy_extensions import TypedDict
-from typing import List, Dict, Optional, Any
+from typing import Any, List, Dict
 
-class OldComment(TypedDict):
+from mypy_extensions import TypedDict
+
+from custom_types import (Comments, Rubric, RubricCategory,
+                          RubricItem, RubricOption)
+
+
+class _OldComment(TypedDict):
     comment: str
     value: bool
 
 
-class Comments(TypedDict):
-    given: List[str]
-    un_given: List[str]
-
-
-class RubricOption(TypedDict):
-    point_val: int
-    descr: str
-
-
-class RubricItem(TypedDict):
-    descr: str
-    default: Optional[int]
-    selected: Optional[int]
-    items: List[RubricOption]
-
-
-class RubricCategory(TypedDict):
-    comments: Comments
-    rubric_items: List[RubricItem]
-
-
-class Rubric(TypedDict):
-    comments: Comments
-    rubric: Dict[str, RubricCategory]
-
-
-with open(sys.argv[1]) as f:
-    data: Dict[str, Any] = json.load(f)
-
-def update_comments(comments: List[OldComment]) -> Comments:
+def _update_comments(comments: List[_OldComment]) -> Comments:
+    """
+    update old comments to new comments
+    :param comments: old comments
+    :return: new comments
+    """
     given = [c['comment'] for c in comments if c['value']]
     un_given = [c['comment'] for c in comments if not c['value']]
-    return {'given': given, 'un_given': un_given}
+    res: Comments = {'given': given, 'un_given': un_given}
+    return res
 
-def update_rubric(items: List[dict]) -> List[RubricItem]:
+
+def _update_rubric_items(items: List[dict]) -> List[RubricItem]:
     new_items: List[RubricItem] = []
     for item in items:
         if item['default'] is None:
@@ -68,16 +49,31 @@ def update_rubric(items: List[dict]) -> List[RubricItem]:
     return new_items
 
 
-gen_comments: Comments = update_comments(data.pop('_COMMENTS'))
-new_rubric: Dict[str, RubricCategory] = {}
-for key in list(data.keys()).copy():
-    cat_data = data.pop(key)
-    cat_comments = update_comments(cat_data['comments'])
-    cat_rub = update_rubric(cat_data['rubric_items'])
-    new_cat = RubricCategory(comments=cat_comments, rubric_items=cat_rub)
-    new_rubric[key] = new_cat
+def update_rubric(old_rubric: Dict[str, Any]) -> Rubric:
+    """
+    given a rubric of the old style (version < 2.0), update it to a rubric of
+    new style (2.0+)
+    :param old_rubric:
+    :return:
+    """
+    gen_comments: Comments = _update_comments(old_rubric.pop('_COMMENTS'))
+    new_rubric: Dict[str, RubricCategory] = {}
+    for key in list(old_rubric.keys()).copy():
+        cat_data = old_rubric.pop(key)
+        cat_comments = _update_comments(cat_data['comments'])
+        cat_rub = _update_rubric_items(cat_data['rubric_items'])
+        new_cat = RubricCategory(comments=cat_comments, rubric_items=cat_rub)
+        new_rubric[key] = new_cat
 
-final_rubric: Rubric = Rubric(comments=gen_comments, rubric=new_rubric)
-with open(sys.argv[1].replace('.json', '') + '-new.json', 'w') as f:
-    json.dump(final_rubric, f, indent=2, sort_keys=True)
+    final_rubric: Rubric = Rubric(comments=gen_comments, rubric=new_rubric)
+    return final_rubric
 
+
+if __name__ == '__main__':
+    with open(sys.argv[1]) as f:
+        data: Dict[str, Any] = json.load(f)
+
+    final_rubric = update_rubric(data)
+
+    with open(sys.argv[1].replace('.json', '') + '-new.json', 'w') as f:
+        json.dump(final_rubric, f, indent=2, sort_keys=True)

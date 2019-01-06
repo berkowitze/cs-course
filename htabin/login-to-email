@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 
-ldapsearch -Q cn=$1 | grep mail
-
+full=`ldapsearch -Q cn=$1 | grep mail`
+em=${full#"mail: "}
+echo $em

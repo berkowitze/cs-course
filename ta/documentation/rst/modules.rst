@@ -1,0 +1,12 @@
+ta/grading
+=======
+
+.. toctree::
+   :maxdepth: 4
+
+   classes
+   course_customization
+   custom_types
+   grading_app
+   helpers
+   update_rubric

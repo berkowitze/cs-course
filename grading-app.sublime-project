@@ -1,0 +1,11 @@
+{
+    "DocblockrPython": {
+        "formatter": "sphinx"
+    },
+	"folders":
+	[
+		{
+			"path": "/course/cs0111"
+		}
+	]
+}

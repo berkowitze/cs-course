@@ -1,0 +1,263 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>course_customization module &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">course_customization module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>course_customization module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/course_customization.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-course_customization">
+<span id="course-customization-module"></span><h1>course_customization module<a class="headerlink" href="#module-course_customization" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="course_customization.determine_grade">
+<code class="descclassname">course_customization.</code><code class="descname">determine_grade</code><span class="sig-paren">(</span><em>grade: Dict[str, Union[int, float, None]], asgn: str</em><span class="sig-paren">)</span> &#x2192; Union[int, float, str, Dict[str, str], Dict[str, int]]<a class="reference internal" href="_modules/course_customization.html#determine_grade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.determine_grade" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>inputs:</dt>
+<dd><ul class="first last simple">
+<li>grade, a RawGrade (defined in custom_types).</li>
+<li>asgn, a string describing the assignment in the form output
+by full_asgn_name_to_dirname.</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd>the Grade to assign the student (Grade type defined in custom_types)
+(must be JSON writeable)</dd>
+<dt>Example:</dt>
+<dd>determine_grade({“Functionality”: 20, “Design”: 12}, “Homework1”) -&gt; 32
+determine_grade({“Grade”: 44}, “Homework 6”)</dd>
+</dl>
+<p>can return either a 32, or {“</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.full_asgn_name_to_dirname">
+<code class="descclassname">course_customization.</code><code class="descname">full_asgn_name_to_dirname</code><span class="sig-paren">(</span><em>asgn_name: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/course_customization.html#full_asgn_name_to_dirname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.full_asgn_name_to_dirname" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>inputs:</dt>
+<dd><ul class="first last simple">
+<li>asgn_name : string</li>
+</ul>
+</dd>
+<dt>output:</dt>
+<dd>the string of the directory name to be used for that assignment.
+this directory name will be used for all grading app related filesystems</dd>
+</dl>
+<p>examples: full_asgn_name_to_dirname(“Homework 3”) -&gt; “homework3”</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.get_empty_raw_grade">
+<code class="descclassname">course_customization.</code><code class="descname">get_empty_raw_grade</code><span class="sig-paren">(</span><em>asgn: Assignment</em><span class="sig-paren">)</span> &#x2192; RawGrade<a class="reference internal" href="_modules/course_customization.html#get_empty_raw_grade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.get_empty_raw_grade" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a dictionary with one key for every theme on this assignment,
+with values of set_to (set_to = None by default)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.get_handin_report_str">
+<code class="descclassname">course_customization.</code><code class="descname">get_handin_report_str</code><span class="sig-paren">(</span><em>rubric: Rubric</em>, <em>grader_login: str</em>, <em>question: Question</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/course_customization.html#get_handin_report_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.get_handin_report_str" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="course_customization.increasing">
+<code class="descclassname">course_customization.</code><code class="descname">increasing</code><span class="sig-paren">(</span><em>lst: Sequence[float]</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/course_customization.html#increasing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.increasing" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns true if the input list is increasing (non-decreasing)
+(all numbers larger or equal to than previous numbers)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.raw_grade_to_grade">
+<code class="descclassname">course_customization.</code><code class="descname">raw_grade_to_grade</code><span class="sig-paren">(</span><em>raw_grade: RawGrade</em>, <em>late: bool</em>, <em>asgn: Assignment</em><span class="sig-paren">)</span> &#x2192; Grade<a class="reference internal" href="_modules/course_customization.html#raw_grade_to_grade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.raw_grade_to_grade" title="Permalink to this definition">¶</a></dt>
+<dd><p>given a grade dictionary with numeric grades, determine the
+text grades from the possibilities list (defined in function)</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

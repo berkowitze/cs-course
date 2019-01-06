@@ -5,7 +5,7 @@ import json
 import os
 from contextlib import contextmanager
 from functools import wraps
-from typing import Generator
+from typing import Generator, Callable, Any
 
 from filelock import FileLock
 
@@ -17,7 +17,22 @@ def_res_path: str = os.path.join(BASE_PATH, 'resource-lock.lock')
 
 @contextmanager
 def locked_file(filename: str, mode: str = 'r') -> Generator:
-    """ this will ensure no file is opened across different processes """
+    """
+    Yield a locked file to be used for safe, one at a time reading/writing
+
+    :param filename: filename of path to open
+    :param mode: mode to open in (should only be read append or write)
+                 opens in read mode by default ("r")
+    :return: locked file to use
+
+    **Example:**
+
+    .. code-block:: python
+
+        with locked_file('hello.txt') as f:
+            text = f.read()
+
+    """
     if not (mode == 'r' or mode == 'a' or mode == 'w'):
         base = 'Can only open locked file in r, w, or a mode (just in case)'
         raise ValueError(base)
@@ -38,15 +53,19 @@ def locked_file(filename: str, mode: str = 'r') -> Generator:
             pass
 
 
-def require_resource(resource: str = def_res_path):
+def require_resource(resource: str = def_res_path) -> Callable[[Callable], Any]:
     """ use require_resource as a decorator when writing a function that you
-    don't want to be run simultaneously; for example, if you don't want to run
-    extract_handin at the same time on two different TA's computers
-    you'd do something like:
+    shouldn't be run simultaneously
 
-    @require_resource()
-    def extract_handin(...):
-        ...
+    :param resource: resource to lock while the function is being run
+                     (set by default, but can be overrided if needed)
+    :return: a decorator to be used around a function/method as required
+
+    .. code-block:: python
+
+        @require_resource()
+        def extract_handin(...):
+            ...
 
     """
     def decorator(f):
@@ -63,11 +82,12 @@ def require_resource(resource: str = def_res_path):
 
 def json_file_with_check(path: str):
     """
-    given a path to a json file, return the data in that json file
-    also checking that the path exists (with AssertionErrors raised
-    for invalid input, so that they can be caught along with other
-    AssertionErrors raised in rubric/bracket checking functions below
-    if necessary). works for Rubrics and Brackets
+    returns data in JSON file after checking that it contains valid JSON
+
+    :param path: the path of the JSON file
+    :return: the data in the JSON file
+    :raises AssertionError: invalid JSON file (filename or data in file)
+
     """
     assert os.path.exists(path), f'json path {path} does not exist'
     assert os.path.splitext(path)[1] == '.json', \
@@ -83,11 +103,27 @@ def json_file_with_check(path: str):
 
 
 def rubric_check(path: str) -> None:
-    """ given a path to a rubric JSON file
-        /course/.../ta/grading/data/rubrics/.../q1.json
-    determines whether or not the rubric is valid (should follow spec in
-    custom_types). raises assertion error if invalid
     """
+    Check validity of rubric by path
+    :param path: path of rubric to check
+    :return: None as long as rubric is valid
+    :raises AssertionError: invalid rubric
+
+    """
+    rubric: Rubric = json_file_with_check(path)
+    loaded_rubric_check(rubric)
+
+
+def loaded_rubric_check(rubric: Rubric) -> None:
+    """
+
+    :param rubric: rubric to check
+    :type rubric: Rubric
+    :return: nothing if the rubric is valid
+    :raises AssertionError: invalid rubric
+
+    """
+
     def check_rubric_category(rc: RubricCategory) -> bool:
         assert check_comments(rc['comments'])
         assert isinstance(rc['rubric_items'], list)
@@ -117,12 +153,11 @@ def rubric_check(path: str) -> None:
                        comments['un_given']))
         return True
 
-    data: Rubric = json_file_with_check(path)
-    assert isinstance(data, dict)  # loaded rubric is a dictionary
-    assert check_comments(data['comments'])
+    assert isinstance(rubric, dict)  # loaded rubric is a dictionary
+    assert check_comments(rubric['comments'])
 
-    assert isinstance(data['rubric'], dict)  # rubric key exists
-    assert all(map(check_rubric_category, data['rubric'].values()))
+    assert isinstance(rubric['rubric'], dict)  # rubric key exists
+    assert all(map(check_rubric_category, rubric['rubric'].values()))
 
 
 def bracket_check(path: str) -> None:
@@ -149,7 +184,7 @@ def update_comments(comments: Comments, new_given: List[str]) -> None:
     inputs:
         - comments, a Comments dictionary (given and un_given keys)
         - new_given, a list of comments that the TA has assigned to
-          be the new given key of this Comments block
+          be the new given comments of this Comments block
     output: None
     effect: modify `comments` to update given comments to match new_given
     and un_given comments to have all un_given comments """
