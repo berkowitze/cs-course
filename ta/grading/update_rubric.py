@@ -41,9 +41,8 @@ def _update_rubric_items(items: List[dict]) -> List[RubricItem]:
         zipped_opts = zip(item['point-val'], item['options'])
         opts = [RubricOption(descr=v, point_val=d) for (d, v) in zipped_opts]
         n_item = RubricItem(descr=item['name'],
-                            default=def_ndx,
                             selected=sel_ndx,
-                            items=opts)
+                            options=opts)
         new_items.append(n_item)
 
     return new_items

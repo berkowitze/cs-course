@@ -1,21 +1,20 @@
 # written by Eli Berkowitz (eberkowi) 2018
-# TODO: formalize docstring format
 
 import json
 import os
 import random
 import shutil
 import subprocess
+from datetime import datetime as dt
 from functools import wraps
 from os.path import join as pjoin
-from datetime import datetime as dt
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from course_customization import full_asgn_name_to_dirname, \
-    get_handin_report_str
+    get_handin_report_str, get_empty_raw_grade, determine_grade
 from custom_types import HTMLData, Log, LogItem, Rubric
-from helpers import locked_file, require_resource, \
-    rubric_check, update_comments, loaded_rubric_check
+from helpers import (loaded_rubric_check, locked_file,
+                     require_resource, update_comments)
 
 # READ BEFORE EDITING THIS FILE #
 # do not use the builtin `open` function; instead use the
@@ -27,18 +26,18 @@ from helpers import locked_file, require_resource, \
 
 BASE_PATH = '/course/cs0111'
 DATA_PATH = pjoin(BASE_PATH, 'ta', 'grading', 'data')
-proj_base_path    = pjoin(DATA_PATH, 'projects')
-asgn_data_path    = pjoin(BASE_PATH, 'ta', 'assignments.json')
-ta_path           = pjoin(BASE_PATH, 'ta/groups', 'tas.txt')
-hta_path          = pjoin(BASE_PATH, 'ta/groups', 'htas.txt')
-student_path      = pjoin(BASE_PATH, 'ta/groups', 'students.txt')
-log_base_path     = pjoin(DATA_PATH, 'logs')
-test_base_path    = pjoin(DATA_PATH, 'tests')
-rubric_base_path  = pjoin(DATA_PATH, 'rubrics')
-grade_base_path   = pjoin(DATA_PATH, 'grades')
+proj_base_path = pjoin(DATA_PATH, 'projects')
+asgn_data_path = pjoin(BASE_PATH, 'ta', 'assignments.json')
+ta_path = pjoin(BASE_PATH, 'ta/groups', 'tas.txt')
+hta_path = pjoin(BASE_PATH, 'ta/groups', 'htas.txt')
+student_path = pjoin(BASE_PATH, 'ta/groups', 'students.txt')
+log_base_path = pjoin(DATA_PATH, 'logs')
+test_base_path = pjoin(DATA_PATH, 'tests')
+rubric_base_path = pjoin(DATA_PATH, 'rubrics')
+grade_base_path = pjoin(DATA_PATH, 'grades')
 s_files_base_path = pjoin(DATA_PATH, 'sfiles')
-anon_base_path    = pjoin(DATA_PATH, 'anonymization')
-blocklist_path    = pjoin(DATA_PATH, 'blocklists')
+anon_base_path = pjoin(DATA_PATH, 'anonymization')
+blocklist_path = pjoin(DATA_PATH, 'blocklists')
 assert os.path.exists(asgn_data_path), 'No data file "{asgn_data_path}"'
 
 with locked_file(asgn_data_path) as f:
@@ -48,12 +47,15 @@ with locked_file(asgn_data_path) as f:
 # function that checks if an assignment has been started
 # func is the function the wrapper will be wrapped around
 def is_started(func: Callable) -> Callable:
-    """decorator that checks if assignment has been started before
+    """
+
+    decorator that checks if assignment has been started before
     calling the appropriate method
 
     :param func: method for Assignments (should take in assignment as first
                  argument)
     :return: decorated method
+
     """
     @wraps(func)
     def magic(asgn: 'Assignment', *args, **kwargs):
@@ -71,9 +73,11 @@ def is_started(func: Callable) -> Callable:
 
 
 def is_extracted(func: Callable) -> Callable:
-    """Ensures a handin is extracted (to be used as a decorator)
+    """
+
+    Ensures a handin is extracted (to be used as a decorator)
     raises ValueError if method called on unextracted handin
-    
+
     :param func: any Handin method
     :type func: Callable
     :returns: decorated method that checks if handin is extracted
@@ -90,6 +94,7 @@ def is_extracted(func: Callable) -> Callable:
             @is_extracted
             def unextract(self, ...):
                 ...
+
     """
     @wraps(func)
     def magic(handin: 'Handin', *args, **kwargs):
@@ -108,7 +113,7 @@ def is_extracted(func: Callable) -> Callable:
 
 class User:
     """
-    
+
     User class to give an interface to the user and their permissions.
 
     :ivar uname: The user's login
@@ -118,15 +123,15 @@ class User:
     :ivar ta: Whether or not the user is a TA
     :vartype ta: bool
     """
-    
+
     def __init__(self, uname: str) -> None:
         """
-        
+
         make a new User
 
         :param uname: CS login of user
         :type uname: str
-        
+
         """
         with locked_file(ta_path) as t, locked_file(hta_path) as h:
             tas = t.read().strip().split('\n')
@@ -153,7 +158,7 @@ class Assignment:
     """
 
     Provides interface with logs, grades, and rubrics, files, etc.
-    
+
     :ivar proj_dir: If group_asgn is False, None. If group_asgn is True,
                     the name of the common directory to use
                     (for multi-assignment projects). For example, "project3"
@@ -187,18 +192,19 @@ class Assignment:
     :ivar blocklist_path: JSON parth where blocklist information for this
                           assignment will be stored
     :vartype blocklist_path: str
+    :ivar grading_completed: whether or not grading has been completed for
+                             this assignment
     :ivar _json: JSON data for this assignment from assignments.json
     :vartype _json: dict
-    
     :ivar __login_to_id_map: a map from login to anonymous ID for this asgn
     :vartype __login_to_id_map: Dict[str, int]
     :ivar __id_to_login_map: a map from anonymous ID to login for this asgn
     :vartype __id_to_login_map: Dict[int, str]
-    
+
     """
     def __init__(self, key: str, full_load: bool = False) -> None:
         """
-        
+
         Create a new assignment based on the key from /ta/assignments.json
 
         :param key: Key of assignment to load (i.e. 'Homework 4')
@@ -239,6 +245,7 @@ class Assignment:
         self.bracket_path: str = pjoin(rubric_base_path,
                                        self.mini_name,
                                        'bracket.json')
+        self.grading_completed = self._json['grading_completed']
 
         if self.started and full_load:
             self.load()
@@ -249,8 +256,8 @@ class Assignment:
     @is_started
     def load(self):
         """
-        
-        Loads the assignment (checks all paths are proper and 
+
+        Loads the assignment (checks all paths are proper and
         loads all assignment questions)
         :raises AssertionError: invalid assignment
 
@@ -280,7 +287,7 @@ class Assignment:
     @is_started
     def __load_questions(self) -> None:
         """load all log files, creating Question instances stored into
-        self.questions.  
+        self.questions.
         """
         questions = []
         for qnumb, q in enumerate(self._json['questions']):
@@ -292,7 +299,7 @@ class Assignment:
     @is_started
     def get_question(self, ndx: int) -> 'Question':
         """
-        
+
         get a question by index (0 indexed)
 
         :param ndx: Index of question (0 index)
@@ -310,11 +317,11 @@ class Assignment:
                  f'{len(self.questions)} qns'
                 )
             raise IndexError(e)
-    
+
     @is_started
     def login_to_id(self, login: str) -> int:
         """
-        
+
         Get anonymous ID of student by login
 
         :param login: Student CS login
@@ -342,11 +349,11 @@ class Assignment:
         except KeyError:
             #  then fail
             raise ValueError(f'login {login} does not exist in map for {self}')
-    
+
     @is_started
     def id_to_login(self, ident: int) -> str:
         """
-        
+
         Get anonymous ID of student by login
 
         :param ident: Student anonymous ID for this assignment
@@ -354,7 +361,7 @@ class Assignment:
         :returns: Login of student with ident id
         :rtype: str
         :raises: ValueError: No student with anon ID for this assignment
-        
+
         """
         if self.anonymous:
             raise ValueError('Cannot get login on anonymous assignment')
@@ -383,9 +390,9 @@ class Assignment:
 
 class Question:
     """
-    
+
     Class for questions (Assignments are made up of a list of questions)
-    
+
     :ivar completed_count: number of handins graded
     :vartype completed_count: int
     :ivar flagged_count: number of handins flagged for review
@@ -400,7 +407,7 @@ class Question:
     :vartype has_incomplete: bool
     :ivar assignment: assignment this question is from
     :vartype assignment: Assignment
-    :ivar code_filename: string of the filename of this question (i.e. maze.arr)
+    :ivar code_filename: code filename of this question (i.e. maze.arr)
     :vartype code_filename: str
     :ivar grade_path: path that grades of this question will be stored in
     :vartype grade_path: str
@@ -414,15 +421,16 @@ class Question:
     :vartype _qnumb: int
     :ivar rubric_filepath: filepath for the base rubric for this question
     :vartype rubric_filepath: str
-    :ivar test_path: base filepath for the testsuite for this question
-    :vartype test_path: str
+    :ivar test_path: base filepath for the testsuite for this question, or
+                     None if there is no testsuite for this question.
+    :vartype test_path: Optional[str]
     :ivar _json: JSON for this question from /ta/assignments.json
     :vartype _json: dict
-    
+
     """
     def __init__(self, parent_assignment: Assignment, q_ndx: int) -> None:
         """
-        
+
         makes a Question instance. I highly recommend against direct
         instantiation (let Assignment class
         do it)
@@ -464,22 +472,26 @@ class Question:
                                        f'q{qn}.json')
 
         self.code_filename: str = self._json['filename']
-        test_filename = f'q{qn}.{self._json["test-ext"]}'
-        self.test_path: str = pjoin(parent_assignment.test_path,
-                                    test_filename)
+
+        self.test_path: Optional[str]
+        if self._json['test-ext'] is None:
+            self.test_path = None
+        else:
+            test_filename = f'q{qn}.{self._json["test-ext"]}'
+            self.test_path = pjoin(parent_assignment.test_path, test_filename)
 
         self.load_handins()
 
     @require_resource('/course/cs0111/handin-loading-lock.lock')
     def load_handins(self) -> None:
         """
-        
-        set self.handins based on the questions log file 
+
+        set self.handins based on the questions log file
 
         """
         with locked_file(self.log_filepath) as f:
             data = json.load(f)
-        
+
         handins = []
         for raw_handin in data:
             handins.append(Handin(self, raw_handin.pop('id'), **raw_handin))
@@ -512,7 +524,7 @@ class Question:
 
     def ta_handins(self, user: User) -> List['Handin']:
         """
-        
+
         return all handins for the given user
 
         :param user: user for whom to find handins
@@ -521,13 +533,14 @@ class Question:
         :rtype: List[Handin]
 
         """
-        return [h for h in self.handins if h.grader == user.uname or h.grader == 'eberkowi']
+        return [h for h in self.handins if (
+            h.grader == user.uname or h.grader == 'eberkowi')]
 
     def html_data(self, user: User) -> HTMLData:
         """
-        
+
         given a user, return a dictionary with the data that will be used
-        to populate that TA's view of already extracted handins to grade 
+        to populate that TA's view of already extracted handins to grade
 
         :param user: user for whom to get html data
         :type user: User
@@ -541,21 +554,21 @@ class Question:
         # potentially unnecessary but I think it's a good idea just in case
         self.load_handins()
 
-        user_handins = self.ta_handins(user)  # get this users' handins to grade
+        user_handins = self.ta_handins(user)  # get this ta's handins to grade
 
-        unextracted_logins: Optional[List[str]] = None
+        unext_logins: Optional[List[str]] = None
         if not self.assignment.anonymous:
-            unextracted_logins = []
+            unext_logins = []
             for h in self.handins:
                 if not (h.extracted or h.blocklisted_by(user.uname)):
-                    unextracted_logins.append(self.assignment.id_to_login(h.id))
+                    unext_logins.append(self.assignment.id_to_login(h.id))
 
         hdata: HTMLData = {
             'ta_handins':         [h.get_rubric_data() for h in user_handins],
             'handin_count':       len(self.handins),
             'complete_count':     self.completed_count,
             'anonymous':          self.assignment.anonymous,
-            'unextracted_logins': unextracted_logins
+            'unextracted_logins': unext_logins
         }
 
         return hdata
@@ -563,7 +576,7 @@ class Question:
     @require_resource()
     def get_random_handin(self, user: User) -> Optional['Handin']:
         """
-        
+
         Get a random handin gradeable by the user
 
         :param user: user for whom to get a handin
@@ -585,7 +598,7 @@ class Question:
 
     def get_handin_by_id(self, ident: int) -> 'Handin':
         """
-        
+
         get handin by anon id for this question
 
         :param ident: anonymous identifier of student for this assignment
@@ -603,16 +616,16 @@ class Question:
 
     def add_handin_to_log(self, ident: int) -> None:
         """
-        
+
         add a new handin to the question's log file
-        
+
         :param ident: anonymous identifier of the new handin
         :type ident: int
 
         """
         with locked_file(self.log_filepath) as f:
             data = json.load(f)
-        
+
         new_data: LogItem = {'id': ident, 'flag_reason': None,
                              'complete': False, 'grader': None}
         data.append(new_data)
@@ -623,10 +636,10 @@ class Question:
 
     def copy_rubric(self) -> Rubric:
         """
-        
+
         return the JSON rubric of this question following the spec from
         custom_types.py
-        
+
         :returns: base rubric for this question
         :rtype: Rubric
 
@@ -637,7 +650,7 @@ class Question:
     @require_resource()
     def rewrite_rubric(self, rubric: Rubric) -> None:
         """
-        
+
         given a new rubric, check the rubric and write it into the questions
         rubric file.
 
@@ -648,13 +661,13 @@ class Question:
         loaded_rubric_check(rubric)
         with locked_file(self.rubric_filepath, 'w') as f:
             json.dump(rubric, f, indent=2, sort_keys=True)
-    
+
     @require_resource()  # using this here is definitely important
     def add_ungiven_comment(self, category: Optional[str], comment: str):
         """
-        
-        add a comment to the rubric & all extracted students 
-        
+
+        add a comment to the rubric & all extracted students
+
         :param category: the category to give the comment in, or
                          None if giving a general comment
         :type category: Optional[str]
@@ -689,7 +702,7 @@ class Question:
 
 class Handin:
     """
-    
+
     class for individual handin (question specific)
 
     :ivar question: the Question this handin is for
@@ -717,13 +730,13 @@ class Handin:
     :vartype login: Optional[str]
 
     """
-    
+
     def __init__(self, question: Question, ident: int, complete: bool,
                  grader: Optional[str], flag_reason: Optional[str]) -> None:
         """
-        
-        Handin class (question specific). Used for managing invdividual handins.
-        
+
+        Handin class (question specific). Used for managing invdividual handins
+
         :param question: Question that this handin is for
         :type question: Question
         :param ident: anonymous id of the handin
@@ -762,9 +775,9 @@ class Handin:
     @is_extracted
     def get_rubric(self) -> Rubric:
         """
-        
-        get the rubric for this handin only; must be extracted 
-        
+
+        get the rubric for this handin only; must be extracted
+
         :returns: rubric of this handin
         :rtype: Rubric
 
@@ -772,34 +785,34 @@ class Handin:
         with locked_file(self.grade_path) as f:
             d = json.load(f)
             return d
-        
+
     @is_extracted
     def get_rubric_data(self) -> Dict[str, Any]:
         """
-        
-        collect information about the student's grade rubric 
-        
+
+        collect information about the student's grade rubric
+
         :returns: a dictionary with the rubric for this handin along with some
                   other metadata
         :rtype: Dict[str, any]
 
         """
         rdata: Dict[str, Any] = {}
-        rdata['id']           = self.id
+        rdata['id'] = self.id
         rdata['student-name'] = self.login
-        rdata['flagged']      = self.flagged
-        rdata['complete']     = self.complete
-        rdata['rubric']       = self.get_rubric()
-        rdata['filename']     = self.question.code_filename
-        rdata['sfile-link']   = self.handin_path
+        rdata['flagged'] = self.flagged
+        rdata['complete'] = self.complete
+        rdata['rubric'] = self.get_rubric()
+        rdata['filename'] = self.question.code_filename
+        rdata['sfile-link'] = self.handin_path
         return rdata
 
     def get_code(self) -> str:
         """
-        
+
         get student's code for this handin as a string, or an error string
         if the code is not JSON decodable (it needs to be for the grading app)
-        
+
         :returns: student code string or error string if code is not decodable
         :rtype: str
 
@@ -817,7 +830,7 @@ class Handin:
             # only ever reading this file, no need for lock
             with open(filepath) as f:
                 code = f.read()
-            
+
             try:
                 json.dumps(code)
             except UnicodeDecodeError:
@@ -828,7 +841,7 @@ class Handin:
 
     def write_line(self, **kwargs) -> None:
         """
-        
+
         update the log file for this handin
 
         :param \*\*kwargs:
@@ -864,9 +877,9 @@ class Handin:
     @require_resource('/course/cs0111/ta/question_extract_resource')
     def start_grading(self, ta: str) -> None:
         """
-        
-        given a TA username, start grading this handin 
-    
+
+        given a TA username, start grading this handin
+
         :param ta: login of ta grading this handin
         :type ta: str
 
@@ -881,9 +894,9 @@ class Handin:
     @is_extracted
     def unextract(self) -> None:
         """
-        
-        unextract handin; gets rid of grade rubric 
-        
+
+        unextract handin; gets rid of grade rubric
+
         """
         self.write_line(grader=None, extracted=False, flag_reason=None)
         os.remove(self.grade_path)
@@ -894,9 +907,9 @@ class Handin:
     @is_extracted
     def flag(self, msg: str = '') -> None:
         """
-        
-        flag a handin with an optional message 
-        
+
+        flag a handin with an optional message
+
         :param msg: the flag reason, defaults to ''
         :type msg: str, optional
 
@@ -907,8 +920,8 @@ class Handin:
     @is_extracted
     def unflag(self) -> None:
         """
-        
-        unflag handin, reset flag message if there was one 
+
+        unflag handin, reset flag message if there was one
 
         """
         self.write_line(flag_reason=None)
@@ -917,8 +930,8 @@ class Handin:
     @is_extracted
     def set_complete(self) -> None:
         """
-        
-        handin grading complete 
+
+        handin grading complete
 
         """
         self.write_line(complete=True)
@@ -926,8 +939,8 @@ class Handin:
 
     def write_grade(self, rubric: Rubric) -> None:
         """
-        
-        write the grade rubric 
+
+        write the grade rubric
 
         :param rubric: new rubric to write into grade file
         :type rubric: Rubric
@@ -943,9 +956,9 @@ class Handin:
                   new_comments: Tuple[List[str], Dict[str, List[str]]],
                   force_complete: bool = False) -> bool:
         """
-        
+
         Saves new data from grading app to rubric file
-        
+
         :param data: a dict of category keys and
                      (rubric_item -> rubric_value) dict values
         :type data: Dict[str, Dict[str, Optional[int]]]
@@ -975,7 +988,7 @@ class Handin:
         for cat in new_comments[1]:
             update_comments(rubric['rubric'][cat]['comments'],
                             new_comments[1][cat])
-        
+
         if force_complete and not rub_complete:
             # attempting to finish grading but has empty rubric cells
             return False
@@ -993,11 +1006,11 @@ class Handin:
 
     def gradeable_by(self, uname: str) -> bool:
         """
-        
+
         checks if handin is gradeable by input login;
-        checks if the student is blocklisted by the TA or if the 
-        handin has already been extracted (False if either are true) 
-        
+        checks if the student is blocklisted by the TA or if the
+        handin has already been extracted (False if either are true)
+
         :param uname: login of TA who is attempting to grade
         :type uname: str
         :returns: whether or not the TA can grade this handin based on
@@ -1009,7 +1022,7 @@ class Handin:
 
     def blocklisted_by(self, ta: str) -> bool:
         """
-        
+
         determines if a TA can grade this handin
 
         :param ta: login of the TA to check
@@ -1027,7 +1040,7 @@ class Handin:
     @is_extracted
     def generate_report_str(self, rubric: Optional[Rubric] = None) -> str:
         """
-        
+
         return a report string for this handin (this question only)
         formatted so that no lines are over 74 characters, indentation
         is all pretty, etc. uses rubric if provided, otherwise loads
@@ -1040,15 +1053,14 @@ class Handin:
         :rtype: str
 
         """
-        if rubric is None:
-            rubric = self.get_rubric()
-
-        return get_handin_report_str(rubric, self.grader, self.question)
+        rub: Rubric = rubric if rubric is not None else self.get_rubric()
+        grader: str = self.grader if self.grader is not None else 'No grader'
+        return get_handin_report_str(rub, grader, self.question)
 
     @is_extracted
     def generate_grade_report(self) -> Tuple[str, Dict[str, int]]:
         """
-        
+
         get the formatted handin report_str and a dictionary with one key per
         category, values being the numeric score the student received in that
         category (for this question only)
@@ -1075,7 +1087,7 @@ class Handin:
                         )
                     raise ValueError(e)
 
-                grade[key] += rubric_item['items'][sel_ndx]['point_val']
+                grade[key] += rubric_item['options'][sel_ndx]['point_val']
 
         for key in grade:
             if grade[key] < 0:
@@ -1085,15 +1097,17 @@ class Handin:
 
     def run_test(self) -> str:
         """
-        
+
         Runs the testsuite for this handin and returns the results
-        
+
         :returns: testsuite results
         :rtype: str
 
         """
         test_type = self.question._json['test-ext']
-        if test_type == 'arr':
+        if test_type is None:
+            return 'No defined testsuite'
+        elif test_type == 'arr':
             return self.pyret_test()
         elif test_type == 'py':
             return self.python_test()
@@ -1102,13 +1116,14 @@ class Handin:
 
     def python_test(self) -> str:
         """
-        
+
         Runs python testsuite for this handin, returning the results
 
         :returns: the results of the testsuite as a string
         :rtype: str
 
         """
+        assert self.question.test_path is not None
         test_filepath = self.question.test_path
         cmd = [pjoin(BASE_PATH, 'tabin', 'python-test'),
                test_filepath, self.filepath]
@@ -1116,17 +1131,18 @@ class Handin:
 
     def pyret_test(self) -> str:
         """
-        
+
         Runs pyret testsuite for this handin, returning the results
 
         :returns: the results of the testsuite as a string
         :rtype: str
 
         """
+        assert self.question.test_path is not None
         filepath = pjoin(self.handin_path, self.question.code_filename)
         if not os.path.exists(filepath):
             return 'No handin or missing handin'
-        
+
         test_dir = pjoin(self.handin_path, 'TA_TESTS')
         if not os.path.exists(test_dir):
             os.mkdir(test_dir)
@@ -1146,7 +1162,7 @@ class Handin:
 
             with locked_file(test_filepath, 'w') as f:
                 f.writelines(lines)
-        
+
         cmd = [pjoin(BASE_PATH, 'tabin', 'pyret-test'),
                filepath, test_filepath, test_dir]
 
@@ -1170,7 +1186,7 @@ class Handin:
 
 def started_asgns() -> List[Assignment]:
     """
-    
+
     Get list of started assignments
 
     :returns: list of started assignments (unloaded)
@@ -1178,7 +1194,7 @@ def started_asgns() -> List[Assignment]:
 
     """
     assignments = []
-    for key in asgn_data['assignments']:
+    for key in sorted(asgn_data['assignments'].keys()):
         asgn = Assignment(key)
         if asgn.started:
             assignments.append(asgn)
@@ -1188,15 +1204,15 @@ def started_asgns() -> List[Assignment]:
 
 def all_asgns() -> List[Assignment]:
     """
-    
+
     Get list of all assignments
 
     :returns: list of all assignments (unloaded)
     :rtype: List[Assignment]
-    
+
     """
     assignments = []
-    for key in asgn_data['assignments']:
+    for key in sorted(asgn_data['assignments'].keys()):
         asgn = Assignment(key)
         assignments.append(asgn)
 

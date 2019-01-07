@@ -5,14 +5,15 @@ import json
 import os
 from contextlib import contextmanager
 from functools import wraps
-from typing import Generator, Callable, Any
+from typing import Generator, Callable, Any, List, Optional
 
 from filelock import FileLock
 
-from custom_types import *
+from custom_types import (Rubric, RubricCategory, RubricItem, RubricOption,
+                          Bracket, BracketItem, Comments)
 
 BASE_PATH: str = '/course/cs0111'
-def_res_path: str = os.path.join(BASE_PATH, 'resource-lock.lock')
+res_path: str = os.path.join(BASE_PATH, 'resource-lock.lock')
 
 
 @contextmanager
@@ -36,7 +37,7 @@ def locked_file(filename: str, mode: str = 'r') -> Generator:
     if not (mode == 'r' or mode == 'a' or mode == 'w'):
         base = 'Can only open locked file in r, w, or a mode (just in case)'
         raise ValueError(base)
-    
+
     lock_path = filename + '.lock'
     lock = FileLock(lock_path, timeout=10)  # throw error after 10 seconds
     with lock, open(filename, mode) as f:
@@ -53,7 +54,33 @@ def locked_file(filename: str, mode: str = 'r') -> Generator:
             pass
 
 
-def require_resource(resource: str = def_res_path) -> Callable[[Callable], Any]:
+@contextmanager
+def json_edit(filename: str) -> Generator:
+    """
+
+    Enables quickly editing JSON files using with block.
+    Note: this only allows mutation of the data in the JSON file;
+    if you need to completely change a JSON file, this is not the
+    write function to use.
+
+    **Example**:
+
+    >>> with json_edit('hello.json') as data:
+    ... data['hi'].append(4)
+
+    :param filename: filepath of the JSON file to modify
+    :type filename: str
+
+    """
+    with locked_file(filename) as f:
+        data = json.load(f)
+
+    yield data
+    with locked_file(filename, 'w') as f:
+        json.dump(data, f, indent=2, sort_keys=True)
+
+
+def require_resource(resource: str = res_path) -> Callable[[Callable], Any]:
     """ use require_resource as a decorator when writing a function that you
     shouldn't be run simultaneously
 
@@ -133,8 +160,8 @@ def loaded_rubric_check(rubric: Rubric) -> None:
     def check_item(ri: RubricItem) -> bool:
         assert isinstance(ri['descr'], str)
         assert isinstance(ri['selected'], (type(None), int))
-        assert isinstance(ri['items'], list)
-        assert all(map(check_opt, ri['items']))
+        assert isinstance(ri['options'], list)
+        assert all(map(check_opt, ri['options']))
         return True
 
     def check_opt(ro: RubricOption):
@@ -200,3 +227,32 @@ def update_comments(comments: Comments, new_given: List[str]) -> None:
     sv = set(comments['given'])  # local variable to speed up contains checking
     # comments in un_given that are now being given are removed
     comments['un_given'] = [c for c in comments['un_given'] if c not in sv]
+
+
+def line_read(filename: str, delim: Optional[str] = None) -> list:
+    """read lines from a file. returns list of strings with whitespace
+    right-stripped with delim=None, or list of lists of strings with
+    whitespace stripped with delim=str
+    (I don't use csv module because I'm unsure exactly how it parses lines
+    and it sometimes has weird results; this way there's full control)
+
+    Args:
+        filename (str): name of file to open
+        delim (Optional[str], optional): if None, reads filename as
+        list of strings, otherwise will split each line on delim
+        i.e. delim=',' a line 'hi,there' -> ['hi', 'there']
+
+    Returns:
+        list: if delim is None, a list of strings (one string for each
+        line). if delim is not None, a list of lists of strings, one
+        list for each line in the file and that list contains the split
+        up line based on delim
+    """
+    with locked_file(filename) as f:
+        raw: str = f.read()
+
+    lines = [line.rstrip() for line in raw.strip().split('\n')]
+    if delim is not None:
+        return [line.split(delim) for line in lines]
+    else:
+        return lines

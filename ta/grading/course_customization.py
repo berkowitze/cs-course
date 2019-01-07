@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 def increasing(lst: Sequence[float]) -> bool:
     """
-    
+
     returns whether or not the input list is increasing (non-decreasing)
     (all numbers larger or equal to than previous numbers)
 
@@ -53,7 +53,7 @@ def full_asgn_name_to_dirname(asgn_name: str) -> str:
 
 def get_empty_raw_grade(asgn: Assignment) -> RawGrade:
     """
-    
+
     create a dictionary with one key for every category on this assignment
 
     :param asgn: assignment to get empty raw grade for
@@ -62,7 +62,7 @@ def get_empty_raw_grade(asgn: Assignment) -> RawGrade:
     :rtype: RawGrade
 
     **Example**:
-    
+
     >>> get_empty_raw_grade(Assignment("Homework 4"))
     {"Functionality": None, "Design": None}
 
@@ -74,9 +74,12 @@ def get_empty_raw_grade(asgn: Assignment) -> RawGrade:
     return empty_grade
 
 
-def determine_grade(raw_grade: RawGrade, late: bool, asgn: Assignment) -> Grade:
+def determine_grade(raw_grade: RawGrade,
+                    late: bool,
+                    asgn: Assignment
+                    ) -> Grade:
     """
-    
+
     given a raw grade (i.e. category -> float dictionary), determine the
     student's full grade (i.e. category -> string dictionary)
 
@@ -88,7 +91,7 @@ def determine_grade(raw_grade: RawGrade, late: bool, asgn: Assignment) -> Grade:
     :type late: bool
     :returns: The grade to give the student (following spec from custom_types)
     :rtype: Grade
-    
+
     **Example**:
 
     >>> determine_grade({"Functionality": 20, "Design": 12}, "Homework1")
@@ -97,7 +100,9 @@ def determine_grade(raw_grade: RawGrade, late: bool, asgn: Assignment) -> Grade:
     {"Functionality": "Check Plus", "Design": "Check Minus"}
 
     """
-    def use_bracket(b_item: List[BracketItem], score: Union[int, float]) -> str:
+    def use_bracket(b_item: List[BracketItem],
+                    score: Union[int, float]
+                    ) -> str:
         bounds = [k['upper_bound_inclusive'] for k in b_item]
         if not increasing(bounds):
             raise ValueError('Bounds must increase throughout bracket')
@@ -177,7 +182,7 @@ def get_handin_report_str(rubric: Rubric,
     for comment in gen_comments:
         comment_lines = fill(comment, 74, initial_indent=f'{pre_string}- ')
         report_str += f'{comment_lines}\n\n'
-    
+
     report_str += f'Grader: {grader_login} ({grader_login}@cs.brown.edu)'
     report_str += f'\n\n{"-" * 74}\n'
     return report_str

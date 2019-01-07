@@ -78,9 +78,8 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../classes.html">classes module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../custom_types.html">custom_types module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules.html">ta/grading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html#hta-grading">hta/grading</a></li>
 </ul>
 
             
@@ -153,18 +152,20 @@
 
 <span class="n">BASE_PATH</span> <span class="o">=</span> <span class="s1">&#39;/course/cs0111&#39;</span>
 
+
 <div class="viewcode-block" id="load_students"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.load_students">[docs]</a><span class="k">def</span> <span class="nf">load_students</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
-    <span class="sd">&quot;&quot;&quot;reads students from the hta/groups/students.csv file </span>
-<span class="sd">    </span>
+    <span class="sd">&quot;&quot;&quot;reads students from the hta/groups/students.csv file</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        List[str]: list of (login, email, name)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta&#39;</span><span class="p">,</span> <span class="s1">&#39;groups&#39;</span><span class="p">,</span> <span class="s1">&#39;students.csv&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">line_read</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">delim</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span></div>
 
+
 <div class="viewcode-block" id="student_list"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.student_list">[docs]</a><span class="k">def</span> <span class="nf">student_list</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;list of student logins from hta/groups/students.txt</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        List[str]: list of logins of students in the class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -174,13 +175,13 @@
 
 <div class="viewcode-block" id="email_to_login"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.email_to_login">[docs]</a><span class="k">def</span> <span class="nf">email_to_login</span><span class="p">(</span><span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Converts brown email to CS login</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        email (str): Student&#39;s Brown email (aliases will not work)</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        str: Student&#39;s CS login</span>
-<span class="sd">    </span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: when email not found</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -194,13 +195,13 @@
 
 <div class="viewcode-block" id="login_to_email"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.login_to_email">[docs]</a><span class="k">def</span> <span class="nf">login_to_email</span><span class="p">(</span><span class="n">login</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Convert CS login to full Brown email</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        login (str): CS login of student</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        str: Brown email of student (no aliases)</span>
-<span class="sd">    </span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: Student with input login not found</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -214,13 +215,13 @@
 
 <div class="viewcode-block" id="argmax"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.argmax">[docs]</a><span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Get index of maximum integer of input list</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        lst (List[int]): list of non-negative integers</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        int: Index of maximum integer in lst</span>
-<span class="sd">    </span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: Cannot input a list with repeated values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -237,18 +238,18 @@
     <span class="k">return</span> <span class="n">max_ndx</span></div>
 
 
-<div class="viewcode-block" id="latest_submission_path"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.latest_submission_path">[docs]</a><span class="k">def</span> <span class="nf">latest_submission_path</span><span class="p">(</span><span class="n">base</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+<div class="viewcode-block" id="latest_submission_path"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.latest_submission_path">[docs]</a><span class="k">def</span> <span class="nf">latest_submission_path</span><span class="p">(</span><span class="n">base</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                            <span class="n">login</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                            <span class="n">mini_name</span><span class="p">:</span> <span class="nb">str</span>
                            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Returns None if no submission for this student on this assignment,</span>
 <span class="sd">    and the path of the student&#39;s latest submission if they did submit</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        base (str): base path (i.e. /course/cs0111/hta/handin/students)</span>
 <span class="sd">        login (str): cs login of student</span>
 <span class="sd">        mini_name (str): directory name of assignment (i.e. homework2)</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Optional[str]: None if login has no handin for mini_name, and</span>
 <span class="sd">        the path of the latest submission for login if they do</span>
@@ -269,13 +270,13 @@
 <span class="sd">    whitespace stripped with delim=str</span>
 <span class="sd">    (I don&#39;t use csv module because I&#39;m unsure exactly how it parses lines</span>
 <span class="sd">    and it sometimes has weird results; this way there&#39;s full control)</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        filename (str): name of file to open</span>
 <span class="sd">        delim (Optional[str], optional): if None, reads filename as</span>
 <span class="sd">        list of strings, otherwise will split each line on delim</span>
 <span class="sd">        i.e. delim=&#39;,&#39; a line &#39;hi,there&#39; -&gt; [&#39;hi&#39;, &#39;there&#39;]</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        list: if delim is None, a list of strings (one string for each</span>
 <span class="sd">        line). if delim is not None, a list of lists of strings, one</span>
@@ -290,6 +291,29 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">delim</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">lines</span></div>
+
+
+<div class="viewcode-block" id="get_blocklists"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.get_blocklists">[docs]</a><span class="k">def</span> <span class="nf">get_blocklists</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Get blocklist data from both TAs blocklisting students and</span>
+<span class="sd">    students blocklisting TAs</span>
+
+<span class="sd">    :returns: a dictionary of ta logins as the keys and lists of</span>
+<span class="sd">    students blocklisted as the values</span>
+<span class="sd">    :rtype: {Dict[str, List[str]]}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">bl1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/t-s-blocklist.txt&#39;</span><span class="p">)</span>
+    <span class="n">bl2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta/s-t-blocklist.txt&#39;</span><span class="p">)</span>
+    <span class="n">bl</span> <span class="o">=</span> <span class="n">line_read</span><span class="p">(</span><span class="n">bl1</span><span class="p">,</span> <span class="n">delim</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="n">bl</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">line_read</span><span class="p">(</span><span class="n">bl2</span><span class="p">,</span> <span class="n">delim</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
+    <span class="n">blocklist</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">bl</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">blocklist</span><span class="p">:</span>
+        <span class="n">mapping</span><span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">mapping</span></div>
 </pre></div>
 
            </div>

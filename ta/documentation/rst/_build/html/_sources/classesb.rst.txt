@@ -1,7 +1,8 @@
-helpers module
+classes module
 ==============
 
-.. automodule:: helpers
+.. automodule:: classes
     :members:
     :undoc-members:
     :show-inheritance:
+

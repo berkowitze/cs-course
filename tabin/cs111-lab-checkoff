@@ -1,0 +1,100 @@
+#!/course/cs0111/ta/venv/bin/python
+
+import os
+import sys
+import json
+import tabulate
+from typing import List, Set, Tuple, Iterable
+
+import prompts
+from helpers import line_read, locked_file, json_edit
+
+
+BASE_PATH = '/course/cs0111'
+lab_base = os.path.join(BASE_PATH, 'ta/grading/data/labs')
+lab_data_path = os.path.join(lab_base, 'lab-data.json')
+lab_roster_path = os.path.join(lab_base, 'roster.json')
+attendance_path = os.path.join(lab_base, 'attendance.json')
+students_path = os.path.join(BASE_PATH, 'ta/groups/students.csv')
+student_data = line_read(students_path, delim=',')
+
+
+def print_data_table(data: List[Iterable]) -> List[str]:
+    """
+
+    given data from students.csv (or subset of that data), print out tabulated
+    version of that table and return a list of the logins in the input table
+
+    :param data: a list of (login, email, full name) iterables
+    :type data: List[Iterable]
+    """
+    ls = []
+    students = []
+    for i, (login, email, name) in enumerate(data):
+        students.append(login)
+        ls.append([i + 1, login, name])
+
+    print(tabulate.tabulate(ls, headers=('#', 'Login', 'Name')))
+    return students
+
+
+with locked_file(lab_data_path) as f:
+    SESSION_LIST: List[str] = json.load(f)
+
+with locked_file(lab_roster_path) as f:
+    roster_data = json.load(f)
+    LAB_LIST = sorted(roster_data.keys())
+
+
+print('Which lab are you checking off for?')
+lab_numb = prompts.opt_prompt(LAB_LIST)
+if lab_numb is None:
+    print('Exiting...')
+    sys.exit(1)
+
+lab_key = f'lab{str(lab_numb).zfill(2)}'
+
+
+print('Which lab session are you checking off for?')
+print('Press ctrl-c if you are checking off an individual student')
+sess = prompts.opt_prompt(SESSION_LIST)
+to_checkoff: Set[str] = set()
+if sess is None:
+    students = print_data_table(student_data)
+
+    print('')
+    print('Which student would you like to checkoff?')
+    print('Type the number next to their login(s)')
+    print('(ctrl-c to cancel)')
+
+    inp = prompts.int_prompt(len(student_data), '> ')
+    if inp is None:
+        print('Exiting...')
+        sys.exit(1)
+
+    student = students[inp - 1]
+    assert prompts.yn_prompt(f'Confirm lab {lab_numb} checkoff for {student}')
+    to_checkoff.add(student)
+else:
+    session_key = f'session{sess}'
+    session_logins = roster_data[lab_key][session_key]
+    session_data = [l for l in student_data if l[0] in session_logins]
+    students = print_data_table(session_data)
+    print('')
+    print('Enter the number next to the student you want to checkoff.')
+    print('ctrl-c to stop')
+    while True:
+        res = prompts.int_prompt(len(students))
+        if res is None:
+            break
+
+        student = students[res - 1]
+        to_checkoff.add(student)
+
+with json_edit(attendance_path) as data:
+    for student in to_checkoff:
+        data[lab_key].append(student)
+
+    data[lab_key] = list(set(data[lab_key]))
+    print('')
+    print(f"Checked off {', '.join(to_checkoff)}")

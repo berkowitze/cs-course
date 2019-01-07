@@ -1,6 +1,6 @@
 import json
 import os
-from hta_classes import get_full_asgn_list, asgn_data_path, \
+from hta_classes import get_hta_asgn_list, asgn_data_path, \
                         BASE_PATH, student_list, User, login_to_email
 import sys
 import tabulate
@@ -73,7 +73,7 @@ def get_student_labcount(student):
     return count
 
 opt = get_opt('> ', ['Generate gradebook', 'Work with assignment'])
-asgns = get_full_asgn_list()
+asgns = get_hta_asgn_list()
 if opt == 0:
     path = os.path.join(BASE_PATH, 'hta', 'gradebook.tsv')
     print(('gradebook will be saved as "%s".' % path))
@@ -249,7 +249,7 @@ else:
 
             handins = asgn.get_handin_dict(logins, user)
             for student in list(handins.keys()):
-                asgn.generate_report(handins[student],
+                asgn._generate_report(handins[student],
                                      student_id=student,
                                      soft=False,
                                      overrides=asgn.emails_sent)
@@ -271,30 +271,30 @@ else:
                          'Send to all students'])
             if r == 0 or r == 1:
                 if r == 0:
-                    l = eval(input('Enter student login: '))
+                    login = input('Enter student login: ')
                 elif r == 1:
-                    i = eval(input('Enter anonymous id: '))
-                    l = asgn.id_to_login(i)
+                    i = input('Enter anonymous id: ')
+                    login = asgn.id_to_login(i)
                 else:
                     raise Exception('whut')
-                handins = asgn.get_handin_dict([l], user)
-                handin_list = handins[l]
-                
+                handins = asgn.get_handin_dict([login], user)
+                handin_list = handins[login]
+
                 if asgn.report_already_generated(l):
                     print('A grade report has already been generated for this student.')
                     print('Re-generate report or email existing report?')
                     s = get_opt('> ', ['Regenerate report', 'Send existing report'])
                     if s == 0:
-                        asgn.generate_report(handin_list,
-                                     student_id=l,
-                                     soft=False,
-                                     overrides=True)
-                    
+                        asgn._generate_report(handin_list,
+                                              student_id=l,
+                                              soft=False,
+                                              overrides=True)
+
                 else:
-                    asgn.generate_report(handin_list,
-                                     student_id=l,
-                                     soft=False,
-                                     overrides=True)
+                    asgn._generate_report(handin_list,
+                                          student_id=l,
+                                          soft=False,
+                                          overrides=True)
 
                 send_grade_report(asgn, l)
 

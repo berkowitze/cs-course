@@ -4,50 +4,135 @@ from mypy_extensions import TypedDict
 
 
 class Comments(TypedDict):
+    """
+
+    comments class (for rubrics)
+
+    :ivar given: the given comments
+    :vartype given: List[str]
+    :ivar un_given: the ungiven coments (to be suggested)
+    :vartype un_given: List[str]
+
+    """
     given: List[str]
     un_given: List[str]
 
 
 class RubricOption(TypedDict):
+    """
+
+    individual rubric option (each option in a select dropdown
+    in the grading app as of 2.0)
+
+    :var point_val: how many points this option is worth
+    :vartype point_val: int
+    :ivar descr: the description of this rubric option
+    :vartype descr: str
+
+    """
     point_val: int
     descr: str
 
 
 class RubricItem(TypedDict):
+    """
+
+    rubric item (collection of rubric options and a description)
+
+    :param descr: the description for this item
+    :type descr: str
+    :param selected: the selected option, or None if there is nothing selected
+    :type selected: Optional[int]
+    :param options: rubric options for this RubricItem
+    :type options: List[RubricOption]
+
+    """
     descr: str
     selected: Optional[int]
-    items: List[RubricOption]
+    options: List[RubricOption]
 
 
 class RubricCategory(TypedDict):
+    """
+
+    rubric category (i.e. Functionality)
+
+    :param comments: the comments given for this category
+    :type comments: Comments
+    :param rubric_items: the rubric items for this category
+    :type rubric_items: List[RubricItem]
+
+    """
     comments: Comments
     rubric_items: List[RubricItem]
 
 
 class Rubric(TypedDict):
+    """
+
+    full rubric type
+
+    :param comments: general comments
+    :type comments: Comments
+    :param rubric: rubric categories for this rubric
+    :type rubric: Dict[str, RubricCategory]
+
+    """
     comments: Comments
     rubric: Dict[str, RubricCategory]
 
 
 class BracketItem(TypedDict):
+    """
+
+    individual bracket item (cutoffs and grade description)
+
+    :param grade: the grade to give if the student's grade lies in this
+                  bracket item.
+    :type grade: str
+    :param upper_bound_inclusive: the cutoff for a grade to be in this
+                                  grade category (inclusive on the upper bound)
+    :type upper_bound_inclusive: float
+
+    """
     grade: str
     upper_bound_inclusive: float
 
 
+#: Bracket type, which is a category -> list of bracket items
+#: dictionary
 Bracket = Dict[str, List[BracketItem]]
 
+
+#: Raw grade type, which is collected from RubricCategories
+#: across assignments for each question
 RawGrade = Dict[str, Optional[Union[int, float]]]
+
+#: Final grade type, which is what is used for grade reports and
+#: gradebooks
 Grade = Union[int, float, str, Dict[str, str], Dict[str, int]]
 
 
-class LogItem(TypedDict):
-    id: int
-    complete: bool
-    flag_reason: Optional[bool]
-    grader: Optional[str]
-
-
 class HTMLData(TypedDict):
+    """
+
+    data that is transmitted to the grading app to populate the TA's
+    view and options for a specific Question
+
+    :param ta_handins: handins that this TA has extracted
+    :type ta_handins: List[dict]
+    :param handin_count: number of handins there are to grade for this question
+    :type handin_count: int
+    :param complete_count: number of handins completed for this question
+    :type complete_count: int
+    :param anonymous: whether or not this question is being graded anonymously
+    :type anonymous: bool
+    :param unextracted_logins: list of logins that are unextracted for this
+                               Question, or None if the assignment is being
+                               graded anonymously
+    :type unextracted_logins: Optional[List[str]]
+
+    """
     ta_handins: List[dict]
     handin_count: int
     complete_count: int
@@ -55,6 +140,28 @@ class HTMLData(TypedDict):
     unextracted_logins: Optional[List[str]]
 
 
+class LogItem(TypedDict):
+    """
+
+    log item (for individual Handin with particular Question)
+
+    :param id: anonymous ID of handin
+    :type id: int
+    :param complete: whether or not grading is complete for this handin
+    :type complete: bool
+    :param flag_reason: the flag reason, or None if the handin is unflagged
+    :type flag_reason: Optional[str]
+    :param grader: login string of grader if handin is extracted, None if not
+    :type grader: Optional[str]
+
+    """
+    id: int
+    complete: bool
+    flag_reason: Optional[str]
+    grader: Optional[str]
+
+
+#: Log type, which are used to track progress on question grading
 Log = List[LogItem]
 
 if __name__ == '__main__':
@@ -66,9 +173,9 @@ if __name__ == '__main__':
     ropt2: RubricOption = {"point_val": 2, "descr": 'bye'}
 
     # examples of RubricItems
-    ri1: RubricItem = {"descr": 'hi', "selected": 0, "items": [ropt1]}
-    ri2: RubricItem = {"descr": 'hi', "selected": 1, "items": [ropt1, ropt2]}
-    ri3: RubricItem = {"descr": 'hi', "selected": 1, "items": [ropt1, ropt2]}
+    ri1: RubricItem = {"descr": 'hi', "selected": 0, "options": [ropt1]}
+    ri2: RubricItem = {"descr": 'hi', "selected": 1, "options": [ropt1, ropt2]}
+    ri3: RubricItem = {"descr": 'hi', "selected": 1, "options": [ropt1, ropt2]}
 
     # example of RubricCategory
     rc1: RubricCategory = {"comments": c, "rubric_items": [ri1, ri2]}

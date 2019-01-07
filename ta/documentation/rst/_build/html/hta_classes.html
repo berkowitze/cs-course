@@ -27,7 +27,9 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="hub_helpers module" href="hub_helpers.html" />
+    <link rel="prev" title="update_rubric module" href="update_rubric.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -77,10 +79,15 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="classes.html">classes module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="custom_types.html">custom_types module</a></li>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="modules.html">ta/grading</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html#hta-grading">hta/grading</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">hta_classes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hub_helpers.html">hub_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hta_helpers.html">hta_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html">prompts module</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -126,6 +133,8 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
+          <li><a href="modules.html">ta/grading</a> &raquo;</li>
+        
       <li>hta_classes module</li>
     
     
@@ -148,136 +157,249 @@
   <div class="section" id="module-hta_classes">
 <span id="hta-classes-module"></span><h1>hta_classes module<a class="headerlink" href="#module-hta_classes" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="hta_classes.Course">
-<em class="property">class </em><code class="descclassname">hta_classes.</code><code class="descname">Course</code><span class="sig-paren">(</span><em>base_path: str = '/course/cs0111'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#Course"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.Course" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="method">
-<dt id="hta_classes.Course.generate_gradebook">
-<code class="descname">generate_gradebook</code><span class="sig-paren">(</span><em>path: str, tas: Optional[List[str]]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#Course.generate_gradebook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.Course.generate_gradebook" title="Permalink to this definition">¶</a></dt>
-<dd><p>generates gradebook for course, writing into tsv file
-uses the course_customization “grade_to_columns” function to determine
-columns, and has one row for each student.
-:param path: path to put tsv file in (should include filename)
-:param tas: optional list of logins to ignore (i.e. the course TAs)
-:return: None</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="hta_classes.Course.get_drill_data">
-<code class="descname">get_drill_data</code><span class="sig-paren">(</span><em>canvas_data_path: str, columns: List[int], students: Optional[List[str]] = None, tas: Optional[List[str]] = None</em><span class="sig-paren">)</span> &#x2192; Dict[str, Tuple[Set[str], Set[str]]]<a class="reference internal" href="_modules/hta_classes.html#Course.get_drill_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.Course.get_drill_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="hta_classes.Course.get_drill_grades">
-<code class="descname">get_drill_grades</code><span class="sig-paren">(</span><em>canvas_data_path: str, columns: List[int], students: Optional[List[str]] = None, tas: Optional[List[str]] = None</em><span class="sig-paren">)</span> &#x2192; Dict[str, Union[int, float, str, Dict[str, str], Dict[str, int]]]<a class="reference internal" href="_modules/hta_classes.html#Course.get_drill_grades"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.Course.get_drill_grades" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="hta_classes.Course.get_grade_dict">
-<code class="descname">get_grade_dict</code><span class="sig-paren">(</span><em>students: Optional[List[str]] = None</em>, <em>tas: Optional[List[str]] = None</em><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, str]]<a class="reference internal" href="_modules/hta_classes.html#Course.get_grade_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.Course.get_grade_dict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="hta_classes.Course.get_grading_app_data">
-<code class="descname">get_grading_app_data</code><span class="sig-paren">(</span><em>students: Optional[List[str]], tas: Optional[List[str]]</em><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Union[int, float, str, Dict[str, str], Dict[str, int]]]]<a class="reference internal" href="_modules/hta_classes.html#Course.get_grading_app_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.Course.get_grading_app_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="hta_classes.Course.get_lab_data">
-<code class="descname">get_lab_data</code><span class="sig-paren">(</span><em>students: Optional[List[str]] = None</em>, <em>tas: Optional[List[str]] = None</em><span class="sig-paren">)</span> &#x2192; Dict[str, Tuple[Set[str], Set[str]]]<a class="reference internal" href="_modules/hta_classes.html#Course.get_lab_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.Course.get_lab_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="hta_classes.Course.get_lab_grades">
-<code class="descname">get_lab_grades</code><span class="sig-paren">(</span><em>students: Optional[List[str]] = None</em>, <em>tas: Optional[List[str]] = None</em><span class="sig-paren">)</span> &#x2192; Dict[str, Union[int, float, str, Dict[str, str], Dict[str, int]]]<a class="reference internal" href="_modules/hta_classes.html#Course.get_lab_grades"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.Course.get_lab_grades" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="hta_classes.Course.get_summaries">
-<code class="descname">get_summaries</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, str]<a class="reference internal" href="_modules/hta_classes.html#Course.get_summaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.Course.get_summaries" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="hta_classes.Course.send_summaries">
-<code class="descname">send_summaries</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#Course.send_summaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.Course.send_summaries" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="hta_classes.HTA_Assignment">
 <em class="property">class </em><code class="descclassname">hta_classes.</code><code class="descname">HTA_Assignment</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="classes.html#classes.Assignment" title="classes.Assignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">classes.Assignment</span></code></a></p>
 <p>HTA version of Assignment (TA version is just Assignment)
-initialized with full homework name:</p>
-<blockquote>
-<div>HTA_Assignment(“Homework 3”)</div></blockquote>
+initialized with full homework name</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>emails_sent</strong> (<em>bool</em>) – whether or not grade reports have been sent
+for this assignment</li>
+<li><strong>groups_loaded</strong> (<em>bool</em>) – whether or not group data has been loaded for this
+assignment (False by default)</li>
+<li><strong>handin_path</strong> (<em>str</em>) – path that handins for this assignment are in</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">HTA_Assignment</span><span class="p">(</span><span class="s2">&quot;Homework 3&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="hta_classes.HTA_Assignment.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>[summary]</p>
+<p>creates HTA_Assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>*args</strong> – any args to use in Assignment initialization</li>
+<li><strong>**kwargs</strong> – any keyword args to use in Assignment initialization</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="hta_classes.HTA_Assignment._generate_report">
+<code class="descname">_generate_report</code><span class="sig-paren">(</span><em>handins: List[Optional[classes.Handin]], login: str, soft=True, overrides=False</em><span class="sig-paren">)</span> &#x2192; Tuple[str, Dict[str, Union[int, float, None]], str]<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment._generate_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment._generate_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>given a list of Handins and student login,
+generate a report for that student.
+the third argument, soft, represents whether or not to write the grades
+to corresponding grade files. returns the students (nonanonymous) id,
+the grade (dictionary), and the text of the report.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>handins</strong> (<em>List</em><em>[</em><em>Optional</em><em>[</em><a class="reference internal" href="classes.html#classes.Handin" title="classes.Handin"><em>Handin</em></a><em>]</em><em>]</em>) – List of Handins/None if no Handin for that question</li>
+<li><strong>login</strong> (<em>str</em>) – login of student generating report</li>
+<li><strong>soft</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not to only return the report information,
+rather than writing it into files; defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code></li>
+<li><strong>overrides</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not to generate override reports
+defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a (login, raw student grade, grade report) 3-tuple</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Tuple[str, RawGrade, str]</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note</strong>: This method needs a <em>lot</em> of cleanup. Ideas in source code.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.add_new_handin">
 <code class="descname">add_new_handin</code><span class="sig-paren">(</span><em>login: str</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.add_new_handin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.add_new_handin" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Add new handin to this Assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>login</strong> (<em>str</em>) – student CS login of the new handin</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – message specific</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.check_startable">
-<code class="descname">check_startable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.check_startable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.check_startable" title="Permalink to this definition">¶</a></dt>
-<dd><p>raise an error if the proper files do not exist for
-the assignment</p>
+<code class="descname">check_startable</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.check_startable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.check_startable" title="Permalink to this definition">¶</a></dt>
+<dd><p>checks that grading can start for the assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>OSError</strong> – proper files do not exist for the assignment</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.create_log">
 <code class="descname">create_log</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.create_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.create_log" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>creates a log file for this assignment. should only be called while
+creating the assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – log file has already been created</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.deanonymize">
 <code class="descname">deanonymize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.deanonymize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.deanonymize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>deanonymize this assignment so TAs can regrade</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.delete_student_handin">
 <code class="descname">delete_student_handin</code><span class="sig-paren">(</span><em>login: str</em>, <em>override: bool = False</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.delete_student_handin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.delete_student_handin" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>remove a student’s handins for this assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>login</strong> (<em>str</em>) – login of the student’s handins to remove</li>
+<li><strong>override</strong> (<em>bool</em><em>, </em><em>required</em>) – required to be True to operate, just a check to make
+sure this method isn’t used lightly.
+defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.generate_all_reports">
 <code class="descname">generate_all_reports</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.generate_all_reports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.generate_all_reports" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">NotImplementedError</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.generate_one_report">
-<code class="descname">generate_one_report</code><span class="sig-paren">(</span><em>login</em>, <em>user</em>, <em>soft=True</em>, <em>overrides=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.generate_one_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.generate_one_report" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="hta_classes.HTA_Assignment.generate_report">
-<code class="descname">generate_report</code><span class="sig-paren">(</span><em>problems</em>, <em>student_id</em>, <em>soft=True</em>, <em>overrides=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.generate_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.generate_report" title="Permalink to this definition">¶</a></dt>
-<dd><p>given a list of Handins and either a (nonanonymous) student id,
-generate a report for that student.
-the third argument, soft, represents whether or not to write the grades
-to corresponding grade files. returns the students (nonanonymous) id,
-the grade (dictionary), and the text of the report</p>
+<code class="descname">generate_one_report</code><span class="sig-paren">(</span><em>login: str</em>, <em>soft: bool = True</em>, <em>overrides: bool = False</em><span class="sig-paren">)</span> &#x2192; Tuple[str, Dict[str, Union[int, float, None]], str]<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.generate_one_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.generate_one_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate full grade report for a single student for this assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>login</strong> (<em>str</em>) – login to generate report for</li>
+<li><strong>soft</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not to only return the report data rather than
+writing it to a file. defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code></li>
+<li><strong>overrides</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not a report should be written as an
+override report (for grade complaints).
+defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a (login, &lt;numeric grade data&gt;, &lt;grade report&gt;) 3-tuple</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Tuple[str, RawGrade, str]</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.get_handin_dict">
-<code class="descname">get_handin_dict</code><span class="sig-paren">(</span><em>students</em>, <em>user</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.get_handin_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.get_handin_dict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">get_handin_dict</code><span class="sig-paren">(</span><em>students: Optional[List[str]] = None</em><span class="sig-paren">)</span> &#x2192; Dict[str, List[Optional[classes.Handin]]]<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.get_handin_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.get_handin_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>get a dictionary of students’ handins for this assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>students</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – list of student logins for whom to collect handins.
+defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dictionary of student login keys and list of handins for
+this assignment as the values</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, List[<a class="reference internal" href="classes.html#classes.Handin" title="classes.Handin">Handin</a>]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.get_new_id">
 <code class="descname">get_new_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.get_new_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.get_new_id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>get an unused anonymous id to use</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">anonymous id</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.get_report_data">
-<code class="descname">get_report_data</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.get_report_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.get_report_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>given a User class (i.e. User(“eberkowi”)) return
-a list of 3-tuples, (login, &lt;numeric grade data&gt;, &lt;grade report&gt;)
-with one 3-tuple for each student that was graded on this asgn.
-grade data is a dictionary of category-value pairs, and grade
-report is the string for the student’s grade report
-note: User input is useless, but can’t easily get rid of it (TODO)</p>
+<code class="descname">get_report_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[Tuple[str, Dict[str, Union[int, float, None]], str]]<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.get_report_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.get_report_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>get list of information for reports for this assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a list of 3-tuples:
+(login, &lt;numeric grade data&gt;, &lt;grade report&gt;)
+with one 3-tuple for each student that was graded on this
+assignment. grade data is the RawGrade representation of
+the student’s grade, and grade report is the string of
+the student’s grade report</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[Tuple[str, RawGrade, str]]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -303,12 +425,22 @@ note: User input is useless, but can’t easily get rid of it (TODO)</p>
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.init_grading">
 <code class="descname">init_grading</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.init_grading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.init_grading" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>starts grading for this assignment</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.load_groups">
 <code class="descname">load_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.load_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.load_groups" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>load group data for this assignment (must be a group assignment)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>AssertionError</strong> – run on non-group assignment</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.login_to_id">
@@ -332,74 +464,181 @@ note: User input is useless, but can’t easily get rid of it (TODO)</p>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.proj_partners">
-<code class="descname">proj_partners</code><span class="sig-paren">(</span><em>student</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.proj_partners"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.proj_partners" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">proj_partners</code><span class="sig-paren">(</span><em>student: str</em><span class="sig-paren">)</span> &#x2192; List[str]<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.proj_partners"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.proj_partners" title="Permalink to this definition">¶</a></dt>
+<dd><p>get list of partners for student on this assignment (must be a group
+assignment)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>student</strong> (<em>str</em>) – CS login for student</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of CS logins of the student’s partners</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">List[str]</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ValueError</strong> – no partner data for student</li>
+<li><strong>AssertionError</strong> – run on non-group assignment</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.record_finish">
 <code class="descname">record_finish</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.record_finish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.record_finish" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>sets grading_completed in assignments.json to true for this assignment</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.record_start">
-<code class="descname">record_start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.record_start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.record_start" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">record_start</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.record_start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.record_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets grading_started in assignments.json to true for this assignment</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.report_already_generated">
-<code class="descname">report_already_generated</code><span class="sig-paren">(</span><em>login</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.report_already_generated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.report_already_generated" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">report_already_generated</code><span class="sig-paren">(</span><em>login: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.report_already_generated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.report_already_generated" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns whether or not a report and grade have already been generated
+for this student for this assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>login</strong> (<em>str</em>) – CS login of student</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">whether or not a report has been generated for this student</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.reset_grading">
-<code class="descname">reset_grading</code><span class="sig-paren">(</span><em>confirm</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.reset_grading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.reset_grading" title="Permalink to this definition">¶</a></dt>
+<code class="descname">reset_grading</code><span class="sig-paren">(</span><em>confirm: bool</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.reset_grading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.reset_grading" title="Permalink to this definition">¶</a></dt>
 <dd><p>remove the assignment log; there is no recovering the data.
-grade files are <em>not</em> deleted. do that by hand if you want to.</p>
+grade files are <em>not</em> deleted. do that by hand if needed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>confirm</strong> (<em>bool</em>) – confirmation boolean (to indicate knowledge of what
+this method does)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.send_email">
-<code class="descname">send_email</code><span class="sig-paren">(</span><em>student_id</em>, <em>student_email</em>, <em>yag</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.send_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.send_email" title="Permalink to this definition">¶</a></dt>
-<dd><p>takes in a student_id and a yag instance
-(yag = yagmail.SMTP(…)), and sends a report email to the student</p>
+<code class="descname">send_email</code><span class="sig-paren">(</span><em>login: str</em>, <em>student_email: str</em>, <em>yag: yagmail.sender.SMTP</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.send_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.send_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>sends report email to student using yagmail</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>login</strong> (<em>str</em>) – CS login of student to send email to</li>
+<li><strong>student_email</strong> (<em>str</em>) – email address of student (or recipient)</li>
+<li><strong>yag</strong> (<em>yagmail.Sender.SMTP</em>) – yag instance to use to send the email</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.set_emails_sent">
 <code class="descname">set_emails_sent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.set_emails_sent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.set_emails_sent" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>sets sent_emails in assignments.json to true for this assignment</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.setup_blocklist">
-<code class="descname">setup_blocklist</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.setup_blocklist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.setup_blocklist" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="hta_classes.HTA_Assignment.status">
-<code class="descname">status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.status" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">setup_blocklist</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.setup_blocklist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.setup_blocklist" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets up blocklist for assignment (puts data into JSON file)</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.transfer_handins">
-<code class="descname">transfer_handins</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.transfer_handins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.transfer_handins" title="Permalink to this definition">¶</a></dt>
-<dd><p>takes handins from the handin folder, anonymizes them,
-and puts them in the TA folder; zip files with be extracted
-to a new folder (hopefully)</p>
+<code class="descname">transfer_handins</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.transfer_handins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.transfer_handins" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes handins from the handin folder, anonymizes them, and puts them
+in the TA folder. zip files are extracted to a new folder</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – No submission for student in handin directory
+(empty directory login/mini_name)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="function">
-<dt id="hta_classes.get_full_asgn_list">
-<code class="descclassname">hta_classes.</code><code class="descname">get_full_asgn_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#get_full_asgn_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.get_full_asgn_list" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="hta_classes.get_hta_asgn_list">
+<code class="descclassname">hta_classes.</code><code class="descname">get_hta_asgn_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[hta_classes.HTA_Assignment]<a class="reference internal" href="_modules/hta_classes.html#get_hta_asgn_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.get_hta_asgn_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of all assignments</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of all assignments (unloaded)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[<a class="reference internal" href="#hta_classes.HTA_Assignment" title="hta_classes.HTA_Assignment">HTA_Assignment</a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="hta_classes.magic_update">
 <code class="descclassname">hta_classes.</code><code class="descname">magic_update</code><span class="sig-paren">(</span><em>question: classes.Question, func: Callable[[importlib._bootstrap.Rubric], None]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#magic_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.magic_update" title="Permalink to this definition">¶</a></dt>
-<dd><p>given a Question and a function that takes in a rubric (dictionary)
-and mutates it. changes a) the base rubric, and b) each
-extracted rubric by applying func to those rubrics</p>
+<dd><p>using a rubric updating function, changes a) the base rubric, and b) each
+extracted rubric. updated rubrics are checked for validity before file
+writing (as of after homework 8 2018 rip)</p>
+<p>This is most easily done in asgnipython</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>question</strong> (<a class="reference internal" href="classes.html#classes.Question" title="classes.Question"><em>Question</em></a>) – the question for which to update all rubrics</li>
+<li><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>Rubric</em><em>]</em><em>, </em><em>None</em><em>]</em>) – a function that takes in a rubric, returns None, and mutates
+the rubric.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><strong>TypeError</strong> – invalid input types</li>
+<li><strong>AssertionError</strong> – func improperly modifies rubrics</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">asgn</span> <span class="o">=</span> <span class="n">HTA_Assignment</span><span class="p">(</span><span class="s2">&quot;Homework 6&quot;</span><span class="p">)</span>
+<span class="n">qn</span> <span class="o">=</span> <span class="n">asgn</span><span class="o">.</span><span class="n">questions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">updater</span><span class="p">(</span><span class="n">rubric</span><span class="p">):</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">][</span><span class="s1">&#39;Functionality&#39;</span><span class="p">][</span><span class="s1">&#39;rubric_items&#39;</span><span class="p">]</span>
+    <span class="n">items</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">][</span><span class="s1">&#39;point-val&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="n">magic_update</span><span class="p">(</span><span class="n">qn</span><span class="p">,</span> <span class="n">updater</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -409,6 +648,15 @@ extracted rubric by applying func to those rubrics</p>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="hub_helpers.html" class="btn btn-neutral float-right" title="hub_helpers module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="update_rubric.html" class="btn btn-neutral" title="update_rubric module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

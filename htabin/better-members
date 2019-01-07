@@ -17,15 +17,25 @@ if len(sys.argv) != 2:
 
 group = sys.argv[1]
 
+
 def todict(s: str) -> Dict[str, str]:
-    """given a string like a=3,b=hello,key=value, turn into a
-    dictionary like {'a': '3', 'b': 'hello', 'key': 'value'} 
-    
-    Args:
-        s (str): String of form "key=value,key2=value2,..."
-    
-    Returns:
-        Dict[str, str]: A (key, value) dictionary extracted from s
+    """
+
+    given a string of the form a=3,b=hello,key=value, turn into a
+    dictionary with keys from the left of the equal and values on the right
+    (and until the comma)
+
+    :param s: string of form key1=value1, key2=value2,...
+    :type s: str
+    :returns: A (key, value) dictionary extracted from s
+    :rtype: {Dict[str, str]}
+
+    **example**:
+
+    >>> s = 'a=3,b=hello,key=value'
+    >>> todict(s)
+    {'a': 3, 'b': 'hello', 'key': 'value'}
+
     """
     d = {}
     kvs = s.split(',')
@@ -35,9 +45,10 @@ def todict(s: str) -> Dict[str, str]:
 
     return d
 
+
 # get obfuscated group code
 o1 = subprocess.Popen(['ldapsearch', '-Q', f'cn={group}'],
-                     stdout=subprocess.PIPE)
+                      stdout=subprocess.PIPE)
 o2 = subprocess.Popen(['grep', 'member'],
                       stdin=o1.stdout, stdout=subprocess.PIPE)
 o1.wait()
@@ -48,7 +59,7 @@ group_data = todict(output)
 
 o1 = subprocess.Popen(['ldapsearch', '-Q', '-LLL', '-E',
                       'pr=500/noprompt', f'cn={group_data["CN"]}'],
-                     stdout=subprocess.PIPE)
+                      stdout=subprocess.PIPE)
 o2 = subprocess.Popen(['grep', 'member: '],
                       stdin=o1.stdout, stdout=subprocess.PIPE)
 o1.wait()

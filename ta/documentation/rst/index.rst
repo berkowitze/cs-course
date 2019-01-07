@@ -7,14 +7,10 @@ Welcome to CS Grading App's documentation!
 ==========================================
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 3
    :caption: Contents:
 
-   classes
-   custom_types
    modules
-
-
 
 Indices and tables
 ==================

@@ -27,9 +27,7 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="custom_types module" href="custom_types.html" />
-    <link rel="prev" title="Welcome to CS Grading App’s documentation!" href="index.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -79,9 +77,9 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">classes module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="custom_types.html">custom_types module</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">ta/grading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#hta-grading">hta/grading</a></li>
 </ul>
 
             
@@ -133,7 +131,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/classes.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/classesb.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -177,6 +175,8 @@ assignment (i.e. True for projects)</li>
 assignment will be stored.</li>
 <li><strong>blocklist_path</strong> (<em>str</em>) – JSON parth where blocklist information for this
 assignment will be stored</li>
+<li><strong>grading_completed</strong> – whether or not grading has been completed for
+this assignment</li>
 <li><strong>_json</strong> (<em>dict</em>) – JSON data for this assignment from assignments.json</li>
 <li><strong>__login_to_id_map</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – a map from login to anonymous ID for this asgn</li>
 <li><strong>__id_to_login_map</strong> (<em>Dict</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – a map from anonymous ID to login for this asgn</li>
@@ -185,28 +185,6 @@ assignment will be stored</li>
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="classes.Assignment.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>key: str</em>, <em>full_load: bool = False</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Assignment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Assignment.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new assignment based on the key from /ta/assignments.json</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>key</strong> (<em>str</em>) – Key of assignment to load (i.e. ‘Homework 4’)</li>
-<li><strong>full_load</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not to fully load the
-assignment and all its Questions, defaults to False</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">ValueError if attempting to load unstarted assignment</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <dl class="method">
 <dt id="classes.Assignment.get_question">
 <code class="descname">get_question</code><span class="sig-paren">(</span><em>ndx: int</em><span class="sig-paren">)</span> &#x2192; classes.Question<a class="reference internal" href="_modules/classes.html#Assignment.get_question"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Assignment.get_question" title="Permalink to this definition">¶</a></dt>
@@ -291,7 +269,7 @@ loads all assignment questions)
 <li><strong>id</strong> (<em>int</em>) – anonymous assignment identifier for the handin’s student</li>
 <li><strong>complete</strong> (<em>bool</em>) – whether or not this handin has been graded</li>
 <li><strong>extracted</strong> (<em>bool</em>) – whether or not this handin has been extracted</li>
-<li><strong>grader</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – None if unextracted, login of TA is extracted</li>
+<li><strong>grader</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – None if unextracted, login of TA if is extracted</li>
 <li><strong>flagged</strong> (<em>bool</em>) – Whether or not the handin is flagged</li>
 <li><strong>flag_reason</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – None if unflagged, the flag reason if flagged</li>
 <li><strong>filepath</strong> (<em>str</em>) – filepath of the students’ code file for this question</li>
@@ -305,107 +283,129 @@ non-anonymous assignment</li>
 </tbody>
 </table>
 <dl class="method">
-<dt id="classes.Handin.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>question: classes.Question, ident: int, complete: bool, grader: Optional[str], flag_reason: Optional[str]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Handin.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handin class (question specific). Used for managing invdividual handins.</p>
+<dt id="classes.Handin.blocklisted_by">
+<code class="descname">blocklisted_by</code><span class="sig-paren">(</span><em>ta: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/classes.html#Handin.blocklisted_by"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.blocklisted_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>determines if a TA can grade this handin</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>question</strong> (<a class="reference internal" href="#classes.Question" title="classes.Question"><em>Question</em></a>) – Question that this handin is for</li>
-<li><strong>ident</strong> (<em>int</em>) – anonymous id of the handin</li>
-<li><strong>complete</strong> (<em>bool</em>) – whether or not grading of handin is complete</li>
-<li><strong>grader</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – None if handin unextracted, and the
-login of the TA grading the handin if it has</li>
-<li><strong>flag_reason</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – None if unflagged, and the flag reason
-if flagged</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ta</strong> (<em>str</em>) – login of the TA to check</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">whether the handin’s student is blocklisted by TA</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="classes.Handin.blocklisted_by">
-<code class="descname">blocklisted_by</code><span class="sig-paren">(</span><em>ta: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/classes.html#Handin.blocklisted_by"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.blocklisted_by" title="Permalink to this definition">¶</a></dt>
-<dd><p>determines if a TA can grade this handin</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>ta (str): login of the TA to check</dd>
-<dt>Returns:</dt>
-<dd>bool: whether the handin’s student is blocklisted by ta</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
 <dt id="classes.Handin.flag">
 <code class="descname">flag</code><span class="sig-paren">(</span><em>msg: str = ''</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Handin.flag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.flag" title="Permalink to this definition">¶</a></dt>
 <dd><p>flag a handin with an optional message</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>msg (str, optional): the flag reason</dd>
-<dt>No Longer Raises:</dt>
-<dd>TypeError: msg not a string</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg</strong> (<em>str</em><em>, </em><em>optional</em>) – the flag reason, defaults to ‘’</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="classes.Handin.generate_grade_report">
 <code class="descname">generate_grade_report</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Tuple[str, Dict[str, int]]<a class="reference internal" href="_modules/classes.html#Handin.generate_grade_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.generate_grade_report" title="Permalink to this definition">¶</a></dt>
-<dd><p>return a report_str (all comments collected and formatted nicely)
-and a dictionary with one key per theme, values being the numeric score
-the student received in that category for this question only 
-NOTE: no grades can below a 0; as such, any negative grades will
+<dd><p>get the formatted handin report_str and a dictionary with one key per
+category, values being the numeric score the student received in that
+category (for this question only)
+<strong>Note</strong>: no grades can below a 0; as such, any negative grades will
 be rounded up to 0</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a tuple with the report string and the comments dictionary</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Tuple[str, Dict[str, int]]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">ValueError if the handin is incomplete</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="classes.Handin.generate_report_str">
 <code class="descname">generate_report_str</code><span class="sig-paren">(</span><em>rubric: Optional[importlib._bootstrap.Rubric] = None</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/classes.html#Handin.generate_report_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.generate_report_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>return a report string for this handin (this question only)
-will format so that no lines are over 74 characters, indentation
+formatted so that no lines are over 74 characters, indentation
 is all pretty, etc. uses rubric if provided, otherwise loads
 the handins’ rubric</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<em>Optional</em><em>[</em><em>Rubric</em><em>]</em><em>, </em><em>optional</em>) – the handins rubric or None (default) if the rubric
+should be loaded</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the report string</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="classes.Handin.get_code">
 <code class="descname">get_code</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/classes.html#Handin.get_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.get_code" title="Permalink to this definition">¶</a></dt>
-<dd><p>right now, this returns the code as raw text from the
-file the student submitted; this could be updated to be more
-complex (depending on filename, etc.), and would need to be
-updated in /ta/grading/static/main.js to handle those updates</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>str: string of students’ code for this handin. will produce
-string detailing error if the code could not be decoded into
-JSON properly.</dd>
-</dl>
+<dd><p>get student’s code for this handin as a string, or an error string
+if the code is not JSON decodable (it needs to be for the grading app)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">student code string or error string if code is not decodable</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="classes.Handin.get_rubric">
 <code class="descname">get_rubric</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; importlib._bootstrap.Rubric<a class="reference internal" href="_modules/classes.html#Handin.get_rubric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.get_rubric" title="Permalink to this definition">¶</a></dt>
 <dd><p>get the rubric for this handin only; must be extracted</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>Rubric: rubric of this handin</dd>
-<dt>No Longer Raises: (&#64;is_extracted takes care of this)</dt>
-<dd>ValueError: handin unextracted</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">rubric of this handin</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Rubric</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="classes.Handin.get_rubric_data">
 <code class="descname">get_rubric_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Any]<a class="reference internal" href="_modules/classes.html#Handin.get_rubric_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.get_rubric_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>collect information about the student’s grade rubric</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>Dict[str, Any]: the students’ rubric along with metadata required
-to make the website render properly (for use by web app)</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a dictionary with the rubric for this handin along with some
+other metadata</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, any]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -414,52 +414,95 @@ to make the website render properly (for use by web app)</dd>
 <dd><p>checks if handin is gradeable by input login;
 checks if the student is blocklisted by the TA or if the 
 handin has already been extracted (False if either are true)</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>uname (str): login of TA who is attempting to grade</dd>
-<dt>Returns:</dt>
-<dd><dl class="first last docutils">
-<dt>bool: whether or not the TA can grade this handin based on</dt>
-<dd>blocklists and the handin being extracted already</dd>
-</dl>
-</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>uname</strong> (<em>str</em>) – login of TA who is attempting to grade</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">whether or not the TA can grade this handin based on
+blocklists and the handin being extracted already</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="classes.Handin.pyret_test">
 <code class="descname">pyret_test</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/classes.html#Handin.pyret_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.pyret_test" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Runs pyret testsuite for this handin, returning the results</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the results of the testsuite as a string</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="classes.Handin.python_test">
 <code class="descname">python_test</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/classes.html#Handin.python_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.python_test" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Runs python testsuite for this handin, returning the results</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the results of the testsuite as a string</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="classes.Handin.run_test">
 <code class="descname">run_test</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/classes.html#Handin.run_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.run_test" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Runs the testsuite for this handin and returns the results</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">testsuite results</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="classes.Handin.save_data">
 <code class="descname">save_data</code><span class="sig-paren">(</span><em>data: Dict[str, Dict[str, Optional[int]]], new_comments: Tuple[List[str], Dict[str, List[str]]], force_complete: bool = False</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/classes.html#Handin.save_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.save_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves new data from grading app to rubric file</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt>data (Dict[str, Dict[str, Optional[int]]]): a dict of category</dt>
-<dd>keys and (rubric_item -&gt; rubric_value) dict values</dd>
-<dt>new_comments (Tuple[List[str], Dict[str, List[str]]]): a tuple of</dt>
-<dd>general new comments to give and a dictionary of
-(category -&gt; list of comments to give)</dd>
-<dt>force_complete (bool, optional): whether or not the handin is</dt>
-<dd>marked as complete</dd>
-</dl>
-</dd>
-<dt>Returns:</dt>
-<dd>bool: Description</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Optional</em><em>[</em><em>int</em><em>]</em><em>]</em><em>]</em>) – a dict of category keys and
+(rubric_item -&gt; rubric_value) dict values</li>
+<li><strong>new_comments</strong> (<em>Tuple</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>]</em>) – a tuple of general new comments to give and a
+dictionary of (category -&gt; comments to give)</li>
+<li><strong>force_complete</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not the handin is
+marked as complete, defaults to False</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">whether or not the operation was succesfully completed</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -472,10 +515,14 @@ handin has already been extracted (False if either are true)</p>
 <dt id="classes.Handin.start_grading">
 <code class="descname">start_grading</code><span class="sig-paren">(</span><em>ta: str</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Handin.start_grading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.start_grading" title="Permalink to this definition">¶</a></dt>
 <dd><p>given a TA username, start grading this handin</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>ta (str): login of ta grading this handin</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ta</strong> (<em>str</em>) – login of ta grading this handin</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -494,29 +541,34 @@ handin has already been extracted (False if either are true)</p>
 <dt id="classes.Handin.write_grade">
 <code class="descname">write_grade</code><span class="sig-paren">(</span><em>rubric: importlib._bootstrap.Rubric</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Handin.write_grade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.write_grade" title="Permalink to this definition">¶</a></dt>
 <dd><p>write the grade rubric</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>rubric (Rubric): new rubric to write into grade file</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<em>Rubric</em>) – new rubric to write into grade file</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="classes.Handin.write_line">
 <code class="descname">write_line</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Handin.write_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.write_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>update the log file for this handin</p>
-<p>kwargs:</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs: Provide the relevant kwargs</dt>
-<dd>grader (str): login of the handin grader
-flag_reason (str): explanation why the handin is flagged
-complete (bool): whether or not handin is complete</dd>
-</dl>
-</dd>
-<dt>No Longer Raises:</dt>
-<dd>ValueError: handin doesn’t exist in log file</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> – <ul class="simple">
+<li>grader (str): login of the handin grader</li>
+<li>flag_reason (str): explanation why the handin is
+flagged</li>
+<li>complete (bool): whether or not handin is complete</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -553,36 +605,6 @@ for this question</li>
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="classes.Question.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>parent_assignment: classes.Assignment</em>, <em>q_ndx: int</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Question.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Question.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>makes a Question instance. I highly recommend against direct
-instantiation (let Assignment class
-do it)</p>
-<p>Todo: make <code class="code docutils literal notranslate"><span class="pre">Question</span></code> nested class of <code class="code docutils literal notranslate"><span class="pre">Assignment</span></code>?
-would probably allow for <code class="code docutils literal notranslate"><span class="pre">HTA_Question</span></code> and <code class="code docutils literal notranslate"><span class="pre">HTA_Handin</span></code>
-classes which could be helpful</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>parent_assignment</strong> (<a class="reference internal" href="#classes.Assignment" title="classes.Assignment"><em>Assignment</em></a>) – assignment corresponding to this question</li>
-<li><strong>q_ndx</strong> (<em>int</em>) – question number (used to get info from assignments.json)</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">ValueError</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Question</span><span class="p">(</span><span class="n">Assignment</span><span class="p">(</span><span class="s2">&quot;Homework 4&quot;</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
 <dl class="method">
 <dt id="classes.Question.add_handin_to_log">
 <code class="descname">add_handin_to_log</code><span class="sig-paren">(</span><em>ident: int</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Question.add_handin_to_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Question.add_handin_to_log" title="Permalink to this definition">¶</a></dt>
@@ -751,21 +773,22 @@ rubric file.</p>
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="classes.User.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>uname: str</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#User.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.User.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Args:</dt>
-<dd>uname (str): CS login of user</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="function">
 <dt id="classes.all_asgns">
 <code class="descclassname">classes.</code><code class="descname">all_asgns</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[classes.Assignment]<a class="reference internal" href="_modules/classes.html#all_asgns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.all_asgns" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of all assignments (unloaded)</p>
+<dd><p>Get list of all assignments</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of all assignments (unloaded)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[<a class="reference internal" href="#classes.Assignment" title="classes.Assignment">Assignment</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -819,11 +842,17 @@ argument)</td>
 <dl class="function">
 <dt id="classes.started_asgns">
 <code class="descclassname">classes.</code><code class="descname">started_asgns</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[classes.Assignment]<a class="reference internal" href="_modules/classes.html#started_asgns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.started_asgns" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get list of started assignments (unloaded)</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>List[Assignment]: list of started assignments</dd>
-</dl>
+<dd><p>Get list of started assignments</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of started assignments (unloaded)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[<a class="reference internal" href="#classes.Assignment" title="classes.Assignment">Assignment</a>]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -833,15 +862,6 @@ argument)</td>
            
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="custom_types.html" class="btn btn-neutral float-right" title="custom_types module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="index.html" class="btn btn-neutral" title="Welcome to CS Grading App’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>

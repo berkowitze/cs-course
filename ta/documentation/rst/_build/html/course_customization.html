@@ -28,8 +28,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="grading_app module" href="grading_app.html" />
-    <link rel="prev" title="ta/grading" href="modules.html" /> 
+    <link rel="next" title="custom_types module" href="custom_types.html" />
+    <link rel="prev" title="classes module" href="classes.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -80,17 +80,15 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="classes.html">classes module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="custom_types.html">custom_types module</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">ta/grading</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="classes.html">classes module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">course_customization module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_types.html">custom_types module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="grading_app.html">grading_app module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="helpers.html">helpers module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="update_rubric.html">update_rubric module</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#hta-grading">hta/grading</a></li>
 </ul>
 
             
@@ -160,6 +158,39 @@
   <div class="section" id="module-course_customization">
 <span id="course-customization-module"></span><h1>course_customization module<a class="headerlink" href="#module-course_customization" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
+<dt id="course_customization.determine_grade">
+<code class="descclassname">course_customization.</code><code class="descname">determine_grade</code><span class="sig-paren">(</span><em>raw_grade: RawGrade</em>, <em>late: bool</em>, <em>asgn: Assignment</em><span class="sig-paren">)</span> &#x2192; Grade<a class="reference internal" href="_modules/course_customization.html#determine_grade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.determine_grade" title="Permalink to this definition">¶</a></dt>
+<dd><p>given a raw grade (i.e. category -&gt; float dictionary), determine the
+student’s full grade (i.e. category -&gt; string dictionary)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>raw_grade</strong> (<em>RawGrade</em>) – a raw grade (defined in custom_types)</li>
+<li><strong>asgn</strong> (<a class="reference internal" href="classes.html#classes.Assignment" title="classes.Assignment"><em>Assignment</em></a>) – the Assignment for which to determine the grade</li>
+<li><strong>late</strong> (<em>bool</em>) – whether or not the student handed in the assignment late</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The grade to give the student (following spec from custom_types)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Grade</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">determine_grade</span><span class="p">({</span><span class="s2">&quot;Functionality&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;Design&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">},</span> <span class="s2">&quot;Homework1&quot;</span><span class="p">)</span>
+<span class="go">32</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">determine_grade</span><span class="p">({</span><span class="s2">&quot;Functionality&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;Design&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="s2">&quot;Homework 6&quot;</span><span class="p">)</span>
+<span class="go">{&quot;Functionality&quot;: &quot;Check Plus&quot;, &quot;Design&quot;: &quot;Check Minus&quot;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="course_customization.full_asgn_name_to_dirname">
 <code class="descclassname">course_customization.</code><code class="descname">full_asgn_name_to_dirname</code><span class="sig-paren">(</span><em>asgn_name: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/course_customization.html#full_asgn_name_to_dirname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.full_asgn_name_to_dirname" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
@@ -176,11 +207,79 @@ filesystems</td>
 </tr>
 </tbody>
 </table>
-<p><strong>example</strong>:</p>
+<p><strong>Example</strong>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">full_asgn_name_to_dirname</span><span class="p">(</span><span class="s2">&quot;Homework 3&quot;</span><span class="p">)</span>
-<span class="go">    &quot;homework3&quot;</span>
+<span class="go">&quot;homework3&quot;</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.get_empty_raw_grade">
+<code class="descclassname">course_customization.</code><code class="descname">get_empty_raw_grade</code><span class="sig-paren">(</span><em>asgn: Assignment</em><span class="sig-paren">)</span> &#x2192; RawGrade<a class="reference internal" href="_modules/course_customization.html#get_empty_raw_grade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.get_empty_raw_grade" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a dictionary with one key for every category on this assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>asgn</strong> (<a class="reference internal" href="classes.html#classes.Assignment" title="classes.Assignment"><em>Assignment</em></a>) – assignment to get empty raw grade for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">empty raw grade for this assignment</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">RawGrade</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_empty_raw_grade</span><span class="p">(</span><span class="n">Assignment</span><span class="p">(</span><span class="s2">&quot;Homework 4&quot;</span><span class="p">))</span>
+<span class="go">{&quot;Functionality&quot;: None, &quot;Design&quot;: None}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.get_handin_report_str">
+<code class="descclassname">course_customization.</code><code class="descname">get_handin_report_str</code><span class="sig-paren">(</span><em>rubric: Rubric</em>, <em>grader_login: str</em>, <em>question: Question</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/course_customization.html#get_handin_report_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.get_handin_report_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a report string that will be sent to the student with all relevant
+grade information</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rubric</strong> (<em>Rubric</em>) – rubric for the student</li>
+<li><strong>grader_login</strong> (<em>str</em>) – login of the grader for the assignment</li>
+<li><strong>question</strong> (<a class="reference internal" href="classes.html#classes.Question" title="classes.Question"><em>Question</em></a>) – question that was graded for this rubric</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">report string</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.increasing">
+<code class="descclassname">course_customization.</code><code class="descname">increasing</code><span class="sig-paren">(</span><em>lst: Sequence[float]</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/course_customization.html#increasing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.increasing" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns whether or not the input list is increasing (non-decreasing)
+(all numbers larger or equal to than previous numbers)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lst</strong> (<em>Sequence</em><em>[</em><em>float</em><em>]</em>) – sequence of numbers</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if lst is non-decreasing, False otherwise</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -193,10 +292,10 @@ filesystems</td>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="grading_app.html" class="btn btn-neutral float-right" title="grading_app module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="custom_types.html" class="btn btn-neutral float-right" title="custom_types module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="modules.html" class="btn btn-neutral" title="ta/grading" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="classes.html" class="btn btn-neutral" title="classes module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
