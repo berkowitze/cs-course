@@ -2,31 +2,60 @@ import csv
 import zipfile
 from typing import Set
 
+import yagmail
+
 from classes import *
 from custom_types import *
 from hta_helpers import *
 
-anon_map_path: str = os.path.join(BASE_PATH, 'hta/grading/anonymization')
-handin_base_path: str = os.path.join(BASE_PATH, 'hta/handin/students')
+anon_map_path: str = pjoin(BASE_PATH, 'hta/grading/anonymization')
+handin_base_path: str = pjoin(BASE_PATH, 'hta/handin/students')
 
-grade_base_path: str = os.path.join(BASE_PATH, 'hta/grades')
+grade_base_path: str = pjoin(BASE_PATH, 'hta/grades')
 
-final_grade_path: str = os.path.join(BASE_PATH, 'ta', 'grading', 'grades')
+final_grade_path: str = pjoin(BASE_PATH, 'ta', 'grading', 'grades')
 
 
 class HTA_Assignment(Assignment):
-    """ HTA version of Assignment (TA version is just Assignment)
-    initialized with full homework name:
-        HTA_Assignment("Homework 3")
+    """
+
+    HTA version of Assignment (TA version is just Assignment)
+    initialized with full homework name
+
+    :ivar emails_sent: whether or not grade reports have been sent
+                       for this assignment
+    :vartype emails_sent: bool
+    :ivar groups_loaded: whether or not group data has been loaded for this
+                         assignment (False by default)
+    :vartype groups_loaded: bool
+    :ivar handin_path: path that handins for this assignment are in
+    :vartype handin_path: str
+
+
+    **Example**:
+
+    >>> HTA_Assignment("Homework 3")
+
+    .. automethod:: __init__
+
+    .. automethod:: _generate_report
+
     """
 
     def __init__(self, *args, **kwargs):
+        """[summary]
+
+        creates HTA_Assignment
+
+        :param \*args: any args to use in Assignment initialization
+        :param \*\*kwargs: any keyword args to use in Assignment initialization
+        """
         # initialize TA version of Assignment class
-        super(HTA_Assignment, self).__init__(*args, **kwargs)
-        # then set some HTA only attributes
+        super().__init__(*args, **kwargs)
+
         if self.anonymous:
-            jpath = '%s.json' % self.mini_name
-            self.anon_path = os.path.join(anon_map_path, jpath)
+            jpath = f'{self.mini_name}.json'
+            self.anon_path = pjoin(anon_map_path, jpath)
         else:
             assert self.anon_path != '', 'error with anon path tell eli'
 
@@ -38,17 +67,19 @@ class HTA_Assignment(Assignment):
             self.login_handin_list = list(d.keys())
 
         self.handin_path = handin_base_path
-        
+
         assert os.path.exists(grade_base_path), \
-            '%s directory does not exist' % grade_base_path
-        self.grading_completed = self._json['grading_completed']
+            f'{grade_base_path} directory does not exist'
         self.emails_sent = self._json['sent_emails']
-        self.bracket_exists = os.path.exists(self.bracket_path)
         self.groups_loaded = False
 
     def init_grading(self) -> None:
-        assert not self.started, \
-            'Cannot init_grading on started %s' % repr(self)
+        """
+
+        starts grading for this assignment
+
+        """
+        assert not self.started, f'Cannot init_grading on started {self}'
         self.check_startable()
         # make log files (/ta/grading/data/logs/mini_name)
         self.create_log()
@@ -60,26 +91,45 @@ class HTA_Assignment(Assignment):
         self.setup_blocklist()
         self.record_start()  # update assignments.json
 
-    def check_startable(self):
-        """ raise an error if the proper files do not exist for
-        the assignment """
+    def check_startable(self) -> None:
+        """
+
+        checks that grading can start for the assignment
+
+        :raises OSError: proper files do not exist for the assignment
+
+        """
         if not os.path.exists(self.rubric_path):
-            base = 'Rubric directory for "%s" does not exist (should be in %s)'
-            raise OSError(base % (self, self.rubric_path))
+            err = (
+                   f'Rubric directory for "{self}" does not exist '
+                   f'(should be in {self.rubric_path})'
+                   )
+            raise OSError(err)
 
         for i in range(len(self._json['questions'])):
             qn = Question(self, i)
             if not os.path.exists(qn.rubric_filepath):
-                base = '%s does not have rubric for %s (should be in %s)'
-                raise OSError(base % (self, qn, qn.rubric_filepath))
+                err = (
+                       f'{self} does not have rubric for {qn} '
+                       f'(should be in {qn.rubric_filepath})'
+                      )
+                raise OSError(err)
 
-        if not self.bracket_exists:
-            base = '%s does not have bracket file (should be in %s)'
-            raise OSError(base % (self, self.bracket_path))
+        if not os.path.exists(self.bracket_path):
+            err = (
+                   f'{self} does not have bracket file '
+                   f'(should be in {self.bracket_path})'
+                  )
+            raise OSError(err)
 
-    def setup_blocklist(self):
+    def setup_blocklist(self) -> None:
+        """
+
+        sets up blocklist for assignment (puts data into JSON file)
+
+        """
         mapping = get_blocklists()
-        data = defaultdict(list)
+        data: Dict[str, List[int]] = defaultdict(list)
         for ta in mapping:
             for student in mapping[ta]:
                 try:
@@ -92,6 +142,17 @@ class HTA_Assignment(Assignment):
             json.dump(data, f, indent=2, sort_keys=True)
 
     def login_to_id(self, login: str) -> int:
+        """
+
+        Get anonymous ID of student by login
+
+        :param login: Student CS login
+        :type login: str
+        :returns: Anonymous ID for student by login
+        :rtype: int
+        :raises: ValueError: Student has no anonymous ID for this assignment
+
+        """
         with locked_file(self.anon_path) as f:
             data = json.load(f)
         try:
@@ -100,6 +161,17 @@ class HTA_Assignment(Assignment):
             raise ValueError(f'login {login} does not exist in map for {self}')
 
     def id_to_login(self, id: int) -> str:
+        """
+
+        Get anonymous ID of student by login
+
+        :param ident: Student anonymous ID for this assignment
+        :type ident: int
+        :returns: Login of student with ident id
+        :rtype: str
+        :raises: ValueError: No student with anon ID for this assignment
+
+        """
         with locked_file(self.anon_path) as f:
             data = json.load(f)
 
@@ -109,10 +181,17 @@ class HTA_Assignment(Assignment):
 
         raise ValueError(f'id {id} does not exist in map for {self}')
 
-    def transfer_handins(self):
-        """ takes handins from the handin folder, anonymizes them,
-            and puts them in the TA folder; zip files with be extracted
-            to a new folder (hopefully) """
+    def transfer_handins(self) -> None:
+        """
+
+        takes handins from the handin folder, anonymizes them, and puts them
+        in the TA folder. zip files are extracted to a new folder
+
+
+        :raises ValueError: No submission for student in handin directory
+                            (empty directory login/mini_name)
+
+        """
         sub_paths = []
 
         file_sys = os.walk(self.handin_path)
@@ -140,24 +219,33 @@ class HTA_Assignment(Assignment):
         with locked_file(self.anon_path, 'w') as f:
             json.dump(data, f, sort_keys=True, indent=2)
 
-        for student, id, path in sub_paths:
-            dest = os.path.join(self.files_path, 'student-%s' % id)
+        for student, ident, path in sub_paths:
+            dest = pjoin(self.files_path, f'student-{ident}')
             shutil.copytree(path, dest)
             for f in os.listdir(dest):
                 fname, ext = os.path.splitext(f)
                 if ext == '.zip':
-                    full_path = os.path.join(dest, f)
-                    new_fname = '%s-extracted' % fname
-                    new_dest = os.path.join(dest, new_fname)
+                    full_path = pjoin(dest, f)
+                    new_fname = f'{fname}-extracted'
+                    new_dest = pjoin(dest, new_fname)
                     with zipfile.ZipFile(full_path, 'r') as zf:
                         zf.extractall(new_dest)
 
         self.__load_questions()
-        for _, id, _ in sub_paths:
+        for _, ident, _ in sub_paths:
             for question in self.questions:
-                question.add_handin_to_log(id)
+                question.add_handin_to_log(ident)
 
     def add_new_handin(self, login: str) -> None:
+        """
+
+        Add new handin to this Assignment
+
+        :param login: student CS login of the new handin
+        :type login: str
+        :raises ValueError: message specific
+
+        """
         try:
             ident = self.login_to_id(login)
             has_graded_handin = False
@@ -172,10 +260,12 @@ class HTA_Assignment(Assignment):
                     pass
 
             if has_graded_handin:
-                base = 'Student %s resubmitted %s after grading completed.'
-                base += ' Not adding to grading app; handle manually.'
-                base = base % (login, self.full_name)
-                return
+                base = (
+                        f'Student {login} resubmitted {self.full_name} after '
+                        f'grading completed. Not adding to grading app; '
+                        f'handle manually.'
+                       )
+                raise ValueError(base)
 
             self.delete_student_handin(login, override=True)
         except ValueError:
@@ -186,7 +276,7 @@ class HTA_Assignment(Assignment):
                                             login,
                                             self.mini_name)
         if final_path is None:
-            raise ValueError("No handin for %s" % login)
+            raise ValueError(f"No handin for {login}")
         elif not os.path.exists(final_path):
             e = 'latest_submission_path returned nonexisting path'
             raise ValueError(e)
@@ -198,14 +288,14 @@ class HTA_Assignment(Assignment):
         with locked_file(self.anon_path, 'w') as f:
             json.dump(data, f, indent=2, sort_keys=True)
 
-        dest = os.path.join(self.files_path, 'student-%s' % rand_id)
+        dest = pjoin(self.files_path, f'student-{rand_id}')
         shutil.copytree(final_path, dest)
         for f in os.listdir(dest):
             fname, ext = os.path.splitext(f)
             if ext == '.zip':
-                full_path = os.path.join(dest, f)
-                new_fname = '%s-extracted' % fname
-                new_dest = os.path.join(dest, new_fname)
+                full_path = pjoin(dest, f)
+                new_fname = f'{fname}-extracted'
+                new_dest = pjoin(dest, new_fname)
                 with zipfile.ZipFile(full_path, 'r') as zf:
                     zf.extractall(new_dest)
 
@@ -214,6 +304,14 @@ class HTA_Assignment(Assignment):
             question.add_handin_to_log(rand_id)
 
     def get_new_id(self) -> int:
+        """
+
+        get an unused anonymous id to use
+
+        :returns: anonymous id
+        :rtype: int
+
+        """
         with locked_file(self.anon_path) as f:
             data = json.load(f)
 
@@ -222,21 +320,34 @@ class HTA_Assignment(Assignment):
         else:
             return 0
 
-    def delete_student_handin(self, login: str,
+    def delete_student_handin(self,
+                              login: str,
                               override: bool = False) -> None:
+        """
+
+        remove a student's handins for this assignment
+
+        :param login: login of the student's handins to remove
+        :type login: str
+        :param override: required to be True to operate, just a check to make
+                         sure this method isn't used lightly.
+                         defaults to ``False``
+        :type override: bool, required
+
+        """
         if not override:
-            print('Confirm removal of %s handin from grading app [y/n]' % login)
+            print(f'Confirm removal of {login} handin from grading app [y/n]')
             if input('> ').lower() != 'y':
                 return
 
         try:
             ident = self.login_to_id(login)
-            print('DELETING %s' % ident)
+            print(f'DELETING {ident}')
         except ValueError:
-            e = '%s does not have a handin that\'s being graded' % login
+            e = f'{login} does not have a handin that\'s being graded'
             raise ValueError(e)
 
-        dest = os.path.join(self.files_path, f'student-{ident}')
+        dest = pjoin(self.files_path, f'student-{ident}')
         if os.path.exists(dest):
             shutil.rmtree(dest)
 
@@ -261,7 +372,7 @@ class HTA_Assignment(Assignment):
             try:
                 h = q.get_handin_by_id(ident)
             except ValueError:
-                print("Could not delete %s" % q)
+                print(f'Could not delete {q}')
                 continue
             if os.path.exists(h.grade_path):
                 os.remove(h.grade_path)
@@ -274,8 +385,17 @@ class HTA_Assignment(Assignment):
                 json.dump(data, f, indent=2, sort_keys=True)
 
     def create_log(self):
+        """
+
+        creates a log file for this assignment. should only be called while
+        creating the assignment
+
+        :raises ValueError: log file has already been created
+
+        """
         if os.path.exists(self.log_path):
-            raise Exception('create_log called on a log that already exists')
+            e = 'create_log called on a log that already exists'
+            raise ValueError(e)
         else:
             os.makedirs(self.log_path)
         # create a log file for each question in the assignment
@@ -288,12 +408,33 @@ class HTA_Assignment(Assignment):
                 json.dump([], f, indent=2, sort_keys=True)
 
     def load_groups(self):
+        """
+
+        load group data for this assignment (must be a group assignment)
+
+        :raises AssertionError: run on non-group assignment
+
+        """
+        assert self.group_asgn, 'cannot get project partner of non group asgn'
         with locked_file(self.proj_dir) as f:
             self.groups = json.load(f)
 
         self.groups_loaded = True
 
-    def proj_partners(self, student):
+    def proj_partners(self, student: str) -> List[str]:
+        """
+
+        get list of partners for student on this assignment (must be a group
+        assignment)
+
+        :param student: CS login for student
+        :type student: str
+        :returns: list of CS logins of the student's partners
+        :rtype: List[str]
+        :raises ValueError: no partner data for student
+        :raises AssertionError: run on non-group assignment
+
+        """
         assert self.group_asgn, 'cannot get project partner of non group asgn'
         if not self.groups_loaded:
             self.load_groups()
@@ -304,14 +445,30 @@ class HTA_Assignment(Assignment):
                 ogs.remove(student)
                 return ogs
 
-        e = 'Student %s does not have partner (cs111-project-pair unrun?)'
-        raise ValueError(e % student)
+        raise ValueError(f'Student {student} does not have partner')
 
-    def get_handin_dict(self, students, user):
-        # str wrapping all d[student] because a mix of unicode and str
-        # is annoying
-        d = defaultdict(lambda: [])
-        handin_logins = [self.id_to_login(h.id) for h in self.questions[0].handins]
+    def get_handin_dict(self,
+                        students: Optional[List[str]] = None
+                        ) -> Dict[str, List[Optional[Handin]]]:
+        """
+
+        get a dictionary of students' handins for this assignment
+
+        :param students: list of student logins for whom to collect handins.
+                         defaults to ``None``
+        :type students: Optional[List[str]]
+        :returns: dictionary of student login keys and list of handins for
+                  this assignment as the values
+        :rtype: Dict[str, List[Handin]]
+
+        """
+        d: Dict[str, List[Optional[Handin]]] = defaultdict(list)
+        if students is None:
+            handins = self.questions[0].handins
+            handin_logins = [self.id_to_login(h.id) for h in handins]
+        else:
+            handin_logins = students
+
         for student in handin_logins:
             if self.group_asgn:
                 ohs = handin_logins[:]
@@ -319,7 +476,7 @@ class HTA_Assignment(Assignment):
                 partners = self.proj_partners(student)
                 for p in partners:
                     if p in ohs:
-                        e = 'Multiple students in %s group submitted' % student
+                        e = f'Multiple students in {student} group submitted'
                         raise ValueError(e)
             try:
                 anon_id = self.login_to_id(student)
@@ -330,161 +487,240 @@ class HTA_Assignment(Assignment):
                 if self.group_asgn:
                     partners = self.proj_partners(student)
                     if partners == []:
-                        d[str(student)] = [None for h in self.questions]
+                        d[student] = [None for h in self.questions]
                         continue
                     elif len(partners) == 1:
-                        d[str(student)] = d[str(partners[0])]
+                        d[student] = d[partners[0]]
                     else:
-                        e = "currently doesn't work for 3 person groups"
-                        e += " (notify authorities)"
-                        e += " (%s)" % student
+                        e = (
+                             f'currently doesn\'t work for 3 person groups'
+                             f' (notify authorities) (attempt for {student}'
+                            )
+
                         raise NotImplementedError(e)
                 else:
                     # no handin for any question
-                    d[str(student)] = [None for h in self.questions]
+                    d[student] = [None for h in self.questions]
                     continue
 
             for q in self.questions:
+                handin: Optional[Handin]
                 try:
                     handin = q.get_handin_by_id(anon_id)
                 except ValueError:
                     # student didn't hand in this question
-                    print('No %s handin for %s' % (self.full_name, student))
+                    print(f'No {self.full_name} handin for {student}')
                     handin = None
 
-                d[str(student)].append(handin)
+                d[student].append(handin)
 
         return d
 
-    def get_report_data(self, user):
-        """ given a User class (i.e. User("eberkowi")) return
-        a list of 3-tuples, (login, <numeric grade data>, <grade report>)
-        with one 3-tuple for each student that was graded on this asgn.
-        grade data is a dictionary of category-value pairs, and grade
-        report is the string for the student's grade report
-        note: User input is useless, but can't easily get rid of it (TODO) """
+    def get_report_data(self) -> List[Tuple[str, RawGrade, str]]:
+        """
+
+        get list of information for reports for this assignment
+
+        :returns: a list of 3-tuples:
+                  (login, <numeric grade data>, <grade report>)
+                  with one 3-tuple for each student that was graded on this
+                  assignment. grade data is the RawGrade representation of
+                  the student's grade, and grade report is the string of
+                  the student's grade report
+        :rtype: List[Tuple[str, RawGrade, str]]
+
+        """
         logins = student_list()
-        handins = self.get_handin_dict(logins, user)
+        handins = self.get_handin_dict(logins)
         data = []
         for student in handins:
-            d = self.generate_report(handins[student],
-                                     student_id=student,
-                                     soft=True,
-                                     overrides=self.emails_sent)
+            d = self._generate_report(handins=handins[student],
+                                      login=student,
+                                      soft=True,
+                                      overrides=self.emails_sent)
             data.append(d)
 
         return data
 
     def generate_all_reports(self):
-        # call generate_report with data, student_id, soft at some point
+        """
+        :raises: NotImplementedError
+        """
+        # call _generate_report with data, student_id, soft at some point
         raise NotImplementedError
 
-    def report_already_generated(self, login):
-        grade_dir = os.path.join(grade_base_path,
-                                 '%s/%s' % (login, self.mini_name))
-        report_path = os.path.join(grade_dir, 'report.txt')
-        grade_path = os.path.join(grade_dir, 'grade.json')
-        override_r_p = os.path.join(grade_dir, 'report-override.txt')
-        override_g_p = os.path.join(grade_dir, 'grade-override.json')
+    def report_already_generated(self, login: str) -> bool:
+        """
+
+        returns whether or not a report and grade have already been generated
+        for this student for this assignment
+
+        :param login: CS login of student
+        :type login: str
+        :returns: whether or not a report has been generated for this student
+        :rtype: bool
+
+        """
+        grade_dir = pjoin(grade_base_path, login, self.mini_name)
+        report_path = pjoin(grade_dir, 'report.txt')
+        grade_path = pjoin(grade_dir, 'grade.json')
+        override_r_p = pjoin(grade_dir, 'report-override.txt')
+        override_g_p = pjoin(grade_dir, 'grade-override.json')
         return os.path.exists(report_path) or os.path.exists(override_r_p)
 
-    def generate_one_report(self, login, user, soft=True, overrides=False):
-        id = self.login_to_id(login)
-        ps = []
+    def generate_one_report(self,
+                            login: str,
+                            soft: bool = True,
+                            overrides: bool = False
+                            ) -> Tuple[str, RawGrade, str]:
+        """
+
+        generate full grade report for a single student for this assignment
+
+        :param login: login to generate report for
+        :type login: str
+        :param soft: whether or not to only return the report data rather than
+                     writing it to a file. defaults to ``True``
+        :type soft: bool, optional
+        :param overrides: whether or not a report should be written as an
+                          override report (for grade complaints).
+                          defaults to ``False``
+        :type overrides: bool, optional
+        :returns: a (login, <numeric grade data>, <grade report>) 3-tuple
+        :rtype: Tuple[str, RawGrade, str]
+
+        """
+        ident = self.login_to_id(login)
+        ps: List[Optional[Handin]] = []
         for q in self.questions:
             try:
-                ps.append(q.get_handin_by_id(id))
+                ps.append(q.get_handin_by_id(ident))
             except ValueError:
-                pass
+                ps.append(None)
 
-        return self.generate_report(ps, login, soft=soft, overrides=overrides)
+        return self._generate_report(ps,
+                                     login,
+                                     soft=soft,
+                                     overrides=overrides)
 
-    def generate_report(self, problems, student_id, soft=True, overrides=False):
-        # this needs some serious cleanup
-        """ given a list of Handins and either a (nonanonymous) student id,
+    def _generate_report(self,
+                         handins: List[Optional[Handin]],
+                         login: str,
+                         soft=True,
+                         overrides=False
+                         ) -> Tuple[str, RawGrade, str]:
+        """
+
+        given a list of Handins and student login,
         generate a report for that student.
         the third argument, soft, represents whether or not to write the grades
         to corresponding grade files. returns the students (nonanonymous) id,
-        the grade (dictionary), and the text of the report """
+        the grade (dictionary), and the text of the report.
+
+        :param handins: List of Handins/None if no Handin for that question
+        :type handins: List[Optional[Handin]]
+        :param login: login of student generating report
+        :type login: str
+        :param soft: whether or not to only return the report information,
+                     rather than writing it into files; defaults to ``True``
+        :type soft: bool, optional
+        :param overrides: whether or not to generate override reports
+                          defaults to ``False``
+        :type overrides: bool, optional
+        :returns: a (login, raw student grade, grade report) 3-tuple
+        :rtype: Tuple[str, RawGrade, str]
+
+        **Note**: This method needs a *lot* of cleanup. Ideas in source code.
+
+        """
+        # this needs some serious cleanup
+        # Cleanup todos:
+        # TODO: separate string generation and writing logic
+        # TODO: make lateness a handin attribute (means it needs to be
+        #       available on TA side of things, so probably through log files)
+        # TODO: clean up getting anonymous id for both group and non group asgn
+        # TODO: put generation of rubric summary in different method
+        # TODO: put override/backup/general report location files in method
         if self.group_asgn:
             try:
-                anon_ident = self.login_to_id(student_id)
+                anon_ident = self.login_to_id(login)
             except ValueError:
                 anon_ident = -1  # make this better to handin person's id
         else:
             try:
-                anon_ident = self.login_to_id(student_id)
+                anon_ident = self.login_to_id(login)
             except ValueError:
                 # re-raise error if the student handed something in but doesn't
                 # have an anonymous ID associated with them
-                for p in problems:
-                    if p is not None:
+                for handin in handins:
+                    if handin is not None:
                         raise
 
             anon_ident = -1
 
         assert self.started  # at the very least grading should be started
         final_path = latest_submission_path(self.handin_path,
-                                            student_id,
+                                            login,
                                             self.mini_name)
         if final_path is not None and '-late' in final_path:
             late = True
         else:
             late = False
 
-        grade_dir = os.path.join(grade_base_path,
-                                 '%s/%s' % (student_id, self.mini_name))
-        report_path = os.path.join(grade_dir, 'report.txt')
-        summary_path = os.path.join(grade_dir, 'rubric-summary.txt')
-        grade_path = os.path.join(grade_dir, 'grade.json')
-        override_r_p = os.path.join(grade_dir, 'report-override.txt')
-        override_g_p = os.path.join(grade_dir, 'grade-override.json')
+        grade_dir = pjoin(grade_base_path, login, self.mini_name)
+        report_path = pjoin(grade_dir, 'report.txt')
+        summary_path = pjoin(grade_dir, 'rubric-summary.txt')
+        grade_path = pjoin(grade_dir, 'grade.json')
+        override_r_p = pjoin(grade_dir, 'report-override.txt')
+        override_g_p = pjoin(grade_dir, 'grade-override.json')
         if overrides and not soft:
             report_path = override_r_p
             grade_path = override_g_p
             if os.path.exists(report_path):
                 # if making overrides would overwrite an override...
-                print('Copying existing override for %s to backup files' % student_id)
+                print(f'Copying existing override for {login} to backup files')
                 shutil.copy(report_path,
-                            os.path.join(grade_dir, 'report-override-backup.txt'))
+                            pjoin(grade_dir, 'report-override-backup.txt'))
                 shutil.copy(grade_path,
-                            os.path.join(grade_dir, 'grade-override-backup.json'))
+                            pjoin(grade_dir, 'grade-override-backup.json'))
 
-        if not (os.path.exists(override_r_p) == os.path.exists(override_g_p)):
-            base = 'For %s, student %s must have both report-override.txt '
-            base += 'and grade-override.json'
-            raise TypeError(base % (self, student_id))
+        if (os.path.exists(override_r_p) != os.path.exists(override_g_p)):
+            err = (
+                   f'For {self}, student {login} must have both '
+                   f'report-override.txt and grade-override.json'
+                  )
+            raise TypeError(err)
         if os.path.exists(override_r_p):
             # by extension both exist because of last check
             with locked_file(override_r_p) as f:
                 full_string = f.read()
 
             with locked_file(override_g_p) as f:
-                grade = json.load(f)
+                given_grade = json.load(f)
 
-            return student_id, grade, full_string
+            return login, given_grade, full_string
 
         summary_str = ''
-        for p in problems:
-            if p is None:
+        for handin in handins:
+            if handin is None:
                 continue
-            summary_str += '%s\n' % p.question
-            cmd = [os.path.join(BASE_PATH, 'tabin', 'cs111-rubric-info'),
-                   p.grade_path]
+            summary_str += f'{handin.question}\n'
+            cmd = [pjoin(BASE_PATH, 'tabin', 'cs111-rubric-info'),
+                   handin.grade_path]
             try:
                 p_sum = subprocess.check_output(cmd)
             except subprocess.CalledProcessError:
                 p_sum = 'Error getting summary'
 
             summary_str += p_sum
-            summary_str += '-' * 20
+            summary_str += ('-' * 20)
 
         # make this more rigorous later
-        grade = get_empty_raw_grade(self)
-        full_string = f'{self.full_name} grade report for {student_id}\n\n'
-        for i, handin in enumerate(problems):
+        grade: RawGrade = get_empty_raw_grade(self)
+        full_string = f'{self.full_name} grade report for {login}\n\n'
+        for i, handin in enumerate(handins):
             if handin is None:
-                full_string += 'Question %s: No handin\n\n' % (i + 1)
+                full_string += f'Question {i + 1}: No handin\n\n'
                 continue
 
             report_text, report_grade = handin.generate_grade_report()
@@ -495,27 +731,27 @@ class HTA_Assignment(Assignment):
                 else:
                     grade[key] = report_grade[key]
 
-        final_grades = self.use_brackets(grade, late=late)
+        final_grades: RawGrade = determine_grade(grade, late, self)
 
         grade_string = 'Grade Summary\n'
         for key in final_grades:
-            grade_string += '  %s: %s\n' % (key, final_grades[key])
+            grade_string += f'  {key}: {final_grades[key]}\n'
 
         if late:
             grade_string += '(Late deduction applied)'
 
-        full_string += '\n%s\n' % grade_string
+        full_string += f'\n{grade_string}\n'
 
         if soft:
-            return student_id, grade, full_string
+            return login, grade, full_string
 
         # write appropriate files
         if not os.path.isdir(grade_dir):
             assert not os.path.exists(grade_dir)
             os.makedirs(grade_dir)
 
-        code_src = os.path.join(self.files_path, 'student-%s' % anon_ident)
-        code_dest = os.path.join(grade_dir, 'code')
+        code_src = pjoin(self.files_path, f'student-{anon_ident}')
+        code_dest = pjoin(grade_dir, 'code')
         with locked_file(report_path, 'w') as f:
             f.write(full_string)
 
@@ -530,64 +766,83 @@ class HTA_Assignment(Assignment):
         except OSError:
             pass  # already exists, no need to do anything
 
-        return student_id, final_grades, full_string
+        return login, final_grades, full_string
 
-    def send_email(self, student_id, student_email, yag):
-        """ takes in a student_id and a yag instance
-        (yag = yagmail.SMTP(...)), and sends a report email to the student """
+    def send_email(self,
+                   login: str,
+                   student_email: str,
+                   yag: yagmail.sender.SMTP) -> None:
+        """
+
+        sends report email to student using yagmail
+
+        :param login: CS login of student to send email to
+        :type login: str
+        :param student_email: email address of student (or recipient)
+        :type student_email: str
+        :param yag: yag instance to use to send the email
+        :type yag: yagmail.Sender.SMTP
+
+        """
         assert self.grading_completed
-        subject = '%s Grade Report' % self.full_name
-        gb = os.path.join(grade_base_path, student_id, self.mini_name)
+        subject = f'{self.full_name} Grade Report'
+        gb = pjoin(grade_base_path, login, self.mini_name)
         if 'report-override.txt' in os.listdir(gb):
-            f = os.path.join(gb, 'report-override.txt')
+            f = pjoin(gb, 'report-override.txt')
         else:
-            f = os.path.join(gb, 'report.txt')
+            f = pjoin(gb, 'report.txt')
 
-        print('Report sent to %s' % student_id)
+        print(f'Report sent to {login}')
         with locked_file(f) as fl:
             grade = fl.read()
 
         yag.send(to=student_email,
                  subject=subject,
-                 contents=['<pre>%s</pre>' % grade])
+                 contents=[f'<pre>{grade}</pre>'])
 
-    def reset_grading(self, confirm):
-        """ remove the assignment log; there is no recovering the data.
-        grade files are *not* deleted. do that by hand if you want to. """
-        # should probably not need this much try/except todo
-        if confirm != True:
-            raise ("Must call reset_grading with boolean confirm argument")
+    def reset_grading(self, confirm: bool) -> None:
+        """
+
+        remove the assignment log; there is no recovering the data.
+        grade files are *not* deleted. do that by hand if needed.
+
+        :param confirm: confirmation boolean (to indicate knowledge of what
+                        this method does)
+        :type confirm: bool
+
+        """
+        if not confirm:
+            e = "Must call reset_grading with boolean confirm argument"
+            raise ValueError(e)
         try:
             shutil.rmtree(self.log_path)
             print('Removed log path...')
-        except:
+        except Exception:
             pass
         try:
             shutil.rmtree(self.grade_path)
             print('Removed grade path...')
-        except:
+        except Exception:
             pass
         try:
             shutil.rmtree(self.files_path)
             print('Removed student files path...')
-        except:
+        except Exception:
             pass
         try:
             os.remove(self.blocklist_path)
             print('Removed blocklists...')
-        except:
+        except Exception:
             pass
         try:
             os.remove(self.anon_path)
             try:
-                os.remove(os.path.join(anon_base_path,
-                                       '%s.json' % self.mini_name))
-                # os.remove(self.ta_anon_path)
+                os.remove(pjoin(anon_base_path, f'{self.mini_name}.json'))
             except OSError:
                 pass
 
             print('Removed anonymization mapping...')
-        except:
+        except Exception:
             pass
 
         # now set grading_started in the assignments.json to False
@@ -601,7 +856,13 @@ class HTA_Assignment(Assignment):
         self.started = False
         print('Assignment records removed.')
 
-    def record_start(self):
+    @require_resource()
+    def record_start(self) -> None:
+        """
+
+        sets grading_started in assignments.json to true for this assignment
+
+        """
         with locked_file(asgn_data_path) as f:
             asgn_data = json.load(f)
 
@@ -609,10 +870,26 @@ class HTA_Assignment(Assignment):
         with locked_file(asgn_data_path, 'w') as f:
             json.dump(asgn_data, f, indent=2, sort_keys=True)
 
+    @require_resource()
     def record_finish(self):
-        raise NotImplementedError
+        """
+
+        sets grading_completed in assignments.json to true for this assignment
+
+        """
+        with locked_file(asgn_data_path) as f:
+            asgn_data = json.load(f)
+
+        asgn_data['assignments'][self.full_name]['grading_completed'] = True
+        with locked_file(asgn_data_path, 'w') as f:
+            json.dump(asgn_data, f, indent=2, sort_keys=True)
 
     def set_emails_sent(self):
+        """
+
+        sets sent_emails in assignments.json to true for this assignment
+
+        """
         with locked_file(asgn_data_path) as f:
             d = json.load(f)
 
@@ -621,12 +898,14 @@ class HTA_Assignment(Assignment):
         with locked_file(asgn_data_path, 'w') as f:
             json.dump(d, f, indent=2, sort_keys=True)
 
-    def status(self):
-        raise NotImplementedError("Status method not implemented")
-
     def deanonymize(self):
+        """
+
+        deanonymize this assignment so TAs can regrade
+
+        """
         # step 1 : move anonymization file from HTA to TA
-        dest = os.path.join(anon_base_path, '%s.json' % self.mini_name)
+        dest = pjoin(anon_base_path, f'{self.mini_name}.json')
         src = self.anon_path
         os.rename(src, dest)
 
@@ -638,14 +917,13 @@ class HTA_Assignment(Assignment):
                 if handin.grader:
                     ta_handins[handin.grader].add(handin.id)
 
-        grade_dir = os.path.join(grade_base_path, '%s/%s')
         for ta in ta_handins:
-            d_base = os.path.join(final_grade_path, ta, self.mini_name)
+            d_base = pjoin(final_grade_path, ta, self.mini_name)
             ids = ta_handins[ta]
-            for id in ids:
-                login = self.id_to_login(id)
-                src = grade_dir % (login, self.mini_name)
-                dest = os.path.join(d_base, login)
+            for ident in ids:
+                login = self.id_to_login(ident)
+                src = pjoin(grade_base_path, login, self.mini_name)
+                dest = pjoin(d_base, login)
                 if not os.path.exists(d_base):
                     os.makedirs(d_base)
 
@@ -665,12 +943,13 @@ class HTA_Assignment(Assignment):
 
 class Course:
     def __init__(self, base_path: str = '/course/cs0111') -> None:
-        assert os.path.exists(base_path), f"base path {base_path} doesn't exist"
+        assert os.path.exists(base_path), \
+            f"base path {base_path} doesn't exist"
         self.base_path = base_path
-        self.lab_base_path = os.path.join(self.base_path,
-                                          'ta/grading/data/labs')
-        self.lab_exception_path = os.path.join(BASE_PATH,
-                                               'hta/lab_exceptions.txt')
+        self.lab_base_path = pjoin(self.base_path,
+                                   'ta/grading/data/labs')
+        self.lab_exception_path = pjoin(BASE_PATH,
+                                        'hta/lab_exceptions.txt')
 
     def get_grade_dict(self,
                        students: Optional[List[str]] = None,
@@ -700,7 +979,7 @@ class Course:
         for line in lines[1:]:
             login = email_to_user(line[3])
             for col in range(6, 23):
-                drill = 'drill%s' % descr_to_drill(header[col])
+                drill = f'drill{descr_to_drill(header[col])}'
                 if drill == 'drill18':
                     continue
 
@@ -736,13 +1015,13 @@ class Course:
         f_system = os.walk(self.lab_base_path)
         root, folds, _ = next(f_system)
         for lab_dirname in folds:
-            lab_fold = os.path.join(root, lab_dirname)
+            lab_fold = pjoin(root, lab_dirname)
             all_labs.add(lab_dirname)
             for f in os.listdir(lab_fold):
                 if 'checkoff' not in f:
                     continue
 
-                fp = os.path.join(lab_fold, f)
+                fp = pjoin(lab_fold, f)
                 lines = line_read(fp)
 
                 for student in lines:
@@ -758,7 +1037,7 @@ class Course:
             login_set = set(lab_data.keys())
         else:
             login_set = set(students)
-        
+
         set_tas: Set[str]
         if tas is None:
             set_tas = set()
@@ -812,17 +1091,57 @@ class Course:
         :param tas: optional list of logins to ignore (i.e. the course TAs)
         :return: None
         """
+        pass
 
-def get_full_asgn_list():
-    with locked_file(asgn_data_path) as f:
-        data = json.load(f)
 
-    return list(map(HTA_Assignment, sorted(data['assignments'].keys())))
+def get_hta_asgn_list() -> List[HTA_Assignment]:
+    """
+
+    Get list of all assignments
+
+    :returns: list of all assignments (unloaded)
+    :rtype: List[HTA_Assignment]
+
+    """
+    assignments = []
+    for key in sorted(asgn_data['assignments'].keys()):
+        asgn = HTA_Assignment(key)
+        assignments.append(asgn)
+
+    return assignments
+
 
 def magic_update(question: Question, func: Callable[[Rubric], None]) -> None:
-    """ given a Question and a function that takes in a rubric (dictionary)
-    and mutates it. changes a) the base rubric, and b) each
-    extracted rubric by applying func to those rubrics """
+    """
+
+    using a rubric updating function, changes a) the base rubric, and b) each
+    extracted rubric. updated rubrics are checked for validity before file
+    writing (as of after homework 8 2018 rip)
+
+    This is most easily done in asgnipython
+
+    :param question: the question for which to update all rubrics
+    :type question: Question
+    :param func: a function that takes in a rubric, returns None, and mutates
+                 the rubric.
+    :type func: Callable[[Rubric], None]
+    :raises TypeError: invalid input types
+    :raises AssertionError: func improperly modifies rubrics
+
+    **Example**:
+
+    .. code-block:: python
+
+        asgn = HTA_Assignment("Homework 6")
+        qn = asgn.questions[0]
+
+        def updater(rubric):
+            items = rubric['rubric']['Functionality']['rubric_items']
+            items[2]['options'][3]['point-val'] = 5
+
+        magic_update(qn, updater)
+
+    """
     if not isinstance(question, Question):
         raise TypeError('question must be a Question instance')
     if not callable(func):
@@ -841,4 +1160,3 @@ def magic_update(question: Question, func: Callable[[Rubric], None]) -> None:
         d = handin.get_rubric()
         func(d)
         handin.write_grade(d)
-

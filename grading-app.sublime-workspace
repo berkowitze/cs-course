@@ -131,67 +131,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "asgn-hub.py",
-			"settings":
-			{
-				"buffer_size": 12060,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "classes.py",
-			"settings":
-			{
-				"buffer_size": 38826,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "Package Control Messages\n========================\n\nDocBlockr_Python\n----------------\n\n  DocBlockr Python\n  ================\n  \n  To get started:\n  \n  1. Open a python file (syntax must be currently set to python)\n  2. Open a double quoted docstring (\"\"\") at one of the following places:\n    - Top of the file\n    - Beginning of a class\n    - Beginning of a function\n  3. Press [enter] to trigger the autocomplete\n  \n  If you don't want to trigger the parser on a docstring, simply hold down [ctrl]/[cmd] and press [enter]\n  \n  For configuration and extendability, see the readme\n  https://github.com/adambullmer/sublime_docblockr_python\n  \n  Examples\n  --------\n  \n  1.\n  class TestClass():\n      \"\"\"<-- Press [enter]\n  \n  2.\n  def test_function():\n      \"\"\"<-- Press [enter]\n",
-			"settings":
-			{
-				"buffer_size": 776,
-				"line_ending": "Unix",
-				"name": "Package Control Messages",
-				"read_only": true,
-				"scratch": true
-			}
-		},
-		{
-			"contents": "def f(x: int) -> float:\n    \"\"\"[summary]\n    \n    [description]\n    \n    Arguments:\n        x {int} -- [description]\n    \"\"\"",
-			"settings":
-			{
-				"buffer_size": 124,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "hta_classes.py",
-			"settings":
-			{
-				"buffer_size": 31243,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "helpers.py",
-			"settings":
-			{
-				"buffer_size": 6481,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/course/cs0111/ta/grading/classes.py",
-			"settings":
-			{
-				"buffer_size": 38826,
-				"line_ending": "Unix"
-			}
-		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -333,6 +272,26 @@
 				"Package Control: Install Package"
 			],
 			[
+				"lint",
+				"SublimeLinter: Show All Errors"
+			],
+			[
+				"insall",
+				"Package Control: Install Package"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"install p",
+				"Package Control: Install Package"
+			],
+			[
+				"remove pa",
+				"Package Control: Remove Package"
+			],
+			[
 				"python",
 				"Set Syntax: Python"
 			],
@@ -437,19 +396,37 @@
 	},
 	"expanded_folders":
 	[
-		"/course/cs0111"
+		"/course/cs0111",
+		"/course/cs0111/ta",
+		"/course/cs0111/ta/grading",
+		"/course/cs0111/tabin"
 	],
 	"file_history":
 	[
+		"/course/cs0111/ta/grading/custom_types.py",
+		"/course/cs0111/ta/grading/grading_app.py",
+		"/course/cs0111/ta/grading/update_rubric.py",
+		"/course/cs0111/ta/grading/helpers.py",
 		"/course/cs0111/ta/grading/static/main.js",
+		"/course/cs0111/hta/grading/course_customization.py",
+		"/course/cs0111/hta/grading/classes.py",
+		"/course/cs0111/hta/grading/hta_helpers.py",
+		"/course/cs0111/hta/grading/hta_classes.py",
+		"/course/cs0111/hta/grading/asgn-hub.py",
+		"/course/cs0111/tabin/helpers.py",
+		"/course/cs0111/ta/assignments.json",
+		"/course/cs0111/hta/grading/helpers.py",
+		"/course/cs0111/ta/grading/classes.py",
+		"/course/cs0111/grading-app.sublime-project",
+		"/course/cs0111/ta/grading/course_customization.py",
+		"/course/cs0111/helpers.py",
+		"/course/cs0111/hta_classes.py",
+		"/course/cs0111/classes.py",
+		"/course/cs0111/asgn-hub.py",
 		"/course/cs0111/ta/grading/templates/view_code.html",
 		"/course/cs0111/ta/grading/templates/index.html",
 		"/course/cs0111/tabin/clean-json",
-		"/course/cs0111/ta/grading/grading_app.py",
-		"/course/cs0111/ta/grading/classes.py",
 		"/course/cs0111/ta/grading/bracket.json",
-		"/course/cs0111/hta/grading/helpers.py",
-		"/course/cs0111/hta/grading/hta_helpers.py",
 		"/course/cs0111/htabin/helpers.py",
 		"/course/cs0111/htabin/update-groups",
 		"/course/cs0111/htabin/write-student-csv",
@@ -464,7 +441,6 @@
 		"/course/cs0111/htabin/better-members",
 		"/Users/Eli/Library/Application Support/Sublime Text 3/Packages/User/AutoDocstring.sublime-settings",
 		"/Users/Eli/Library/Application Support/Sublime Text 3/Packages/AutoDocstring/AutoDocstring.sublime-settings",
-		"/course/cs0111/ta/grading/custom_types.py",
 		"/course/cs0111/hta/grading/custom_types.py",
 		"/course/cs0111/ta/grading/new-rubric-new.json",
 		"/Users/Eli/Games/2D Tutorial/Library/metadata/1a/1a4266815e998967becf686f9c71f0a6",
@@ -475,7 +451,6 @@
 		"/Users/Eli/boxcount2.py",
 		"/Users/Eli/Downloads/election.py",
 		"/Users/Eli/Downloads/hi.py",
-		"/course/cs0111/ta/grading/course_customization.py",
 		"/course/cs0111/ta/grading/main.py",
 		"/course/cs-course/ta/grading/custom_types.py",
 		"/course/cs-course/ta/grading/hello.py",
@@ -555,30 +530,20 @@
 		"/course/cs0111/www/sections.html",
 		"/course/cs0111/www/software.html",
 		"/Users/Eli/ugh.html",
-		"/a.py",
-		"/Users/Eli/mcs/gpfs/main/course/cs0111/hta/handin/reject_template.html",
-		"/Users/Eli/mcs/gpfs/main/course/cs0111/hta/handin/confirmation_template.html",
-		"/Users/Eli/mcs/gpfs/main/course/cs0111/hta/handin/helpers.py",
-		"/Users/Eli/mcs/gpfs/main/course/cs0111/hta/handin/check_submissions.py",
-		"/Users/Eli/Downloads/gen.py",
-		"/Users/Eli/Downloads/signup.py",
-		"/Users/Eli/Downloads/website/assets/parsers/staff.py",
-		"/Users/Eli/mcs/gpfs/main/course/cs0111/hta/grading/hta_classes.py",
-		"/Users/Eli/mcs/gpfs/main/course/cs0111/ta/t-s-blocklist.txt",
-		"/Users/Eli/mcs/gpfs/main/course/cs0111/hta/groups/students.txt",
-		"/Users/Eli/mcs/gpfs/main/course/cs0111/hta/groups/tas.txt",
-		"/Users/Eli/mcs/gpfs/main/course/cs0111/ta/grading/templates/index.html",
-		"/course/cs0111/testing.py"
+		"/a.py"
 	],
 	"find":
 	{
-		"height": 39.0
+		"height": 24.0
 	},
 	"find_in_files":
 	{
 		"height": 101.0,
 		"where_history":
 		[
+			"/course/cs0111/hta/grading",
+			"/course/cs0111/ta/grading",
+			"/course/cs0111",
 			"."
 		]
 	},
@@ -587,6 +552,57 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"'items'",
+			"\"items\"",
+			"'items'",
+			"\"items\"",
+			"items",
+			"%s",
+			"%",
+			"%s",
+			"\"items\"",
+			"'items'",
+			"finally:",
+			"finally",
+			"defaults to",
+			"defaul",
+			"defaults to ",
+			"yagmail",
+			"os.path.join",
+			"get_empty",
+			"all_asgns",
+			"get_full_asgn",
+			"__genera",
+			"generate_report",
+			"in handins",
+			"for p in",
+			"problems",
+			"os.path.join",
+			"student_id",
+			"t-s-blocklist.txt",
+			"block",
+			"t-s-blocklist.txt",
+			"t-s-blocklist",
+			"blocklist",
+			"blocklists",
+			"get_blocklist",
+			"use_brackets",
+			"str(",
+			"students",
+			"user",
+			"login_to_id",
+			"groups_loaded",
+			"bracket_exists",
+			"type",
+			"):",
+			"rtype: {",
+			"{Handin}",
+			"):",
+			".check_rubric",
+			"wraps",
+			"type ",
+			"\\:[a-Z](.*)\\:",
+			"current_time",
 			"rewrite_ru",
 			"rewrite_rub",
 			"%s",
@@ -639,218 +655,8 @@
 	"groups":
 	[
 		{
-			"selected": 3,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "asgn-hub.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 12060,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1505,
-								1505
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "classes.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 38826,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								78,
-								78
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 776,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								776,
-								776
-							]
-						],
-						"settings":
-						{
-							"auto_indent": false,
-							"default_dir": "/course/cs0111/hta/grading",
-							"syntax": "Packages/Text/Plain text.tmLanguage",
-							"tab_width": 2,
-							"word_wrap": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 124,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								124,
-								124
-							]
-						],
-						"settings":
-						{
-							"default_dir": "/course/cs0111/hta/grading",
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "hta_classes.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 31243,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								31070,
-								31070
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 11934.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "helpers.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6481,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5029,
-								5029
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1721.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "/course/cs0111/ta/grading/classes.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 38826,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								38658,
-								38658
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 14954.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				}
 			]
 		}
 	],
@@ -885,6 +691,10 @@
 		]
 	},
 	"menu_visible": true,
+	"output.SublimeLinter":
+	{
+		"height": 221.0
+	},
 	"output.exec":
 	{
 		"height": 181.0
@@ -897,7 +707,7 @@
 	"project": "grading-app.sublime-project",
 	"replace":
 	{
-		"height": 70.0
+		"height": 44.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -935,7 +745,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 239.0,
+	"side_bar_width": 186.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

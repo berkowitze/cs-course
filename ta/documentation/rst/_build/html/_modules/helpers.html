@@ -78,9 +78,8 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../classes.html">classes module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../custom_types.html">custom_types module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules.html">ta/grading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html#hta-grading">hta/grading</a></li>
 </ul>
 
             
@@ -279,8 +278,8 @@
     <span class="k">def</span> <span class="nf">check_item</span><span class="p">(</span><span class="n">ri</span><span class="p">:</span> <span class="n">RubricItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ri</span><span class="p">[</span><span class="s1">&#39;descr&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ri</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">],</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">int</span><span class="p">))</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ri</span><span class="p">[</span><span class="s1">&#39;items&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">check_opt</span><span class="p">,</span> <span class="n">ri</span><span class="p">[</span><span class="s1">&#39;items&#39;</span><span class="p">]))</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ri</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">check_opt</span><span class="p">,</span> <span class="n">ri</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">]))</span>
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">check_opt</span><span class="p">(</span><span class="n">ro</span><span class="p">:</span> <span class="n">RubricOption</span><span class="p">):</span>

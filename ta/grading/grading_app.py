@@ -51,6 +51,7 @@ if __name__ == '__main__':
 
     print(user)
 
+
 def is_logged_in(f: Callable) -> Callable:
     ''' this decorator ensures that the user is logged in when attempting
     to access a route (except /login) '''
@@ -63,6 +64,7 @@ def is_logged_in(f: Callable) -> Callable:
 
     return wrap
 
+
 # index page
 @app.route('/')
 @is_logged_in
@@ -70,6 +72,7 @@ def main():
     return render_template('index.html',
                            asgns=started_asgns(),
                            user=user.uname)
+
 
 # load an assignment
 @app.route('/load_asgn')
@@ -80,11 +83,12 @@ def load_asgn():
         asgn = Assignment(asgn_key)
         asgn.load()
         workflow['assignment'] = asgn
-    except KeyError: # assignment not found
+    except KeyError:  # assignment not found
         return json.dumps("None")
-    else: # no exceptions raised
-        lst = [f'Question {q._qnumb}' for q in workflow['assignment'].questions]
+    else:  # no exceptions raised
+        lst = [f'Question {q._qnumb}' for q in asgn.questions]
         return json.dumps(lst)
+
 
 @app.route('/load_prob')
 @is_logged_in
@@ -107,6 +111,7 @@ def load_prob():
         d = question.html_data(user)
         return json.dumps(d)
 
+
 @app.route('/extract_handin')
 @is_logged_in
 def extract_handin():
@@ -128,6 +133,7 @@ def extract_handin():
         workflow['handin'] = handin
         return json.dumps(handin.get_rubric_data())
 
+
 @app.route('/load_handin', methods=['GET'])
 @is_logged_in
 def load_handin():
@@ -135,6 +141,7 @@ def load_handin():
     handin = workflow['question'].get_handin_by_id(sid)
     workflow['handin'] = handin
     return json.dumps(handin.get_rubric_data())
+
 
 @app.route('/flag_handin')
 @is_logged_in
@@ -152,6 +159,7 @@ def flag_handin():
                        'id': ident,
                        'problemData': workflow['handin'].get_rubric_data()})
 
+
 @app.route('/unextract_handin')
 @is_logged_in
 def unextract_handin():
@@ -162,6 +170,7 @@ def unextract_handin():
     workflow['handin'].unextract()
     return str(ident)
 
+
 @app.route('/save_handin')
 @is_logged_in
 def save_handin():
@@ -170,12 +179,13 @@ def save_handin():
         'trying to unextract inactive handin'
 
     data = json.loads(request.args['formData'])
-    comments = tuple(json.loads(request.args['comments'])) # (general, all)
+    comments = tuple(json.loads(request.args['comments']))  # (general, all)
     completed = json.loads(request.args['completed'])
     # don't force a completely filled out form unless completing
     result = workflow['handin'].save_data(data, comments,
                                           force_complete=completed)
     return json.dumps(result)
+
 
 @app.route('/add_global_comment')
 @is_logged_in
@@ -192,6 +202,7 @@ def add_global_comment():
     workflow['question'].add_ungiven_comment(category, comment)
     return 'true'
 
+
 # handin complete; don't save it though, that should be done separately
 @app.route('/complete_handin')
 @is_logged_in
@@ -203,6 +214,7 @@ def complete_handin():
     workflow['handin'].set_complete()
     return 'good'
 
+
 @app.route('/preview_report')
 @is_logged_in
 def preview_report():
@@ -211,6 +223,7 @@ def preview_report():
         'trying to preview report of inactive handin'
 
     return json.dumps(workflow['handin'].generate_report_str())
+
 
 @app.route('/view_code')
 @is_logged_in
@@ -222,6 +235,7 @@ def view_code():
     code_dir = workflow['handin'].handin_path
     return render_template('view_code.html', code=code, code_dir=code_dir)
 
+
 @app.route('/run_test')
 @is_logged_in
 def run_test():
@@ -229,6 +243,7 @@ def run_test():
     assert workflow['handin'].id == int(ident), \
         'trying to preview report of inactive handin'
     return json.dumps(workflow['handin'].run_test())
+
 
 # handle authentication
 @app.route('/login', methods=['GET', 'POST'])
@@ -244,6 +259,7 @@ def login():
     else:
         return render_template('login.html', msg='')
 
+
 # logout (if you need to for some reason)
 @app.route('/logout')
 @is_logged_in
@@ -251,8 +267,8 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+
 if __name__ == '__main__':
     port = args.port
     runtime_dir = os.path.dirname(os.path.abspath(__file__))
     app.run(host='0.0.0.0', port=port)
-

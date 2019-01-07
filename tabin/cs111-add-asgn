@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 
-from datetime import datetime
 import json
+
+from datetime import datetime
+from typing import Dict, List, Optional
+
 data = json.load(open('/course/cs0111/ta/assignments.json'))
 
-print 'What is the assignment name?'
-asgn = raw_input('> ')
+print('What is the assignment name?')
+asgn = input('> ')
 
-print 'Creating %s' % asgn
+print(f'Creating {asgn}')
 
-print 'Will this be graded anonymously? (usually no for projects)'
-print '1 for anonymous, 2 for non-anonymous'
-opt = raw_input('> ')
+print('Will this be graded anonymously? (usually no for projects)')
+print('1 for anonymous, 2 for non-anonymous')
+opt = input('> ')
 if opt == '1':
     anonymous = True
 elif opt == '2':
@@ -19,48 +22,55 @@ elif opt == '2':
 else:
     raise ValueError('must enter 1 or 2')
 
-print 'When is it due? Use "mm/dd/yyyy hh:mm _M" format'
-due = raw_input('> ')
-due = datetime.strptime(due,'%m/%d/%Y %I:%M %p')
+print('When is it due? Use "mm/dd/yyyy hh:mm _M" format')
+due_inp = input('> ')
+due = datetime.strptime(due_inp, '%m/%d/%Y %I:%M %p')
 
-print 'Is this a group assignment? [y/n]'
-g_asgn = raw_input('> ').lower()
-if g_asgn == 'y':
+print('Is this a group assignment? [y/n]')
+g_asgn_inp = input('> ').lower()
+if g_asgn_inp == 'y':
     g_asgn = True
-elif g_asgn == 'n':
+elif g_asgn_inp == 'n':
     g_asgn = False
 else:
     raise ValueError('Must enter y or n')
 
 if g_asgn:
-    group_dir = raw_input("Enter group directory (i.e. project3): ")
+    group_dir = input("Enter group directory (i.e. project3): ")
 
+url_base = 'https://docs.google.com/a/brown.edu/spreadsheets/d'
+ssid = '1WBNNlcFQAnIau1AKgUTR_HmOTgl_C1VtPHOKkwvbO0A'
+url = f'{url_base}/{ssid}'
+print(f'Google sheet is at {url}' % url)
 
-
-qs = []
-url = 'https://docs.google.com/a/brown.edu/spreadsheets/d/1WBNNlcFQAnIau1AKgUTR_HmOTgl_C1VtPHOKkwvbO0A'
-print 'Google sheet is at %s' % url
+qs: List[dict] = []
 while True:
     if qs:
-        print 'Add question? [y/n]'
-        if raw_input('> ') != 'y':
+        print('Add question? [y/n]')
+        if input('> ') != 'y':
             break
-    print 'What column is the file uploaded to in the handin google sheet?'
-    col = raw_input('> ')
 
-    print 'What is the name of the file for this question?'
-    fname = raw_input('> ')
-    print 'Test suite: pyret or python?'
-    print '(enter arr or py for the file extension)?'
-    print 'If it\'s neither, just type one in plz.'
+    print('What is the name of the file for this question?')
+    fname = input('> ')
+
+    print('What column is the file uploaded to in the handin google sheet?')
+    col = input('> ').upper()
+
+    print('Test suite: pyret or python?')
+    print('(enter arr or py for pyret or python)')
+    print('Leave blank if no testsuite')
     while True:
-        ext = raw_input('> ')
-        if ext != 'arr' and ext != 'py':
-            print 'cmon... arr or py only plzzz'
+        ext: Optional[str]
+        ext = input('> ')
+        if ext != 'arr' and ext != 'py' and ext != '':
+            print('Invalid input (should be arr, py, or blank)')
             continue
         else:
+            if not ext:
+                ext = None
+
             break
-    
+
     qs.append({"col": col, "filename": fname, 'test-ext': ext})
 
 new_data = {
@@ -76,6 +86,6 @@ new_data = {
 if g_asgn:
     new_data["group_dir"] = group_dir
 
-data["assignments"][asgn] = new_data
+data['assignments'][asgn] = new_data
 with open('/course/cs0111/ta/assignments.json', 'w') as f:
     json.dump(data, f, indent=2, sort_keys=True)

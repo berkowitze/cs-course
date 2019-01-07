@@ -1,57 +1,49 @@
-#!/usr/bin/env python
+#!/course/cs0111/ta/venv/bin/python
 
 import json
 import sys
 import os
+from typing import List
+from custom_types import Rubric, RubricItem
 
 if not len(sys.argv) == 2:
-    print 'Usage: cs111-rubric-info <path-to-rubric>'
+    print('Usage: cs111-rubric-info <path-to-rubric>')
 
 if not os.path.exists(sys.argv[1]):
     raise OSError('%s does not exist' % sys.argv[1])
 
 p = sys.argv[1]
 with open(p) as f:
-    rubric = json.load(f)
+    rubric: Rubric = json.load(f)
 
 print('This takes max of all points, so subtract max fudge points (if any)')
-# setup
-rubric.pop('_COMMENTS')
-b = rubric[rubric.keys()[0]]['rubric_items'][0] # get a sample item
-populated = ('value' in b.keys()) # is this rubric filled in
+print('')
 
 summary = {}
-for key in rubric:
-    if populated:
-        V = 0
-        M = 0
-        for item in rubric[key]['rubric_items']:
-            V += item['point-val'][item['options'].index(item['value'])]
-            M += max(item['point-val'])
-    else:
-        M = 0
-        for item in rubric[key]['rubric_items']:
-            M += max(item['point-val'])
-
-    summary[key] = M
-    
-    if populated:
-        print '%s (%s/%s)' % (key.upper(), V, M)
-    else:
-        print '%s (%s)' % (key.upper(), M)
-    items = rubric[key]['rubric_items']
+for key in rubric['rubric']:
+    V: float = 0
+    M: float = 0
+    items: List[RubricItem] = rubric['rubric'][key]['rubric_items']
     for item in items:
-        print '  %s' % item['name']
-        if populated:
-            val = item['value']
-            pval = item['point-val'][item['options'].index(val)]
-            mval = max(item['point-val'])
-            print '    %s (%s/%s)' % (val, pval, mval)
-        else:
-            for opt, val in zip(item['options'], item['point-val']):
-                print '    %s (%s)' % (opt, val)
+        M += max(map(lambda opt: opt['point_val'], item['options']))
+        if item['selected'] is not None:
+            V += item['options'][item['selected']]['point_val']
 
-print ''
-print 'Summary:'
+    summary[key] = (V, M)
+    print(f'{key}: {V} / {M}')
+
+    for item in items:
+        print(f'  {item["descr"]}')
+        if item['selected'] is None:
+            for opt in item['options']:
+                print(f'    {opt["descr"]} ({opt["point_val"]})')
+        else:
+            sel = item['selected']
+            opt = item['options'][sel]
+            max_val = max(map(lambda opt: opt['point_val'], item['options']))
+            print(f'    {opt["descr"]} ({opt["point_val"]}/{max_val})')
+
+print('')
+print('Summary:')
 for key in summary:
-    print "\t%s: %s" % (key, summary[key])
+    print(f"\t{key}: {summary[key][0]}/{summary[key][1]}")

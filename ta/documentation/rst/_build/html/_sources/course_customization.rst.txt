@@ -2,6 +2,6 @@ course\_customization module
 ============================
 
 .. automodule:: course_customization
-    :members: full_asgn_name_to_dirname
+    :members:
     :undoc-members:
     :show-inheritance:

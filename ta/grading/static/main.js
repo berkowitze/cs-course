@@ -272,10 +272,10 @@ function rubricToForm(rubric) {
             // generate select dropdown for the rubric item options
             var rubric_select = $('<select class="rubric-sel browser-default">');
             rubric_select.data('description', rubric_item['descr']);
-            for (var k = 0; k < rubric_item['items'].length; k++) { // for each option of each rubric item
+            for (var k = 0; k < rubric_item['options'].length; k++) { // for each option of each rubric item
                 var opt = $('<option>');
                 opt.val(k);
-                opt.text(rubric_item['items'][k]['descr']);
+                opt.text(rubric_item['options'][k]['descr']);
                 opt.data('index', k);
                 rubric_select.append(opt);
             }

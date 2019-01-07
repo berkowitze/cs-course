@@ -3,22 +3,24 @@ import os
 from collections import defaultdict
 from typing import Dict, List, Optional
 
-from helpers import locked_file
+from helpers import locked_file, line_read
 
 BASE_PATH = '/course/cs0111'
 
+
 def load_students() -> List[List[str]]:
-    """reads students from the hta/groups/students.csv file 
-    
+    """reads students from the hta/groups/students.csv file
+
     Returns:
         List[str]: list of (login, email, name)
     """
     path = os.path.join(BASE_PATH, 'hta', 'groups', 'students.csv')
     return line_read(path, delim=",")
 
+
 def student_list() -> List[str]:
     """list of student logins from hta/groups/students.txt
-    
+
     Returns:
         List[str]: list of logins of students in the class
     """
@@ -28,13 +30,13 @@ def student_list() -> List[str]:
 
 def email_to_login(email: str) -> str:
     """Converts brown email to CS login
-    
+
     Args:
         email (str): Student's Brown email (aliases will not work)
-    
+
     Returns:
         str: Student's CS login
-    
+
     Raises:
         ValueError: when email not found
     """
@@ -48,13 +50,13 @@ def email_to_login(email: str) -> str:
 
 def login_to_email(login: str) -> str:
     """Convert CS login to full Brown email
-    
+
     Args:
         login (str): CS login of student
-    
+
     Returns:
         str: Brown email of student (no aliases)
-    
+
     Raises:
         ValueError: Student with input login not found
     """
@@ -68,13 +70,13 @@ def login_to_email(login: str) -> str:
 
 def argmax(lst: List[int]) -> int:
     """Get index of maximum integer of input list
-    
+
     Args:
         lst (List[int]): list of non-negative integers
-    
+
     Returns:
         int: Index of maximum integer in lst
-    
+
     Raises:
         ValueError: Cannot input a list with repeated values
     """
@@ -91,18 +93,18 @@ def argmax(lst: List[int]) -> int:
     return max_ndx
 
 
-def latest_submission_path(base: str, 
+def latest_submission_path(base: str,
                            login: str,
                            mini_name: str
                            ) -> Optional[str]:
     """Returns None if no submission for this student on this assignment,
     and the path of the student's latest submission if they did submit
-    
+
     Args:
         base (str): base path (i.e. /course/cs0111/hta/handin/students)
         login (str): cs login of student
         mini_name (str): directory name of assignment (i.e. homework2)
-    
+
     Returns:
         Optional[str]: None if login has no handin for mini_name, and
         the path of the latest submission for login if they do
@@ -123,13 +125,13 @@ def line_read(filename: str, delim: Optional[str] = None) -> list:
     whitespace stripped with delim=str
     (I don't use csv module because I'm unsure exactly how it parses lines
     and it sometimes has weird results; this way there's full control)
-    
+
     Args:
         filename (str): name of file to open
         delim (Optional[str], optional): if None, reads filename as
         list of strings, otherwise will split each line on delim
         i.e. delim=',' a line 'hi,there' -> ['hi', 'there']
-    
+
     Returns:
         list: if delim is None, a list of strings (one string for each
         line). if delim is not None, a list of lists of strings, one
@@ -144,3 +146,26 @@ def line_read(filename: str, delim: Optional[str] = None) -> list:
         return [line.split(delim) for line in lines]
     else:
         return lines
+
+
+def get_blocklists() -> Dict[str, List[str]]:
+    """
+
+    Get blocklist data from both TAs blocklisting students and
+    students blocklisting TAs
+
+    :returns: a dictionary of ta logins as the keys and lists of
+    students blocklisted as the values
+    :rtype: {Dict[str, List[str]]}
+
+    """
+    mapping: Dict[str, List[str]] = defaultdict(list)
+    bl1 = os.path.join(BASE_PATH, 'ta/t-s-blocklist.txt')
+    bl2 = os.path.join(BASE_PATH, 'hta/s-t-blocklist.txt')
+    bl = line_read(bl1, delim=',')
+    bl.extend(line_read(bl2, delim=','))
+    blocklist = set(l.split(',') for l in bl)
+    for entry in blocklist:
+        mapping[entry[0]].append(entry[1])
+
+    return mapping

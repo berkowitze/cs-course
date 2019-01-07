@@ -1,119 +1,86 @@
-#!/course/cs0111/ta/grading/venv/bin/python2.7
+#!/course/cs0111/ta/venv/bin/python
 
 import os
-import subprocess
-import re
+import sys
+import json
 import tabulate
+from typing import List, Set
+
+import prompts
+from helpers import line_read, locked_file, json_edit
 
 BASE_PATH = '/course/cs0111'
 
 lab_base = os.path.join(BASE_PATH, 'ta/grading/data/labs')
+lab_data_path = os.path.join(lab_base, 'lab-data.json')
+lab_roster_path = os.path.join(lab_base, 'roster.json')
 
-dirs = next(os.walk(lab_base))[1]
-students_path = os.path.join(BASE_PATH, 'ta/groups', 'students.txt')
-with open(students_path) as f:
-    lines = map(str.strip, f.read().strip().split('\n'))
+with locked_file(lab_data_path) as f:
+    SESSION_LIST: List[str] = json.load(f)
 
+with locked_file(lab_roster_path) as f:
+    data = json.load(f)
+    LAB_LIST = sorted(data.keys())
+
+students_path = os.path.join(BASE_PATH, 'ta/groups/students.csv')
+lines = line_read(students_path, delim=',')
+students = []
 ls = []
-for i, user in enumerate(lines):
-    txt = subprocess.check_output(["ldapsearch", "-Q", "cn=%s" % user])
-    res = re.search('gecos:(.*)', txt, re.MULTILINE)
-    if res:
-        full_name = res.group(1).strip().split(', ')[0]
-    else:
-        full_name = 'Not found'
+for i, (login, email, name) in enumerate(lines):
+    students.append(login)
+    ls.append([i + 1, login, name])
 
-    ls.append([i + 1, user, full_name])
+print(tabulate.tabulate(ls, headers=('#', 'Login', 'Name')))
 
-print tabulate.tabulate(ls, headers=('#', 'Login', 'Name'))
+print('')
+print('Who are you switching?')
+print('Type the number next to their login')
+inp = prompts.int_prompt(len(students))
+if inp is None:
+    print('Exiting...')
+    sys.exit(1)
 
-print ''
-print 'Who are you switching?'
-print 'Type the number next to their login'
-while True:
-    inp = raw_input('Enter a number: ')
-    try:
-        student = lines[int(inp) - 1]
-        print ''
-        print 'Running lab switch for %s.' % student
-        break
-    except ValueError:
-        print 'Enter a number only...'
+student = students[int(inp) - 1]
+print('')
+print(f'Running lab switch for {student}.')
 
-print 'Temporary or permanent lab switch?'
-print '1. Temporary'
-print '2. Permanent'
-while True:
-    try:
-        res = int(raw_input('> '))
-        if not (res == 1 or res == 2):
-            print 'Enter 1 or 2...'
-            continue
-        else:
-            temp = res == 1
-            break
-    except ValueError:
-        print 'Enter a number...'
+print('Temporary or permanent lab switch?')
+res = prompts.opt_prompt(['Temporary', 'Permanent'])
+if res is None:
+    print('Exiting...')
+    sys.exit(1)
 
-if temp:
-    print 'Which lab are you switching?'
-    for i, d in enumerate(dirs):
-        nice_name = '%s %s' % (d[0:3], int(d[3:]))
-        print '%s. %s' % ((i + 1), nice_name)
+temp_switch = (res == 1)
 
-    while True:
-        try:
-            res = int(raw_input('> '))
-            if res not in range(1, 13):
-                print 'Enter a valid number...'
-                continue
-            else:
-                break
-        except ValueError:
-            print 'Enter a number...'
+if temp_switch:
+    print('Which lab are you switching?')
+    sess = prompts.opt_prompt(LAB_LIST)
+    print(sess)
+    if sess is None:
+        print('Exiting...')
+        sys.exit(1)
 
-    gothrough = [res]
-    print gothrough
+    to_switch = [sess]
 else:
-    gothrough = range(1, 13)
+    to_switch = list(range(1, len(LAB_LIST) + 1))
 
-print 'Switch to which lab?'
-print '\t1. Lab 1 (Thursday 11AM-1PM)'
-print '\t2. Lab 2 (Thursday 2:30-4:30PM)'
-print '\t3. Lab 3 (Thursday 6:00-8:00PM)'
-print '\t4. Lab 4 (Friday 3:00-5:00PM)'
-while True:
-    try:
-        res = int(raw_input('> '))
-        if res not in range(1, 5):
-            print 'Enter a valid number...'
-        break
-    except ValueError:
-        print "Enter a number..."
+print('Switch to which session?')
+switch_to = prompts.opt_prompt(SESSION_LIST, pre_string='\t')
+if switch_to is None:
+    print('Exiting...')
+    sys.exit(1)
 
-for lab in gothrough:
-    folder = 'lab%s' % str(lab).zfill(2)
-    b = os.path.join(lab_base, folder)
-    to_path = os.path.join(b, 'l%s-roster.txt' % res)
+with json_edit(lab_roster_path) as data:
+    for lab_n in to_switch:
+        key = f'lab{str(lab_n).zfill(2)}'
+        lab = data[key]
+        for session in lab:
+            lab[session] = list(set(s for s in lab[session] if s != student))
 
-    for l in range(1, 5):
-        p = os.path.join(b, 'l%s-roster.txt' % l)
-        with open(p) as f:
-            ss = map(str.strip, f.read().strip().split('\n'))
+        switch_key = f'session{switch_to}'
+        lab[switch_key].append(student)
 
-        if student in ss:
-            ss.remove(student)
-            with open(p, 'w') as f:
-                f.write('\n'.join(ss))
-
-    with open(to_path, 'a') as f:
-        f.write('\n%s' % student)
-
-s = ''
-if temp:
-     s += 'Lab %s switch' % gothrough[0]
+if temp_switch:
+    print(f'Lab {sess} switch for {student} to session {switch_to} complete.')
 else:
-     s += 'Permenant lab switch'
-
-s += ' for %s to session %s complete.' % (student, res)
-print s
+    print(f'Permenant switch for {student} to session {switch_to} complete.')
