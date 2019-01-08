@@ -63,13 +63,29 @@ def json_edit(filename: str) -> Generator:
     if you need to completely change a JSON file, this is not the
     write function to use.
 
+    :param filename: filepath of the JSON file to modify
+    :type filename: str
+
     **Example**:
 
     >>> with json_edit('hello.json') as data:
-    ... data['hi'].append(4)
+    ...     data['hi'].append(4)
 
-    :param filename: filepath of the JSON file to modify
-    :type filename: str
+    **Example**:
+
+    .. code-block:: python
+
+        with locked_file('hello.json') as f:
+            data = json.load(f)
+
+        # operations with data
+        with locked_file('hello.json', 'w') as f:
+            json.dump(data, f, sort_keys=True, indent=2)
+
+        ## THIS CAN BE REWRITTEN AS:
+
+        with json_edit('hello.json') as data:
+            # operations with data
 
     """
     with locked_file(filename) as f:

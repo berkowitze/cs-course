@@ -67,7 +67,7 @@ while True:
         if resp3 is None:
             break
         elif resp3 == 1:
-            generate_grade_summaries(write=True, to_return=False)
+            generate_grade_summaries(write=True)
             print(f'Summaries output in {sum_path}')
             continue
         elif resp3 == 2:

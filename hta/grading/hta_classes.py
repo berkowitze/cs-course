@@ -339,12 +339,8 @@ class HTA_Assignment(Assignment):
         if final_path is None:
             raise ValueError(f"No handin for {login}")
 
-        with locked_file(self.anon_path) as f:
-            data = json.load(f)
-
-        data[login] = ident
-        with locked_file(self.anon_path, 'w') as f:
-            json.dump(data, f, indent=2, sort_keys=True)
+        with json_edit(self.anon_path) as data:
+            data[login] = ident
 
         dest = pjoin(self.files_path, f'student-{ident}')
         shutil.copytree(final_path, dest)
@@ -413,22 +409,12 @@ class HTA_Assignment(Assignment):
         if pexists(dest):
             shutil.rmtree(dest)
 
-        with locked_file(self.anon_path) as f:
-            data = json.load(f)
+        with json_edit(self.anon_path) as data:
+            data.pop(login)
 
-        data.pop(login)
-
-        with locked_file(self.anon_path, 'w') as f:
-            json.dump(data, f, indent=2, sort_keys=True)
-
-        with locked_file(self.blocklist_path) as f:
-            data = json.load(f)
-
-        for k in data:
-            data[k] = [i for i in data[k] if i != ident]
-
-        with locked_file(self.blocklist_path, 'w') as f:
-            json.dump(data, f, indent=2, sort_keys=True)
+        with json_edit(self.blocklist_path) as data:
+            for k in data:
+                data[k] = [i for i in data[k] if i != ident]
 
         for q in self.questions:
             try:
@@ -439,12 +425,8 @@ class HTA_Assignment(Assignment):
             if pexists(h.grade_path):
                 os.remove(h.grade_path)
 
-            with locked_file(q.log_filepath) as f:
-                data = json.load(f)
-
-            data = [d for d in data if d['id'] != ident]
-            with locked_file(q.log_filepath, 'w') as f:
-                json.dump(data, f, indent=2, sort_keys=True)
+            with json_edit(q.log_filepath) as data:
+                data = [d for d in data if d['id'] != ident]
 
         self.login_handin_list.remove(login)
 
@@ -916,12 +898,8 @@ class HTA_Assignment(Assignment):
             pass
 
         # now set grading_started in the assignments.json to False
-        with locked_file(asgn_data_path) as f:
-            data = json.load(f)
-
-        data['assignments'][self.full_name]['grading_started'] = False
-        with locked_file(asgn_data_path, 'w') as f:
-            json.dump(data, f, indent=2, sort_keys=True)
+        with json_edit(asgn_data_path) as data:
+            data['assignments'][self.full_name]['grading_started'] = False
 
         self.started = False
         print('Assignment records removed.')
@@ -945,12 +923,9 @@ class HTA_Assignment(Assignment):
         sets grading_completed in assignments.json to true for this assignment
 
         """
-        with locked_file(asgn_data_path) as f:
-            asgn_data = json.load(f)
-
-        asgn_data['assignments'][self.full_name]['grading_completed'] = True
-        with locked_file(asgn_data_path, 'w') as f:
-            json.dump(asgn_data, f, indent=2, sort_keys=True)
+        with json_edit(asgn_data_path) as data:
+            asgn = asgn_data['assignments'][self.full_name]
+            asgn['grading_completed'] = True
 
     def set_emails_sent(self):
         """
@@ -958,13 +933,8 @@ class HTA_Assignment(Assignment):
         sets sent_emails in assignments.json to true for this assignment
 
         """
-        with locked_file(asgn_data_path) as f:
-            d = json.load(f)
-
-        d['assignments'][self.full_name]['sent_emails'] = True
-
-        with locked_file(asgn_data_path, 'w') as f:
-            json.dump(d, f, indent=2, sort_keys=True)
+        with json_edit(asgn_data_path) as data:
+            data['assignments'][self.full_name]['sent_emails'] = True
 
     def deanonymize(self):
         """
@@ -998,12 +968,8 @@ class HTA_Assignment(Assignment):
                 os.symlink(src, dest)
 
         # step 3 : update json
-        with locked_file(asgn_data_path) as f:
-            d = json.load(f)
-
-        d['assignments'][self.full_name]['anonymous'] = False
-        with locked_file(asgn_data_path, 'w') as f:
-            json.dump(d, f, sort_keys=True, indent=2)
+        with json_edit(asgn_data_path) as data:
+            data['assignments'][self.full_name]['anonymous'] = False
 
     @is_started
     def table_summary(self) -> List[Tuple[str, int, int, int]]:
@@ -1028,159 +994,6 @@ class HTA_Assignment(Assignment):
 
     def __repr__(self):
         return f'HTA-{super().__repr__()}'
-
-
-class Course:
-    def __init__(self, base_path: str = '/course/cs0111') -> None:
-        assert pexists(base_path), \
-            f"base path {base_path} doesn't exist"
-        self.base_path = base_path
-        self.lab_base_path = pjoin(self.base_path,
-                                   'ta/grading/data/labs')
-        self.lab_exception_path = pjoin(BASE_PATH,
-                                        'hta/lab_exceptions.txt')
-
-    def get_grade_dict(self,
-                       students: Optional[List[str]] = None,
-                       tas: Optional[List[str]] = None
-                       ) -> Dict[str, Dict[str, str]]:
-        return {}
-
-    def get_drill_data(self,
-                       canvas_data_path: str,
-                       columns: List[int],
-                       students: Optional[List[str]] = None,
-                       tas: Optional[List[str]] = None,
-                       ) -> Dict[str, Tuple[Set[str], Set[str]]]:
-        def email_to_user(u: str) -> str:
-            return u.replace('@brown.edu', '')
-
-        def descr_to_drill(d: str) -> str:
-            return d.split(' ')[2]
-
-        # (complete, incomplete)
-        drill_data: Dict[str, Tuple[Set[str], Set[str]]]
-        drill_data = defaultdict(lambda: (set(), set()))
-        with open(canvas_data_path) as f:
-            lines = list(csv.reader(f))
-
-        header = lines[0]
-        for line in lines[1:]:
-            login = email_to_user(line[3])
-            for col in range(6, 23):
-                drill = f'drill{descr_to_drill(header[col])}'
-                if drill == 'drill18':
-                    continue
-
-                if line[col] == '':
-                    drill_data[login][1].add(drill)
-                else:
-                    float(line[col])
-                    drill_data[login][0].add(drill)
-
-        return drill_data
-
-    def get_drill_grades(self,
-                         canvas_data_path: str,
-                         columns: List[int],
-                         students: Optional[List[str]] = None,
-                         tas: Optional[List[str]] = None
-                         ) -> Dict[str, Grade]:
-        data = self.get_drill_data(canvas_data_path, columns, students, tas)
-        grades: Dict[str, Grade] = {}
-        total = len(columns)
-        for student in data:
-            complete, _ = data[student]
-            grades[student] = f'{len(complete)} / {total}'
-
-        return grades
-
-    def get_lab_data(self,
-                     students: Optional[List[str]] = None,
-                     tas: Optional[List[str]] = None,
-                     ) -> Dict[str, Tuple[Set[str], Set[str]]]:
-        lab_data: Dict[str, set] = defaultdict(set)
-        all_labs = set()
-        f_system = os.walk(self.lab_base_path)
-        root, folds, _ = next(f_system)
-        for lab_dirname in folds:
-            lab_fold = pjoin(root, lab_dirname)
-            all_labs.add(lab_dirname)
-            for f in os.listdir(lab_fold):
-                if 'checkoff' not in f:
-                    continue
-
-                fp = pjoin(lab_fold, f)
-                lines = line_read(fp)
-
-                for student in lines:
-                    lab_data[student].add(lab_dirname)
-
-        lines = line_read(self.lab_exception_path, delim=' ')
-        for line in lines:
-            login = line[0]
-            lab = line[1]
-            lab_data[login].add(lab)
-
-        if students is None:
-            login_set = set(lab_data.keys())
-        else:
-            login_set = set(students)
-
-        set_tas: Set[str]
-        if tas is None:
-            set_tas = set()
-        else:
-            set_tas = set(tas)
-
-        data: Dict[str, Tuple[Set[str], Set[str]]] = {}
-        to_gen = login_set.difference(set_tas)
-        for student in to_gen:
-            attended = lab_data[student]
-            unattended = all_labs.difference(attended)
-            data[student] = (attended, unattended)
-
-        return data
-
-    def get_lab_grades(self,
-                       students: Optional[List[str]] = None,
-                       tas: Optional[List[str]] = None,
-                       ) -> Dict[str, Grade]:
-        data = self.get_lab_data(students, tas)
-        grades: Dict[str, Grade] = {}
-        numb_labs = max(map(lambda v: len(v[0]) + len(v[1]),
-                            data.values()))
-        for student in data:
-            attended, _ = data[student]
-            grades[student] = f'{len(attended)} / {numb_labs}'
-
-        return grades
-
-    def get_grading_app_data(self,
-                             students: Optional[List[str]],
-                             tas: Optional[List[str]]
-                             ) -> Dict[str, Dict[str, Grade]]:
-        return {}
-
-    def get_summaries(self) -> Dict[str, str]:
-        return {}
-
-    def _write_summaries(self) -> None:
-        pass
-
-    def send_summaries(self) -> None:
-        pass
-
-    def generate_gradebook(self, path: str, tas: Optional[List[str]]) -> None:
-        """
-        generates gradebook for course, writing into tsv file
-        uses the course_customization "grade_to_columns" function to determine
-        columns, and has one row for each student.
-        :param path: path to put tsv file in (should include filename)
-        :param tas: optional list of logins to ignore (i.e. the course TAs)
-        :return: None
-        """
-        pass
 
 
 def get_hta_asgn_list() -> List[HTA_Assignment]:
