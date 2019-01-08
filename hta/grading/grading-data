@@ -1,27 +1,34 @@
 #!/course/cs0111/ta/venv/bin/python
 
 import argparse
+
 from collections import defaultdict
+from course_customization import get_empty_raw_grade
+from hta_classes import HTA_Assignment, RawGrade
+from typing import Dict
 
 parser = argparse.ArgumentParser()
 parser.add_argument('asgn', help='Name of assignment (i.e. "Homework 4")')
 parser.add_argument('-v', '--verbose')
 args = parser.parse_args()
 
-from hta_classes import *
-
 
 asgn = HTA_Assignment(args.asgn)
 asgn.load()
-data = asgn.get_report_data(User('eberkowi'))
 
-grades = [grade[1] for grade in data]
-for k in asgn.get_empty_grade():
-    print(k)
-    d = defaultdict(lambda: 0)
-    for grade in grades:
-        g = asgn.use_brackets(grade)
-        d[g[k]] += 1
+empty_grade: RawGrade = get_empty_raw_grade(asgn)
+data = asgn.get_report_data()
+grades = [line[2] for line in data]
 
-    for k2 in d:
-        print(f'\t{k2}: {d[k2]}')
+summary_data: dict = defaultdict(lambda: defaultdict(int))
+for grade in grades:
+    if isinstance(grade, (int, str, float)):
+        summary_data[grade] += 1
+    else:
+        for cat in grade:
+            summary_data[cat][grade[cat]] += 1
+
+for cat in summary_data:
+    print(cat)
+    for grade_cat in summary_data[cat]:
+        print(f'  {grade_cat}: {summary_data[cat][grade_cat]}')
