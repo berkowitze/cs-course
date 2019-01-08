@@ -147,7 +147,7 @@ def loaded_rubric_check(rubric: Rubric) -> None:
     :param rubric: rubric to check
     :type rubric: Rubric
     :return: nothing if the rubric is valid
-    :raises AssertionError: invalid rubric
+    :raises AssertionError, KeyError: invalid rubric
 
     """
 
