@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# lints all relevant python files
+# should use after editing grading app code
+
+cd /course/cs0111
+cat /course/cs0111/lintfiles | while read p; do
+    mypy $p --ignore-missing-imports
+done

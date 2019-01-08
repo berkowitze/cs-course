@@ -1,11 +1,12 @@
 #!/course/cs0111/ta/grading/venv/bin/python
-
+raise NotImplementedError('This needs updating')
 import sys
+from os.path import join as pjoin
 
-from hta_classes import *
+from hta_classes import HTA_Assignment, asgn_data, BASE_PATH
 
-asgn_path = os.path.join(BASE_PATH, 'ta/assignments.json')
-group_dir = os.path.join(BASE_PATH, 'ta/grading/data/projects')
+asgn_path = pjoin(BASE_PATH, 'ta/assignments.json')
+group_dir = pjoin(BASE_PATH, 'ta/grading/data/projects')
 
 group_projs = []
 for key in asgn_data['assignments']:
@@ -35,4 +36,3 @@ for handin in q.handins:
             '%s has not extracted %s\'s handin' % (grader, login)
         else:
             '%s is still grading %s\'s handin' % (grader, login)
-    

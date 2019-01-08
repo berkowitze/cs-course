@@ -71,7 +71,7 @@ while True:
             print(f'Summaries output in {sum_path}')
             continue
         elif resp3 == 2:
-            send_summaries(resummarize=False, override_email='eliberkowitz@gmail.com')
+            send_summaries(resummarize=False)
         elif resp3 == 3:
             STATE = 0
 

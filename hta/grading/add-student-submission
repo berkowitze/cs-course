@@ -4,7 +4,7 @@
 
 import sys
 
-from hta_classes import *
+from hta_classes import HTA_Assignment
 
 if len(sys.argv) != 3:
     print('Usage: add-student-submission <assignment full name> <login>')

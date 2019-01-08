@@ -14,6 +14,7 @@ handin_base_path: str = pjoin(BASE_PATH, 'hta/handin/students')
 grade_base_path: str = pjoin(BASE_PATH, 'hta/grades')
 
 final_grade_path: str = pjoin(BASE_PATH, 'ta', 'grading', 'grades')
+GradeData = Tuple[str, Optional[RawGrade], Grade, str]
 
 
 class HTA_Assignment(Assignment):
@@ -556,7 +557,7 @@ class HTA_Assignment(Assignment):
 
         return d
 
-    def get_report_data(self) -> List[Tuple[str, RawGrade, str]]:
+    def get_report_data(self) -> List[GradeData]:
         """
 
         get list of information for reports for this assignment
@@ -567,7 +568,7 @@ class HTA_Assignment(Assignment):
                   assignment. grade data is the RawGrade representation of
                   the student's grade, and grade report is the string of
                   the student's grade report
-        :rtype: List[Tuple[str, RawGrade, str]]
+        :rtype: List[Tuple[str, RawGrade, Grade, str]]
 
         """
         logins = student_list()
@@ -612,7 +613,7 @@ class HTA_Assignment(Assignment):
                             login: str,
                             soft: bool = True,
                             overrides: bool = False
-                            ) -> Tuple[str, RawGrade, str]:
+                            ) -> GradeData:
         """
 
         generate full grade report for a single student for this assignment
@@ -627,7 +628,7 @@ class HTA_Assignment(Assignment):
                           defaults to ``False``
         :type overrides: bool, optional
         :returns: a (login, <numeric grade data>, <grade report>) 3-tuple
-        :rtype: Tuple[str, RawGrade, str]
+        :rtype: Tuple[str, RawGrade, Grade, str]
 
         """
         ident = self.login_to_id(login)
@@ -648,7 +649,7 @@ class HTA_Assignment(Assignment):
                          login: str,
                          soft=True,
                          overrides=False
-                         ) -> Tuple[str, RawGrade, str]:
+                         ) -> Tuple[str, Optional[RawGrade], Grade, str]:
         """
 
         given a list of Handins and student login,
@@ -668,7 +669,7 @@ class HTA_Assignment(Assignment):
                           defaults to ``False``
         :type overrides: bool, optional
         :returns: a (login, raw student grade, grade report) 3-tuple
-        :rtype: Tuple[str, RawGrade, str]
+        :rtype: Tuple[str, RawGrade, Grade, str]
 
         **Note**: This method needs a *lot* of cleanup. Ideas in source code.
 
@@ -738,7 +739,7 @@ class HTA_Assignment(Assignment):
             with locked_file(override_g_p) as f:
                 given_grade = json.load(f)
 
-            return login, given_grade, full_string
+            return login, None, given_grade, full_string
 
         summary_str = ''
         for handin in handins:
@@ -756,7 +757,7 @@ class HTA_Assignment(Assignment):
             summary_str += ('-' * 20)
 
         # make this more rigorous later
-        grade: RawGrade = get_empty_raw_grade(self)
+        raw_grade: RawGrade = get_empty_raw_grade(self)
         full_string = f'{self.full_name} grade report for {login}\n\n'
         for i, handin in enumerate(handins):
             if handin is None:
@@ -766,23 +767,26 @@ class HTA_Assignment(Assignment):
             report_text, report_grade = handin.generate_grade_report()
             full_string += report_text
             for key in report_grade:
-                if key in grade and grade[key] is not None:
-                    grade[key] += report_grade[key]
+                if key in raw_grade and raw_grade[key] is not None:
+                    raw_grade[key] += report_grade[key]
                 else:
-                    grade[key] = report_grade[key]
+                    raw_grade[key] = report_grade[key]
 
-        final_grades: RawGrade = determine_grade(grade, late, self)
+        final_grade: Grade = determine_grade(raw_grade, late, self)
 
         grade_string = 'Grade Summary\n'
-        for key in final_grades:
-            grade_string += f'  {key}: {final_grades[key]}\n'
+        if isinstance(final_grade, dict):
+            for key in final_grade:
+                grade_string += f'  {key}: {final_grade[key]}\n'
+        elif isinstance(final_grade, (int, float, str)):
+            grade_string += f'  Grade: {str(final_grade)}\n'
 
         if late:
             grade_string += '(Late deduction applied)'
 
         full_string += f'\n{grade_string}\n'
         if soft:
-            return login, grade, full_string
+            return login, raw_grade, final_grade, full_string
 
         # write appropriate files
         if not os.path.isdir(grade_dir):
@@ -795,7 +799,7 @@ class HTA_Assignment(Assignment):
             f.write(full_string)
 
         with locked_file(grade_path, 'w') as f:
-            json.dump(final_grades, f, indent=2, sort_keys=True)
+            json.dump(final_grade, f, indent=2, sort_keys=True)
 
         with locked_file(summary_path, 'w') as f:
             f.write(summary_str)
@@ -805,7 +809,7 @@ class HTA_Assignment(Assignment):
         except OSError:
             pass  # already exists, no need to do anything
 
-        return login, final_grades, full_string
+        return login, raw_grade, final_grade, full_string
 
     def send_emails(self,
                     yag: yagmail.sender.SMTP,
