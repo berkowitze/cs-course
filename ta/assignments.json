@@ -85,7 +85,7 @@
       "available": "06/01/2018 03:00PM",
       "due": "09/11/2018 09:00PM",
       "grading_completed": true,
-      "grading_started": true,
+      "grading_started": false,
       "group_asgn": false,
       "partner_data": null,
       "questions": [

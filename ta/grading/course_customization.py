@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from classes import Question, Assignment
 
 
-def increasing(lst: Sequence[float]) -> bool:
+def increasing(lst: list) -> bool:
     """
 
     returns whether or not the input list is increasing (non-decreasing)
@@ -23,11 +23,10 @@ def increasing(lst: Sequence[float]) -> bool:
     :rtype: bool
 
     """
-    rst = lst[1:]
-    while rst:
-        if lst[0] > lst[1]:
+    while len(lst) >= 2:
+        fst = lst.pop(0)
+        if fst > lst[0]:
             return False
-        rst = lst[1:]
 
     return True
 

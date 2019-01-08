@@ -101,11 +101,11 @@ def get_lab_data():
     with locked_file(lab_path) as f:
         attendance_data = json.load(f)
 
-    all_labs = list(attendance_data.keys())
+    all_labs = set(attendance_data.keys())
 
     lab_data = defaultdict(set)
     for lab in attendance_data:
-        for student in labs[lab]:
+        for student in attendance_data[lab]:
             lab_data[student].add(lab)
 
     with locked_file(lab_excp_path) as f:
@@ -138,7 +138,7 @@ def generate_grade_summaries(write=False, to_return=True):
                     drill_data[student][1].add('drill14')
 
                 continue
-            S += f'{k}\n' % k
+            S += f'{k}\n'
             mlen = max(map(len, v.keys())) + 1
 
             for (cat, grade) in sorted(v.items()):
@@ -225,7 +225,7 @@ def generate_gradebook(path=None):
         f.write(S)
 
 
-def send_summaries(resummarize=None):
+def send_summaries(resummarize=None, override_email=None):
     if resummarize is None:
         print('Regenerate summaries? [y/n]')
         resp = input('> ').lower()
@@ -241,14 +241,15 @@ def send_summaries(resummarize=None):
 
     yag = yagmail.SMTP('csci0111@brown.edu')
     full_students = load_students()
-    login_to_email = dict((line[0], line[1]) for line in full_students)
-    students = map(lambda line: line[0], full_students)
+    login_to_email = {line[0]: line[1] for line in full_students}
+    students = list(map(lambda line: line[0], full_students))
     with locked_file(ta_group_path) as f:
-        tas = map(str.strip, f.read().strip().split('\n'))
+        tas = list(map(str.strip, f.read().strip().split('\n')))
 
     for sum_file in os.listdir(sum_path):
         path = pjoin(sum_path, sum_file)
         login = os.path.splitext(sum_file)[0]
+        print(f'{login!r}')
         if login not in students or login in tas:
             print(f'skipping login {login}')
             continue
@@ -257,5 +258,12 @@ def send_summaries(resummarize=None):
             contents = f'<pre>{f.read()}</pre>'
 
         em = login_to_email[login]
-        print(f'Sending to {em}')
-        yag.send(to=em, subject='Aggregated grade report', contents=[contents])
+        if override_email is None:
+            send_to = em
+        else:
+            send_to = override_email
+
+        print(f'Sending {login} summary to {send_to}')
+        yag.send(to=send_to,
+                 subject='Aggregated grade report',
+                 contents=[contents])
