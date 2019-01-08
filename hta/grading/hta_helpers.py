@@ -9,36 +9,42 @@ BASE_PATH = '/course/cs0111'
 
 
 def load_students() -> List[List[str]]:
-    """reads students from the hta/groups/students.csv file
-
-    Returns:
-        List[str]: list of (login, email, name)
     """
-    path = os.path.join(BASE_PATH, 'hta', 'groups', 'students.csv')
+
+    reads students from the hta/groups/students.csv file
+
+    :returns: list of (login, email, name) of all enrolled students
+    :rtype: List[List[str]]
+
+    """
+    path = os.path.join(BASE_PATH, 'hta/groups/students.csv')
     return line_read(path, delim=",")
 
 
 def student_list() -> List[str]:
-    """list of student logins from hta/groups/students.txt
+    """
 
-    Returns:
-        List[str]: list of logins of students in the class
+    list of student logins from hta/groups/students.txt
+
+    :returns: list of logins of students in the class
+    :rtype: List[str]
+
     """
     path = os.path.join(BASE_PATH, "hta", "groups", "students.txt")
     return line_read(path)
 
 
 def email_to_login(email: str) -> str:
-    """Converts brown email to CS login
+    """
 
-    Args:
-        email (str): Student's Brown email (aliases will not work)
+    Converts brown email to CS login
 
-    Returns:
-        str: Student's CS login
+    :param email: student's Brown email (aliases will not work)
+    :type email: str
+    :returns: student's CS login
+    :rtype: str
+    :raises ValueError: email not found in students.csv
 
-    Raises:
-        ValueError: when email not found
     """
     students = load_students()
     for student in students:
@@ -49,16 +55,16 @@ def email_to_login(email: str) -> str:
 
 
 def login_to_email(login: str) -> str:
-    """Convert CS login to full Brown email
+    """
 
-    Args:
-        login (str): CS login of student
+    Convert CS login to full Brown email
 
-    Returns:
-        str: Brown email of student (no aliases)
+    :param login: CS login of student
+    :type login: str
+    :returns: student's full Brown email
+    :rtype: str
+    :raises ValueError: Student with login not found in students.csv
 
-    Raises:
-        ValueError: Student with input login not found
     """
     students = load_students()
     for student in students:
@@ -69,16 +75,16 @@ def login_to_email(login: str) -> str:
 
 
 def argmax(lst: List[int]) -> int:
-    """Get index of maximum integer of input list
+    """
 
-    Args:
-        lst (List[int]): list of non-negative integers
+    Get index of maximum integer of input list
 
-    Returns:
-        int: Index of maximum integer in lst
+    :param lst: list of non-negative integers
+    :type lst: List[int]
+    :returns: index of maximum integer in lst
+    :rtype: int
+    :raises ValueError: cannot operate on input list with repeated values
 
-    Raises:
-        ValueError: Cannot input a list with repeated values
     """
     max_val = -1
     max_ndx = -1
@@ -97,17 +103,32 @@ def latest_submission_path(base: str,
                            login: str,
                            mini_name: str
                            ) -> Optional[str]:
-    """Returns None if no submission for this student on this assignment,
+    """
+
+    Returns None if no submission for this student on this assignment,
     and the path of the student's latest submission if they did submit
 
-    Args:
-        base (str): base path (i.e. /course/cs0111/hta/handin/students)
-        login (str): cs login of student
-        mini_name (str): directory name of assignment (i.e. homework2)
+    :param base: handin base path (i.e. /course/cs0111/hta/handin/students)
+    :type base: str
+    :param login: login of student to get submission path for
+    :type login: str
+    :param mini_name: minified assignment name (i.e. homework3)
+    :type mini_name: str
+    :returns: None if login has no handin for mini_name, and
+              the path of the latest submission for login if they do
+    :rtype: Optional[str]
 
-    Returns:
-        Optional[str]: None if login has no handin for mini_name, and
-        the path of the latest submission for login if they do
+    **example**:
+
+    >>> latest_submission_path('/course/cs0111/hta/handin/students',
+                               'eberkowi',
+                               'homework4')
+    '/course/cs0111/hta/handin/students/eberkowi/homework4/5-submission'
+    >>> latest_submission_path('/course/cs0111/hta/handin/students',
+                               'eberkowi',
+                               'homework3')
+    None
+
     """
     sub_path = os.path.join(base, login, mini_name)
     if not os.path.exists(sub_path):
@@ -126,8 +147,8 @@ def get_blocklists() -> Dict[str, List[str]]:
     students blocklisting TAs
 
     :returns: a dictionary of ta logins as the keys and lists of
-    students blocklisted as the values
-    :rtype: {Dict[str, List[str]]}
+              students blocklisted as the values
+    :rtype: Dict[str, List[str]]
 
     """
     bl1 = os.path.join(BASE_PATH, 'ta/t-s-blocklist.json')

@@ -196,8 +196,8 @@ assignment will be stored</li>
 <li><strong>grading_completed</strong> – whether or not grading has been completed for
 this assignment</li>
 <li><strong>_json</strong> (<em>dict</em>) – JSON data for this assignment from assignments.json</li>
-<li><strong>__login_to_id_map</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – a map from login to anonymous ID for this asgn</li>
-<li><strong>__id_to_login_map</strong> (<em>Dict</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – a map from anonymous ID to login for this asgn</li>
+<li><strong>_login_to_id_map</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – a map from login to anonymous ID for this asgn</li>
+<li><strong>_id_to_login_map</strong> (<em>Dict</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – a map from anonymous ID to login for this asgn</li>
 </ul>
 </td>
 </tr>
@@ -372,7 +372,8 @@ for this question</li>
 <li><strong>log_filepath</strong> (<em>str</em>) – filepath for the log file for this question</li>
 <li><strong>_qnumb</strong> (<em>int</em>) – question number</li>
 <li><strong>rubric_filepath</strong> (<em>str</em>) – filepath for the base rubric for this question</li>
-<li><strong>test_path</strong> (<em>str</em>) – base filepath for the testsuite for this question</li>
+<li><strong>test_path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – base filepath for the testsuite for this question, or
+None if there is no testsuite for this question.</li>
 <li><strong>_json</strong> (<em>dict</em>) – JSON for this question from /ta/assignments.json</li>
 </ul>
 </td>
@@ -453,7 +454,7 @@ custom_types.py</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">base rubric for this question</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Rubric</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="custom_types.html#custom_types.Rubric" title="custom_types.Rubric">Rubric</a></td>
 </tr>
 </tbody>
 </table>
@@ -512,7 +513,7 @@ to populate that TA’s view of already extracted handins to grade</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the data required by the web app to allow the TA
 to grade handins for this question</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">HTMLData</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="custom_types.html#custom_types.HTMLData" title="custom_types.HTMLData">HTMLData</a></td>
 </tr>
 </tbody>
 </table>
@@ -533,7 +534,7 @@ rubric file.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<em>Rubric</em>) – The updated base rubric for this question.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<a class="reference internal" href="custom_types.html#custom_types.Rubric" title="custom_types.Rubric"><em>Rubric</em></a>) – The updated base rubric for this question.</td>
 </tr>
 </tbody>
 </table>
@@ -676,7 +677,7 @@ the handins’ rubric</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<em>Optional</em><em>[</em><em>Rubric</em><em>]</em><em>, </em><em>optional</em>) – the handins rubric or None (default) if the rubric
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="custom_types.html#custom_types.Rubric" title="custom_types.Rubric"><em>Rubric</em></a><em>]</em><em>, </em><em>optional</em>) – the handins rubric or None (default) if the rubric
 should be loaded</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the report string</td>
@@ -714,7 +715,7 @@ if the code is not JSON decodable (it needs to be for the grading app)</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">rubric of this handin</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Rubric</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="custom_types.html#custom_types.Rubric" title="custom_types.Rubric">Rubric</a></td>
 </tr>
 </tbody>
 </table>
@@ -874,7 +875,7 @@ marked as complete, defaults to False</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<em>Rubric</em>) – new rubric to write into grade file</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<a class="reference internal" href="custom_types.html#custom_types.Rubric" title="custom_types.Rubric"><em>Rubric</em></a>) – new rubric to write into grade file</td>
 </tr>
 </tbody>
 </table>

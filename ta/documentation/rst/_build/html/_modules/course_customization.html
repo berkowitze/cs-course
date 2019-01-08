@@ -156,7 +156,7 @@
     <span class="kn">from</span> <span class="nn">classes</span> <span class="k">import</span> <span class="n">Question</span><span class="p">,</span> <span class="n">Assignment</span>
 
 
-<div class="viewcode-block" id="increasing"><a class="viewcode-back" href="../course_customization.html#course_customization.increasing">[docs]</a><span class="k">def</span> <span class="nf">increasing</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="increasing"><a class="viewcode-back" href="../course_customization.html#course_customization.increasing">[docs]</a><span class="k">def</span> <span class="nf">increasing</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    returns whether or not the input list is increasing (non-decreasing)</span>
@@ -168,11 +168,10 @@
 <span class="sd">    :rtype: bool</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">rst</span> <span class="o">=</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-    <span class="k">while</span> <span class="n">rst</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">fst</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fst</span> <span class="o">&gt;</span> <span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="k">return</span> <span class="kc">False</span>
-        <span class="n">rst</span> <span class="o">=</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 
     <span class="k">return</span> <span class="kc">True</span></div>
 

@@ -81,7 +81,9 @@ def json_edit(filename: str) -> Generator:
 
 
 def require_resource(resource: str = res_path) -> Callable[[Callable], Any]:
-    """ use require_resource as a decorator when writing a function that you
+    """
+
+    use require_resource as a decorator when writing a function that you
     shouldn't be run simultaneously
 
     :param resource: resource to lock while the function is being run
@@ -109,6 +111,7 @@ def require_resource(resource: str = res_path) -> Callable[[Callable], Any]:
 
 def json_file_with_check(path: str):
     """
+
     returns data in JSON file after checking that it contains valid JSON
 
     :param path: the path of the JSON file
@@ -131,7 +134,9 @@ def json_file_with_check(path: str):
 
 def rubric_check(path: str) -> None:
     """
+
     Check validity of rubric by path
+
     :param path: path of rubric to check
     :return: None as long as rubric is valid
     :raises AssertionError: invalid rubric
@@ -188,8 +193,18 @@ def loaded_rubric_check(rubric: Rubric) -> None:
 
 
 def bracket_check(path: str) -> None:
-    """ given path to a bracket file, checks that it is a valid bracket
-    file, raising an assertion error if it is not """
+    """
+
+    given path to a bracket file, checks that it is a valid bracket
+    file, raising an error if it is not
+
+    :param path: path to bracket file
+    :type path: str
+    :returns: None if the rubric is valid
+    :rtype: None
+    :raises AssertionError, KeyError: Invalid bracket file
+
+    """
     def check_bracket_item(bi: BracketItem) -> bool:
         assert isinstance(bi, dict)
         assert isinstance(bi['grade'], str)
@@ -208,13 +223,18 @@ def bracket_check(path: str) -> None:
 
 def update_comments(comments: Comments, new_given: List[str]) -> None:
     """
-    inputs:
-        - comments, a Comments dictionary (given and un_given keys)
-        - new_given, a list of comments that the TA has assigned to
-          be the new given comments of this Comments block
-    output: None
-    effect: modify `comments` to update given comments to match new_given
-    and un_given comments to have all un_given comments """
+
+    modify `comments` to update given comments to match new_given
+    and un_given comments to have all un_given comments
+
+    :param comments: a Comments dictionary (with given and un_given keys)
+    :type comments: Comments
+    :param new_given:  a list of comments that the TA has assigned to
+                       be the new given comments of this Comments block
+    :type new_given: List[str]
+    :returns: None
+
+    """
 
     # all comments that had been given but are not being given now
     # are added to the un_given list
@@ -230,23 +250,35 @@ def update_comments(comments: Comments, new_given: List[str]) -> None:
 
 
 def line_read(filename: str, delim: Optional[str] = None) -> list:
-    """read lines from a file. returns list of strings with whitespace
+    """
+
+    read lines from a file. returns list of strings with whitespace
     right-stripped with delim=None, or list of lists of strings with
     whitespace stripped with delim=str
     (I don't use csv module because I'm unsure exactly how it parses lines
     and it sometimes has weird results; this way there's full control)
 
-    Args:
-        filename (str): name of file to open
-        delim (Optional[str], optional): if None, reads filename as
-        list of strings, otherwise will split each line on delim
-        i.e. delim=',' a line 'hi,there' -> ['hi', 'there']
+    :param filename: name of file to open
+    :type filename: str
+    :param delim: if None, reads filename as list of strings, otherwise will
+                  split each line on delim. defaults to None
+    :type delim: Optional[str], optional
+    :returns: if delim is None, a list of strings (one string for each
+              line). if delim is not None, a list of lists of strings, one
+              list for each line in the file and that list contains the split
+              up line based on delim
+    :rtype: list
 
-    Returns:
-        list: if delim is None, a list of strings (one string for each
-        line). if delim is not None, a list of lists of strings, one
-        list for each line in the file and that list contains the split
-        up line based on delim
+    **example**:
+
+    >>> line_read('students.txt')
+    ['student-login-1', 'student-login-2', ...]
+    >>> line_read('students.csv', delim=',')
+    [['student-login-1', 'student-email-1', 'student-name-1'],
+     ['student-login-2', 'student-email-2', 'student-name-2'],
+     ...]
+
+
     """
     with locked_file(filename) as f:
         raw: str = f.read()

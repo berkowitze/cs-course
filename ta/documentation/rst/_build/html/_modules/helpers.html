@@ -150,14 +150,15 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">filelock</span> <span class="k">import</span> <span class="n">FileLock</span>
 
-<span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="p">(</span><span class="n">Rubric</span><span class="p">,</span> <span class="n">RubricCategory</span><span class="p">,</span> <span class="n">RubricItem</span><span class="p">,</span> <span class="n">RubricOption</span><span class="p">,</span>
+                          <span class="n">Bracket</span><span class="p">,</span> <span class="n">BracketItem</span><span class="p">,</span> <span class="n">Comments</span><span class="p">)</span>
 
 <span class="n">BASE_PATH</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;/course/cs0111&#39;</span>
-<span class="n">def_res_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;resource-lock.lock&#39;</span><span class="p">)</span>
+<span class="n">res_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;resource-lock.lock&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="locked_file"><a class="viewcode-back" href="../helpers.html#helpers.locked_file">[docs]</a><span class="nd">@contextmanager</span>
@@ -181,7 +182,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;a&#39;</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;w&#39;</span><span class="p">):</span>
         <span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;Can only open locked file in r, w, or a mode (just in case)&#39;</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
-    
+
     <span class="n">lock_path</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;.lock&#39;</span>
     <span class="n">lock</span> <span class="o">=</span> <span class="n">FileLock</span><span class="p">(</span><span class="n">lock_path</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># throw error after 10 seconds</span>
     <span class="k">with</span> <span class="n">lock</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -198,8 +199,36 @@
             <span class="k">pass</span></div>
 
 
-<div class="viewcode-block" id="require_resource"><a class="viewcode-back" href="../helpers.html#helpers.require_resource">[docs]</a><span class="k">def</span> <span class="nf">require_resource</span><span class="p">(</span><span class="n">resource</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">def_res_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">],</span> <span class="n">Any</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot; use require_resource as a decorator when writing a function that you</span>
+<div class="viewcode-block" id="json_edit"><a class="viewcode-back" href="../helpers.html#helpers.json_edit">[docs]</a><span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">json_edit</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Enables quickly editing JSON files using with block.</span>
+<span class="sd">    Note: this only allows mutation of the data in the JSON file;</span>
+<span class="sd">    if you need to completely change a JSON file, this is not the</span>
+<span class="sd">    write function to use.</span>
+
+<span class="sd">    **Example**:</span>
+
+<span class="sd">    &gt;&gt;&gt; with json_edit(&#39;hello.json&#39;) as data:</span>
+<span class="sd">    ... data[&#39;hi&#39;].append(4)</span>
+
+<span class="sd">    :param filename: filepath of the JSON file to modify</span>
+<span class="sd">    :type filename: str</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="k">yield</span> <span class="n">data</span>
+    <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="require_resource"><a class="viewcode-back" href="../helpers.html#helpers.require_resource">[docs]</a><span class="k">def</span> <span class="nf">require_resource</span><span class="p">(</span><span class="n">resource</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">res_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">],</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    use require_resource as a decorator when writing a function that you</span>
 <span class="sd">    shouldn&#39;t be run simultaneously</span>
 
 <span class="sd">    :param resource: resource to lock while the function is being run</span>
@@ -227,6 +256,7 @@
 
 <div class="viewcode-block" id="json_file_with_check"><a class="viewcode-back" href="../helpers.html#helpers.json_file_with_check">[docs]</a><span class="k">def</span> <span class="nf">json_file_with_check</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="sd">    returns data in JSON file after checking that it contains valid JSON</span>
 
 <span class="sd">    :param path: the path of the JSON file</span>
@@ -249,7 +279,9 @@
 
 <div class="viewcode-block" id="rubric_check"><a class="viewcode-back" href="../helpers.html#helpers.rubric_check">[docs]</a><span class="k">def</span> <span class="nf">rubric_check</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="sd">    Check validity of rubric by path</span>
+
 <span class="sd">    :param path: path of rubric to check</span>
 <span class="sd">    :return: None as long as rubric is valid</span>
 <span class="sd">    :raises AssertionError: invalid rubric</span>
@@ -265,7 +297,7 @@
 <span class="sd">    :param rubric: rubric to check</span>
 <span class="sd">    :type rubric: Rubric</span>
 <span class="sd">    :return: nothing if the rubric is valid</span>
-<span class="sd">    :raises AssertionError: invalid rubric</span>
+<span class="sd">    :raises AssertionError, KeyError: invalid rubric</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -306,8 +338,18 @@
 
 
 <div class="viewcode-block" id="bracket_check"><a class="viewcode-back" href="../helpers.html#helpers.bracket_check">[docs]</a><span class="k">def</span> <span class="nf">bracket_check</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot; given path to a bracket file, checks that it is a valid bracket</span>
-<span class="sd">    file, raising an assertion error if it is not &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    given path to a bracket file, checks that it is a valid bracket</span>
+<span class="sd">    file, raising an error if it is not</span>
+
+<span class="sd">    :param path: path to bracket file</span>
+<span class="sd">    :type path: str</span>
+<span class="sd">    :returns: None if the rubric is valid</span>
+<span class="sd">    :rtype: None</span>
+<span class="sd">    :raises AssertionError, KeyError: Invalid bracket file</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">check_bracket_item</span><span class="p">(</span><span class="n">bi</span><span class="p">:</span> <span class="n">BracketItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bi</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bi</span><span class="p">[</span><span class="s1">&#39;grade&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span>
@@ -326,13 +368,18 @@
 
 <div class="viewcode-block" id="update_comments"><a class="viewcode-back" href="../helpers.html#helpers.update_comments">[docs]</a><span class="k">def</span> <span class="nf">update_comments</span><span class="p">(</span><span class="n">comments</span><span class="p">:</span> <span class="n">Comments</span><span class="p">,</span> <span class="n">new_given</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    inputs:</span>
-<span class="sd">        - comments, a Comments dictionary (given and un_given keys)</span>
-<span class="sd">        - new_given, a list of comments that the TA has assigned to</span>
-<span class="sd">          be the new given comments of this Comments block</span>
-<span class="sd">    output: None</span>
-<span class="sd">    effect: modify `comments` to update given comments to match new_given</span>
-<span class="sd">    and un_given comments to have all un_given comments &quot;&quot;&quot;</span>
+
+<span class="sd">    modify `comments` to update given comments to match new_given</span>
+<span class="sd">    and un_given comments to have all un_given comments</span>
+
+<span class="sd">    :param comments: a Comments dictionary (with given and un_given keys)</span>
+<span class="sd">    :type comments: Comments</span>
+<span class="sd">    :param new_given:  a list of comments that the TA has assigned to</span>
+<span class="sd">                       be the new given comments of this Comments block</span>
+<span class="sd">    :type new_given: List[str]</span>
+<span class="sd">    :returns: None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># all comments that had been given but are not being given now</span>
     <span class="c1"># are added to the un_given list</span>
@@ -345,6 +392,47 @@
     <span class="n">sv</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">comments</span><span class="p">[</span><span class="s1">&#39;given&#39;</span><span class="p">])</span>  <span class="c1"># local variable to speed up contains checking</span>
     <span class="c1"># comments in un_given that are now being given are removed</span>
     <span class="n">comments</span><span class="p">[</span><span class="s1">&#39;un_given&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">comments</span><span class="p">[</span><span class="s1">&#39;un_given&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sv</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="line_read"><a class="viewcode-back" href="../helpers.html#helpers.line_read">[docs]</a><span class="k">def</span> <span class="nf">line_read</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">delim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    read lines from a file. returns list of strings with whitespace</span>
+<span class="sd">    right-stripped with delim=None, or list of lists of strings with</span>
+<span class="sd">    whitespace stripped with delim=str</span>
+<span class="sd">    (I don&#39;t use csv module because I&#39;m unsure exactly how it parses lines</span>
+<span class="sd">    and it sometimes has weird results; this way there&#39;s full control)</span>
+
+<span class="sd">    :param filename: name of file to open</span>
+<span class="sd">    :type filename: str</span>
+<span class="sd">    :param delim: if None, reads filename as list of strings, otherwise will</span>
+<span class="sd">                  split each line on delim. defaults to None</span>
+<span class="sd">    :type delim: Optional[str], optional</span>
+<span class="sd">    :returns: if delim is None, a list of strings (one string for each</span>
+<span class="sd">              line). if delim is not None, a list of lists of strings, one</span>
+<span class="sd">              list for each line in the file and that list contains the split</span>
+<span class="sd">              up line based on delim</span>
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    **example**:</span>
+
+<span class="sd">    &gt;&gt;&gt; line_read(&#39;students.txt&#39;)</span>
+<span class="sd">    [&#39;student-login-1&#39;, &#39;student-login-2&#39;, ...]</span>
+<span class="sd">    &gt;&gt;&gt; line_read(&#39;students.csv&#39;, delim=&#39;,&#39;)</span>
+<span class="sd">    [[&#39;student-login-1&#39;, &#39;student-email-1&#39;, &#39;student-name-1&#39;],</span>
+<span class="sd">     [&#39;student-login-2&#39;, &#39;student-email-2&#39;, &#39;student-name-2&#39;],</span>
+<span class="sd">     ...]</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">delim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">delim</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lines</span></div>
 </pre></div>
 
            </div>

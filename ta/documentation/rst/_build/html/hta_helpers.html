@@ -160,28 +160,40 @@
 <dt id="hta_helpers.argmax">
 <code class="descclassname">hta_helpers.</code><code class="descname">argmax</code><span class="sig-paren">(</span><em>lst: List[int]</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/hta_helpers.html#argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.argmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get index of maximum integer of input list</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>lst (List[int]): list of non-negative integers</dd>
-<dt>Returns:</dt>
-<dd>int: Index of maximum integer in lst</dd>
-<dt>Raises:</dt>
-<dd>ValueError: Cannot input a list with repeated values</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lst</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – list of non-negative integers</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">index of maximum integer in lst</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – cannot operate on input list with repeated values</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="hta_helpers.email_to_login">
 <code class="descclassname">hta_helpers.</code><code class="descname">email_to_login</code><span class="sig-paren">(</span><em>email: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/hta_helpers.html#email_to_login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.email_to_login" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts brown email to CS login</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>email (str): Student’s Brown email (aliases will not work)</dd>
-<dt>Returns:</dt>
-<dd>str: Student’s CS login</dd>
-<dt>Raises:</dt>
-<dd>ValueError: when email not found</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>email</strong> (<em>str</em>) – student’s Brown email (aliases will not work)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">student’s CS login</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – email not found in students.csv</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -193,12 +205,13 @@ students blocklisting TAs</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a dictionary of ta logins as the keys and lists of</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a dictionary of ta logins as the keys and lists of
+students blocklisted as the values</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, List[str]]</td>
 </tr>
 </tbody>
 </table>
-<p>students blocklisted as the values
-:rtype: {Dict[str, List[str]]}</p>
 </dd></dl>
 
 <dl class="function">
@@ -206,71 +219,89 @@ students blocklisting TAs</p>
 <code class="descclassname">hta_helpers.</code><code class="descname">latest_submission_path</code><span class="sig-paren">(</span><em>base: str</em>, <em>login: str</em>, <em>mini_name: str</em><span class="sig-paren">)</span> &#x2192; Optional[str]<a class="reference internal" href="_modules/hta_helpers.html#latest_submission_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.latest_submission_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns None if no submission for this student on this assignment,
 and the path of the student’s latest submission if they did submit</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>base (str): base path (i.e. /course/cs0111/hta/handin/students)
-login (str): cs login of student
-mini_name (str): directory name of assignment (i.e. homework2)</dd>
-<dt>Returns:</dt>
-<dd>Optional[str]: None if login has no handin for mini_name, and
-the path of the latest submission for login if they do</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="hta_helpers.line_read">
-<code class="descclassname">hta_helpers.</code><code class="descname">line_read</code><span class="sig-paren">(</span><em>filename: str</em>, <em>delim: Optional[str] = None</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/hta_helpers.html#line_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.line_read" title="Permalink to this definition">¶</a></dt>
-<dd><p>read lines from a file. returns list of strings with whitespace
-right-stripped with delim=None, or list of lists of strings with
-whitespace stripped with delim=str
-(I don’t use csv module because I’m unsure exactly how it parses lines
-and it sometimes has weird results; this way there’s full control)</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>filename (str): name of file to open
-delim (Optional[str], optional): if None, reads filename as
-list of strings, otherwise will split each line on delim
-i.e. delim=’,’ a line ‘hi,there’ -&gt; [‘hi’, ‘there’]</dd>
-<dt>Returns:</dt>
-<dd>list: if delim is None, a list of strings (one string for each
-line). if delim is not None, a list of lists of strings, one
-list for each line in the file and that list contains the split
-up line based on delim</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>base</strong> (<em>str</em>) – handin base path (i.e. /course/cs0111/hta/handin/students)</li>
+<li><strong>login</strong> (<em>str</em>) – login of student to get submission path for</li>
+<li><strong>mini_name</strong> (<em>str</em>) – minified assignment name (i.e. homework3)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">None if login has no handin for mini_name, and
+the path of the latest submission for login if they do</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Optional[str]</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latest_submission_path</span><span class="p">(</span><span class="s1">&#39;/course/cs0111/hta/handin/students&#39;</span><span class="p">,</span>
+<span class="go">                           &#39;eberkowi&#39;,</span>
+<span class="go">                           &#39;homework4&#39;)</span>
+<span class="go">&#39;/course/cs0111/hta/handin/students/eberkowi/homework4/5-submission&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">latest_submission_path</span><span class="p">(</span><span class="s1">&#39;/course/cs0111/hta/handin/students&#39;</span><span class="p">,</span>
+<span class="go">                           &#39;eberkowi&#39;,</span>
+<span class="go">                           &#39;homework3&#39;)</span>
+<span class="go">None</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
 <dt id="hta_helpers.load_students">
 <code class="descclassname">hta_helpers.</code><code class="descname">load_students</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[List[str]]<a class="reference internal" href="_modules/hta_helpers.html#load_students"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.load_students" title="Permalink to this definition">¶</a></dt>
 <dd><p>reads students from the hta/groups/students.csv file</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>List[str]: list of (login, email, name)</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of (login, email, name) of all enrolled students</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[List[str]]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="hta_helpers.login_to_email">
 <code class="descclassname">hta_helpers.</code><code class="descname">login_to_email</code><span class="sig-paren">(</span><em>login: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/hta_helpers.html#login_to_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.login_to_email" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert CS login to full Brown email</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>login (str): CS login of student</dd>
-<dt>Returns:</dt>
-<dd>str: Brown email of student (no aliases)</dd>
-<dt>Raises:</dt>
-<dd>ValueError: Student with input login not found</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>login</strong> (<em>str</em>) – CS login of student</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">student’s full Brown email</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – Student with login not found in students.csv</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="hta_helpers.student_list">
 <code class="descclassname">hta_helpers.</code><code class="descname">student_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[str]<a class="reference internal" href="_modules/hta_helpers.html#student_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.student_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>list of student logins from hta/groups/students.txt</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>List[str]: list of logins of students in the class</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of logins of students in the class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[str]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>

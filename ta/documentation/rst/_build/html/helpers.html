@@ -161,7 +161,43 @@
 <dt id="helpers.bracket_check">
 <code class="descclassname">helpers.</code><code class="descname">bracket_check</code><span class="sig-paren">(</span><em>path: str</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/helpers.html#bracket_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.bracket_check" title="Permalink to this definition">¶</a></dt>
 <dd><p>given path to a bracket file, checks that it is a valid bracket
-file, raising an assertion error if it is not</p>
+file, raising an error if it is not</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>str</em>) – path to bracket file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None if the rubric is valid</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>AssertionError</strong><strong>, </strong><strong>KeyError</strong> – Invalid bracket file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="helpers.json_edit">
+<code class="descclassname">helpers.</code><code class="descname">json_edit</code><span class="sig-paren">(</span><em>filename: str</em><span class="sig-paren">)</span> &#x2192; Generator[T_co, T_contra, V_co]<a class="reference internal" href="_modules/helpers.html#json_edit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.json_edit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables quickly editing JSON files using with block.
+Note: this only allows mutation of the data in the JSON file;
+if you need to completely change a JSON file, this is not the
+write function to use.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">json_edit</span><span class="p">(</span><span class="s1">&#39;hello.json&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">data</span><span class="p">:</span>
+<span class="gp">... </span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;hi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> (<em>str</em>) – filepath of the JSON file to modify</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -183,17 +219,58 @@ file, raising an assertion error if it is not</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="helpers.line_read">
+<code class="descclassname">helpers.</code><code class="descname">line_read</code><span class="sig-paren">(</span><em>filename: str</em>, <em>delim: Optional[str] = None</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/helpers.html#line_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.line_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>read lines from a file. returns list of strings with whitespace
+right-stripped with delim=None, or list of lists of strings with
+whitespace stripped with delim=str
+(I don’t use csv module because I’m unsure exactly how it parses lines
+and it sometimes has weird results; this way there’s full control)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> (<em>str</em>) – name of file to open</li>
+<li><strong>delim</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – if None, reads filename as list of strings, otherwise will
+split each line on delim. defaults to None</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">if delim is None, a list of strings (one string for each
+line). if delim is not None, a list of lists of strings, one
+list for each line in the file and that list contains the split
+up line based on delim</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">line_read</span><span class="p">(</span><span class="s1">&#39;students.txt&#39;</span><span class="p">)</span>
+<span class="go">[&#39;student-login-1&#39;, &#39;student-login-2&#39;, ...]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">line_read</span><span class="p">(</span><span class="s1">&#39;students.csv&#39;</span><span class="p">,</span> <span class="n">delim</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+<span class="go">[[&#39;student-login-1&#39;, &#39;student-email-1&#39;, &#39;student-name-1&#39;],</span>
+<span class="go"> [&#39;student-login-2&#39;, &#39;student-email-2&#39;, &#39;student-name-2&#39;],</span>
+<span class="go"> ...]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="helpers.loaded_rubric_check">
 <code class="descclassname">helpers.</code><code class="descname">loaded_rubric_check</code><span class="sig-paren">(</span><em>rubric: importlib._bootstrap.Rubric</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/helpers.html#loaded_rubric_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.loaded_rubric_check" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<em>Rubric</em>) – rubric to check</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rubric</strong> (<a class="reference internal" href="custom_types.html#custom_types.Rubric" title="custom_types.Rubric"><em>Rubric</em></a>) – rubric to check</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">nothing if the rubric is valid</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>AssertionError</strong> – invalid rubric</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>AssertionError</strong><strong>, </strong><strong>KeyError</strong> – invalid rubric</td>
 </tr>
 </tbody>
 </table>
@@ -252,27 +329,42 @@ shouldn’t be run simultaneously</p>
 <dl class="function">
 <dt id="helpers.rubric_check">
 <code class="descclassname">helpers.</code><code class="descname">rubric_check</code><span class="sig-paren">(</span><em>path: str</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/helpers.html#rubric_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.rubric_check" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check validity of rubric by path
-:param path: path of rubric to check
-:return: None as long as rubric is valid
-:raises AssertionError: invalid rubric</p>
+<dd><p>Check validity of rubric by path</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> – path of rubric to check</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None as long as rubric is valid</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>AssertionError</strong> – invalid rubric</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="helpers.update_comments">
 <code class="descclassname">helpers.</code><code class="descname">update_comments</code><span class="sig-paren">(</span><em>comments: importlib._bootstrap.Comments, new_given: List[str]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/helpers.html#update_comments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.update_comments" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>inputs:</dt>
-<dd><ul class="first last simple">
-<li>comments, a Comments dictionary (given and un_given keys)</li>
-<li>new_given, a list of comments that the TA has assigned to
+<dd><p>modify <cite>comments</cite> to update given comments to match new_given
+and un_given comments to have all un_given comments</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>comments</strong> (<a class="reference internal" href="custom_types.html#custom_types.Comments" title="custom_types.Comments"><em>Comments</em></a>) – a Comments dictionary (with given and un_given keys)</li>
+<li><strong>new_given</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – a list of comments that the TA has assigned to
 be the new given comments of this Comments block</li>
 </ul>
-</dd>
-</dl>
-<p>output: None
-effect: modify <cite>comments</cite> to update given comments to match new_given
-and un_given comments to have all un_given comments</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
