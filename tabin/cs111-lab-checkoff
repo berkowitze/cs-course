@@ -27,6 +27,7 @@ def print_data_table(data: List[Iterable]) -> List[str]:
 
     :param data: a list of (login, email, full name) iterables
     :type data: List[Iterable]
+
     """
     ls = []
     students = []
@@ -96,5 +97,6 @@ with json_edit(attendance_path) as data:
         data[lab_key].append(student)
 
     data[lab_key] = list(set(data[lab_key]))
-    print('')
-    print(f"Checked off {', '.join(to_checkoff)}")
+
+print('')
+print(f"Checked off {', '.join(to_checkoff)}")

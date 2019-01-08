@@ -624,14 +624,11 @@ class Question:
         :type ident: int
 
         """
-        with locked_file(self.log_filepath) as f:
-            data = json.load(f)
-
         new_data: LogItem = {'id': ident, 'flag_reason': None,
                              'complete': False, 'grader': None}
-        data.append(new_data)
-        with locked_file(self.log_filepath, 'w') as f:
-            json.dump(data, f, indent=2, sort_keys=True)
+        data: Log
+        with json_edit(self.log_filepath) as data:
+            data.append(new_data)
 
         self.load_handins()  # ugh idk concurrency is annoying
 
@@ -679,17 +676,13 @@ class Question:
         def add_comment(path: str) -> None:
             """ helper to take in a path and add the global comment to
             the rubric in that file """
-            with locked_file(path) as f:
-                rubric = json.load(f)
-
-            if category is None:
-                rubric['comments']['un_given'].append(comment)
-            else:
-                comments = rubric['rubric'][category]['comments']
-                comments['un_given'].append(comment)
-
-            with locked_file(path, 'w') as f:
-                json.dump(rubric, f, indent=2, sort_keys=True)
+            rubric: Rubric
+            with json_edit(path) as rubric:
+                if category is None:
+                    rubric['comments']['un_given'].append(comment)
+                else:
+                    comments = rubric['rubric'][category]['comments']
+                    comments['un_given'].append(comment)
 
         add_comment(self.rubric_filepath)  # add to main rubric
 

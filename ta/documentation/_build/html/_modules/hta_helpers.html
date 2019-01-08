@@ -1,0 +1,369 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hta_helpers &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">ta/grading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html#hta-grading">hta/grading</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>hta_helpers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for hta_helpers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="n">locked_file</span><span class="p">,</span> <span class="n">line_read</span>
+
+<span class="n">BASE_PATH</span> <span class="o">=</span> <span class="s1">&#39;/course/cs0111&#39;</span>
+
+
+<div class="viewcode-block" id="load_students"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.load_students">[docs]</a><span class="k">def</span> <span class="nf">load_students</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    reads students from the hta/groups/students.csv file</span>
+
+<span class="sd">    :returns: list of (login, email, name) of all enrolled students</span>
+<span class="sd">    :rtype: List[List[str]]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta/groups/students.csv&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">line_read</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">delim</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="student_list"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.student_list">[docs]</a><span class="k">def</span> <span class="nf">student_list</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    list of student logins from hta/groups/students.txt</span>
+
+<span class="sd">    :returns: list of logins of students in the class</span>
+<span class="sd">    :rtype: List[str]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s2">&quot;hta&quot;</span><span class="p">,</span> <span class="s2">&quot;groups&quot;</span><span class="p">,</span> <span class="s2">&quot;students.txt&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">line_read</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="email_to_login"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.email_to_login">[docs]</a><span class="k">def</span> <span class="nf">email_to_login</span><span class="p">(</span><span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Converts brown email to CS login</span>
+
+<span class="sd">    :param email: student&#39;s Brown email (aliases will not work)</span>
+<span class="sd">    :type email: str</span>
+<span class="sd">    :returns: student&#39;s CS login</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    :raises ValueError: email not found in students.csv</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">students</span> <span class="o">=</span> <span class="n">load_students</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">student</span> <span class="ow">in</span> <span class="n">students</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">student</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">email</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">student</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Student </span><span class="si">{email}</span><span class="s1"> not found.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="login_to_email"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.login_to_email">[docs]</a><span class="k">def</span> <span class="nf">login_to_email</span><span class="p">(</span><span class="n">login</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Convert CS login to full Brown email</span>
+
+<span class="sd">    :param login: CS login of student</span>
+<span class="sd">    :type login: str</span>
+<span class="sd">    :returns: student&#39;s full Brown email</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    :raises ValueError: Student with login not found in students.csv</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">students</span> <span class="o">=</span> <span class="n">load_students</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">student</span> <span class="ow">in</span> <span class="n">students</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">student</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">login</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">student</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Student </span><span class="si">{login}</span><span class="s1"> not found.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="argmax"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.argmax">[docs]</a><span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Get index of maximum integer of input list</span>
+
+<span class="sd">    :param lst: list of non-negative integers</span>
+<span class="sd">    :type lst: List[int]</span>
+<span class="sd">    :returns: index of maximum integer in lst</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    :raises ValueError: cannot operate on input list with repeated values</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">max_val</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">max_ndx</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">lst</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Repeated values in argmax: got </span><span class="si">{lst}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ndx</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="n">max_val</span><span class="p">:</span>
+            <span class="n">max_val</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="n">max_ndx</span> <span class="o">=</span> <span class="n">ndx</span>
+
+    <span class="k">return</span> <span class="n">max_ndx</span></div>
+
+
+<div class="viewcode-block" id="latest_submission_path"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.latest_submission_path">[docs]</a><span class="k">def</span> <span class="nf">latest_submission_path</span><span class="p">(</span><span class="n">base</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                           <span class="n">login</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                           <span class="n">mini_name</span><span class="p">:</span> <span class="nb">str</span>
+                           <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Returns None if no submission for this student on this assignment,</span>
+<span class="sd">    and the path of the student&#39;s latest submission if they did submit</span>
+
+<span class="sd">    :param base: handin base path (i.e. /course/cs0111/hta/handin/students)</span>
+<span class="sd">    :type base: str</span>
+<span class="sd">    :param login: login of student to get submission path for</span>
+<span class="sd">    :type login: str</span>
+<span class="sd">    :param mini_name: minified assignment name (i.e. homework3)</span>
+<span class="sd">    :type mini_name: str</span>
+<span class="sd">    :returns: None if login has no handin for mini_name, and</span>
+<span class="sd">              the path of the latest submission for login if they do</span>
+<span class="sd">    :rtype: Optional[str]</span>
+
+<span class="sd">    **example**:</span>
+
+<span class="sd">    &gt;&gt;&gt; latest_submission_path(&#39;/course/cs0111/hta/handin/students&#39;,</span>
+<span class="sd">                               &#39;eberkowi&#39;,</span>
+<span class="sd">                               &#39;homework4&#39;)</span>
+<span class="sd">    &#39;/course/cs0111/hta/handin/students/eberkowi/homework4/5-submission&#39;</span>
+<span class="sd">    &gt;&gt;&gt; latest_submission_path(&#39;/course/cs0111/hta/handin/students&#39;,</span>
+<span class="sd">                               &#39;eberkowi&#39;,</span>
+<span class="sd">                               &#39;homework3&#39;)</span>
+<span class="sd">    None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sub_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">login</span><span class="p">,</span> <span class="n">mini_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sub_path</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">submissions</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">sub_path</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;submission&#39;</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+    <span class="n">sub_numbs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">submissions</span><span class="p">]</span>
+    <span class="n">latest</span> <span class="o">=</span> <span class="n">submissions</span><span class="p">[</span><span class="n">argmax</span><span class="p">(</span><span class="n">sub_numbs</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sub_path</span><span class="p">,</span> <span class="n">latest</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_blocklists"><a class="viewcode-back" href="../hta_helpers.html#hta_helpers.get_blocklists">[docs]</a><span class="k">def</span> <span class="nf">get_blocklists</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Get blocklist data from both TAs blocklisting students and</span>
+<span class="sd">    students blocklisting TAs</span>
+
+<span class="sd">    :returns: a dictionary of ta logins as the keys and lists of</span>
+<span class="sd">              students blocklisted as the values</span>
+<span class="sd">    :rtype: Dict[str, List[str]]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bl1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/t-s-blocklist.json&#39;</span><span class="p">)</span>
+    <span class="n">bl2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta/s-t-blocklist.json&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">bl1</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">ts_bl</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">bl2</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">st_bl</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ta</span> <span class="ow">in</span> <span class="n">st_bl</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ta</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ts_bl</span><span class="p">:</span>
+            <span class="n">ts_bl</span><span class="p">[</span><span class="n">ta</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">ts_bl</span><span class="p">[</span><span class="n">ta</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">st_bl</span><span class="p">[</span><span class="n">ta</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">ta</span> <span class="ow">in</span> <span class="n">ts_bl</span><span class="p">:</span>
+        <span class="n">ts_bl</span><span class="p">[</span><span class="n">ta</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ts_bl</span><span class="p">[</span><span class="n">ta</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">ts_bl</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

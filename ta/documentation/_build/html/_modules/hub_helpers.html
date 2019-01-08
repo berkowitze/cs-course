@@ -1,0 +1,556 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hub_helpers &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">ta/grading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html#hta-grading">hta/grading</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>hub_helpers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for hub_helpers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">pjoin</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+
+<span class="kn">import</span> <span class="nn">yagmail</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Set</span>
+<span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="n">locked_file</span>
+<span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="n">Grade</span>
+<span class="kn">from</span> <span class="nn">hta_helpers</span> <span class="k">import</span> <span class="n">load_students</span>
+
+<span class="c1"># WARNING:</span>
+<span class="c1"># summary script currently assumes:</span>
+<span class="c1"># drill 18 is not complete yet</span>
+<span class="c1"># only gets drills 1-18</span>
+<span class="c1"># canvas data in hta folder called canvas-grades-11-17.csv</span>
+<span class="c1"># drill 14 was done through grading app</span>
+
+<span class="n">BASE_PATH</span> <span class="o">=</span> <span class="s1">&#39;/course/cs0111&#39;</span>
+<span class="n">grade_dir</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta&#39;</span><span class="p">,</span> <span class="s1">&#39;grades&#39;</span><span class="p">)</span>
+<span class="n">sum_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta&#39;</span><span class="p">,</span> <span class="s1">&#39;summaries&#39;</span><span class="p">)</span>
+<span class="n">lab_base</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta&#39;</span><span class="p">,</span> <span class="s1">&#39;grading&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;labs&#39;</span><span class="p">)</span>
+<span class="n">data_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta&#39;</span><span class="p">,</span> <span class="s1">&#39;assignments.json&#39;</span><span class="p">)</span>
+<span class="n">drill_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta/canvas-grades-11-17.csv&#39;</span><span class="p">)</span>
+<span class="n">lab_excp_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/grading/data/labs/exceptions.txt&#39;</span><span class="p">)</span>
+<span class="n">ta_group_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta/groups/tas.txt&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">asgn_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="n">asgns</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">asgn</span> <span class="ow">in</span> <span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">][</span><span class="n">asgn</span><span class="p">][</span><span class="s1">&#39;grading_completed&#39;</span><span class="p">]:</span>
+        <span class="n">asgns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asgn</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_full_grade_dict"><a class="viewcode-back" href="../hub_helpers.html#hub_helpers.get_full_grade_dict">[docs]</a><span class="k">def</span> <span class="nf">get_full_grade_dict</span><span class="p">(</span><span class="n">students</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Grade</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    get a dictionary of student -&gt; dictionary of grades</span>
+
+<span class="sd">    :param students: students for whom to collect grade info. if None, data</span>
+<span class="sd">                     for all students will be collected. defaults to None</span>
+<span class="sd">    :type students: Optional[List[str]], optional</span>
+<span class="sd">    :returns: dictionary of login -&gt; dictionary of</span>
+<span class="sd">              (assignment mini_name -&gt; student&#39;s grade for that assignment)</span>
+<span class="sd">              dictionary values</span>
+<span class="sd">    :rtype: Dict[str, Dict[str, Grade]]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">students</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logins</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">load_students</span><span class="p">()))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logins</span> <span class="o">=</span> <span class="n">students</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">login</span> <span class="ow">in</span> <span class="n">logins</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_student_grade_dict</span><span class="p">(</span><span class="n">login</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="get_student_grade_dict"><a class="viewcode-back" href="../hub_helpers.html#hub_helpers.get_student_grade_dict">[docs]</a><span class="k">def</span> <span class="nf">get_student_grade_dict</span><span class="p">(</span><span class="n">login</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Grade</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    given a login, collect grade information for that student</span>
+
+<span class="sd">    :param login: CS login of student for whom to collect grade info</span>
+<span class="sd">    :type login: str</span>
+<span class="sd">    :returns: a dictionary of assignment mini_name -&gt; grade for that assignment</span>
+<span class="sd">    :rtype: Dict[str, Grade]</span>
+<span class="sd">    :raises ValueError: no grades for this student</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">full_grade</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Grade</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">sdir</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">grade_dir</span><span class="p">,</span> <span class="n">login</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sdir</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Trying to get nonexistent grade_dict for </span><span class="si">{login}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">asgn</span> <span class="ow">in</span> <span class="n">asgns</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">asgn</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">individual_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">sdir</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">individual_path</span><span class="p">):</span>
+            <span class="n">full_grade</span><span class="p">[</span><span class="n">asgn</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;No handin&#39;</span><span class="p">}</span>
+            <span class="k">continue</span>
+
+        <span class="n">fs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">individual_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;grade-override.json&#39;</span> <span class="ow">in</span> <span class="n">fs</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">individual_path</span><span class="p">,</span> <span class="s1">&#39;grade-override.json&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">individual_path</span><span class="p">,</span> <span class="s1">&#39;grade.json&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Nonexistent grade in </span><span class="si">{individual_path}</span><span class="s1">, continuing...&#39;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">grade</span><span class="p">:</span> <span class="n">Grade</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="n">full_grade</span><span class="p">[</span><span class="n">asgn</span><span class="p">]</span> <span class="o">=</span> <span class="n">grade</span>
+
+    <span class="k">return</span> <span class="n">full_grade</span></div>
+
+
+<div class="viewcode-block" id="get_drill_data"><a class="viewcode-back" href="../hub_helpers.html#hub_helpers.get_drill_data">[docs]</a><span class="k">def</span> <span class="nf">get_drill_data</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    collect drill information for this course</span>
+
+<span class="sd">    :returns: dictionary of login -&gt; (completed drills, uncompleted drills)</span>
+<span class="sd">              2-tuples, the tuple is comprised of sets</span>
+<span class="sd">    :rtype: Dict[str, Tuple[Set[str], Set[str]]]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">drill_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span>
+    <span class="n">drill_data</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="p">(</span><span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">()))</span>  <span class="c1"># (complete, incomplete)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">drill_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">login</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;@brown.edu&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">23</span><span class="p">):</span>
+            <span class="n">drill</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;drill{header[col].split(&#39; &#39;)[2]}&quot;</span>
+            <span class="k">if</span> <span class="n">drill</span> <span class="o">==</span> <span class="s1">&#39;drill18&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="n">drill_data</span><span class="p">[</span><span class="n">login</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">drill</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+                <span class="n">drill_data</span><span class="p">[</span><span class="n">login</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">drill</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">drill_data</span></div>
+
+
+<div class="viewcode-block" id="get_lab_data"><a class="viewcode-back" href="../hub_helpers.html#hub_helpers.get_lab_data">[docs]</a><span class="k">def</span> <span class="nf">get_lab_data</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    collect lab information for this course</span>
+
+<span class="sd">    :returns: dictionary of login -&gt; attended labs set and a set of</span>
+<span class="sd">              all the labs for the course</span>
+<span class="sd">    :rtype: Tuple[Dict[str, Set[str]], Set[str]]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lab_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+    <span class="n">lab_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">lab_base</span><span class="p">,</span> <span class="s1">&#39;attendance.json&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">lab_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">attendance_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">all_labs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">attendance_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="n">lab_data</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">attendance_data</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">student</span> <span class="ow">in</span> <span class="n">attendance_data</span><span class="p">[</span><span class="n">lab</span><span class="p">]:</span>
+            <span class="n">lab_data</span><span class="p">[</span><span class="n">student</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lab</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">lab_excp_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="n">login</span><span class="p">,</span> <span class="n">lab</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="n">lab_data</span><span class="p">[</span><span class="n">login</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lab</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lab_data</span><span class="p">,</span> <span class="n">all_labs</span></div>
+
+
+<div class="viewcode-block" id="generate_grade_summaries"><a class="viewcode-back" href="../hub_helpers.html#hub_helpers.generate_grade_summaries">[docs]</a><span class="k">def</span> <span class="nf">generate_grade_summaries</span><span class="p">(</span><span class="n">write</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    generate grade summaries for the course</span>
+
+<span class="sd">    :param write: whether or not to write the summaries into files in</span>
+<span class="sd">                  /hta/summaries, defaults to False</span>
+<span class="sd">    :type write: bool, optional</span>
+<span class="sd">    :returns: dictionary of login -&gt; grade summary strings</span>
+<span class="sd">    :rtype: Dict[str, str]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Gathering grading app grade info...&#39;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">get_full_grade_dict</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Gathering lab info...&#39;</span><span class="p">)</span>
+    <span class="n">lab_data</span><span class="p">,</span> <span class="n">all_labs</span> <span class="o">=</span> <span class="n">get_lab_data</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Gathering drill info...&#39;</span><span class="p">)</span>
+    <span class="n">drill_data</span> <span class="o">=</span> <span class="n">get_drill_data</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Generating summaries...&#39;</span><span class="p">)</span>
+    <span class="n">summs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">student</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;Aggregated grade summary for </span><span class="si">{student}</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+        <span class="n">student_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">student</span><span class="p">]</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">student_data</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;Drill 14&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;Complete&#39;</span><span class="p">}:</span>
+                    <span class="n">drill_data</span><span class="p">[</span><span class="n">student</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;drill14&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">drill_data</span><span class="p">[</span><span class="n">student</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;drill14&#39;</span><span class="p">)</span>
+
+                <span class="k">continue</span>
+            <span class="n">S</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{k}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">mlen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                <span class="n">S</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;{&quot; &quot; * 4}Grade: </span><span class="si">{v}</span><span class="s1">&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cats</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">cat</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="n">grade</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span>
+                    <span class="n">spaces</span> <span class="o">=</span> <span class="p">(</span><span class="n">mlen</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">cat</span><span class="p">))</span>
+                    <span class="n">S</span> <span class="o">+=</span> <span class="n">f</span><span class="s2">&quot;{&#39; &#39; * 4}</span><span class="si">{cat}</span><span class="s2">{&#39; &#39; * spaces}: </span><span class="si">{grade}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+            <span class="n">S</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+        <span class="n">slabs</span> <span class="o">=</span> <span class="n">lab_data</span><span class="p">[</span><span class="n">student</span><span class="p">]</span>
+        <span class="n">unattended</span> <span class="o">=</span> <span class="n">all_labs</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">slabs</span><span class="p">)</span>
+        <span class="n">nlabs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_labs</span><span class="p">)</span>
+        <span class="n">lab_sum</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;{len(slabs)}/</span><span class="si">{nlabs}</span><span class="s1"> labs attended</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="n">unattended</span><span class="p">:</span>
+            <span class="n">unattended_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">unattended</span><span class="p">),</span>
+                                     <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;lab&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)))</span>
+            <span class="n">unattended_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">unattended_list</span><span class="p">)</span>
+            <span class="n">lab_sum</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;Labs not attended: </span><span class="si">{unattended_str}</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+        <span class="n">S</span> <span class="o">+=</span> <span class="n">lab_sum</span>
+        <span class="n">S</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+        <span class="n">complete</span><span class="p">,</span> <span class="n">incomplete</span> <span class="o">=</span> <span class="n">drill_data</span><span class="p">[</span><span class="n">student</span><span class="p">]</span>
+        <span class="n">tot</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">complete</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">incomplete</span><span class="p">)</span>
+        <span class="n">drill_sum</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;{len(complete)}/</span><span class="si">{tot}</span><span class="s1"> drills completed</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="n">incomplete</span><span class="p">:</span>
+            <span class="n">sorted_drills</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">incomplete</span><span class="p">),</span>
+                                   <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;drill&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)))</span>
+            <span class="n">incomplete_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sorted_drills</span><span class="p">)</span>
+            <span class="n">drill_sum</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;Drills not completed: </span><span class="si">{incomplete_str}</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+        <span class="n">S</span> <span class="o">+=</span> <span class="n">drill_sum</span>
+
+        <span class="n">summs</span><span class="p">[</span><span class="n">student</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span>
+        <span class="k">if</span> <span class="n">write</span><span class="p">:</span>
+            <span class="n">fp</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">sum_path</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{student}</span><span class="s1">.txt&#39;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">summs</span></div>
+
+
+<div class="viewcode-block" id="generate_gradebook"><a class="viewcode-back" href="../hub_helpers.html#hub_helpers.generate_gradebook">[docs]</a><span class="k">def</span> <span class="nf">generate_gradebook</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    generates gradebook for the course</span>
+
+<span class="sd">    :param path: path to put gradebook in; puts in /hta/gradebook.tsv if None.</span>
+<span class="sd">                defaults to None</span>
+<span class="sd">    :type path: Optional[str], optional</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta&#39;</span><span class="p">,</span> <span class="s1">&#39;gradebook.tsv&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">path</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;.tsv&#39;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: Output format is tsv, but writing to non-tsv file&#39;</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">get_full_grade_dict</span><span class="p">()</span>
+    <span class="n">categories</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">gradebook</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="p">{})</span>
+    <span class="k">for</span> <span class="n">student</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">s_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">student</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">asgn</span> <span class="ow">in</span> <span class="n">s_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">grade</span> <span class="o">=</span> <span class="n">s_data</span><span class="p">[</span><span class="n">asgn</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grade</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                <span class="n">gradebook</span><span class="p">[</span><span class="n">asgn</span><span class="p">][</span><span class="n">student</span><span class="p">]</span> <span class="o">=</span> <span class="n">grade</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cats</span> <span class="o">=</span> <span class="n">grade</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">cat</span> <span class="ow">in</span> <span class="n">cats</span><span class="p">:</span>
+                    <span class="n">descr</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{asgn}</span><span class="s1"> </span><span class="si">{cat}</span><span class="s1">&#39;</span>
+                    <span class="n">categories</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">descr</span><span class="p">)</span>
+                    <span class="n">gradebook</span><span class="p">[</span><span class="n">descr</span><span class="p">][</span><span class="n">student</span><span class="p">]</span> <span class="o">=</span> <span class="n">grade</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span>
+
+    <span class="n">students</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">sorted_cats</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">categories</span><span class="p">)</span>
+    <span class="n">book</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;Student&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">sorted_cats</span><span class="p">]]</span>
+
+    <span class="k">for</span> <span class="n">student</span> <span class="ow">in</span> <span class="n">students</span><span class="p">:</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="p">[</span><span class="n">student</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">descr</span> <span class="ow">in</span> <span class="n">sorted_cats</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">student</span> <span class="ow">in</span> <span class="n">gradebook</span><span class="p">[</span><span class="n">descr</span><span class="p">]:</span>
+                <span class="n">book_grade</span> <span class="o">=</span> <span class="n">gradebook</span><span class="p">[</span><span class="n">descr</span><span class="p">][</span><span class="n">student</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">book_grade</span> <span class="o">=</span> <span class="s1">&#39;(No data)&#39;</span>
+
+            <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">book_grade</span><span class="p">)</span>
+
+        <span class="n">book</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+
+    <span class="n">S</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">book</span><span class="p">:</span>
+        <span class="n">line_str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="n">S</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{line_str}</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+    <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">S</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="send_summaries"><a class="viewcode-back" href="../hub_helpers.html#hub_helpers.send_summaries">[docs]</a><span class="k">def</span> <span class="nf">send_summaries</span><span class="p">(</span><span class="n">resummarize</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">override_email</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    send course grade summaries</span>
+
+<span class="sd">    :param resummarize: whether or not to regenerate grade summaries, or None</span>
+<span class="sd">                        to have program prompt whether or not to regenerate</span>
+<span class="sd">    :type resummarize: Optional[bool], optional</span>
+<span class="sd">    :param override_email: email to send summaries to (for testing) or None</span>
+<span class="sd">                           to send to the student. defaults to None</span>
+<span class="sd">    :type override_email: Optional[str], optional</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">resummarize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Regenerate summaries? [y/n]&#39;</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;&gt; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">resp</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+            <span class="n">resummarize</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">resp</span> <span class="o">==</span> <span class="s1">&#39;n&#39;</span><span class="p">:</span>
+            <span class="n">resummarize</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">send_summaries</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">resummarize</span><span class="p">:</span>
+        <span class="n">generate_grade_summaries</span><span class="p">(</span><span class="n">write</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">yag</span> <span class="o">=</span> <span class="n">yagmail</span><span class="o">.</span><span class="n">SMTP</span><span class="p">(</span><span class="s1">&#39;csci0111@brown.edu&#39;</span><span class="p">)</span>
+    <span class="n">full_students</span> <span class="o">=</span> <span class="n">load_students</span><span class="p">()</span>
+    <span class="n">login_to_email</span> <span class="o">=</span> <span class="p">{</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">full_students</span><span class="p">}</span>
+    <span class="n">students</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">line</span><span class="p">:</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">full_students</span><span class="p">))</span>
+    <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">ta_group_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">tas</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)))</span>
+
+    <span class="k">for</span> <span class="n">sum_file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">sum_path</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">sum_path</span><span class="p">,</span> <span class="n">sum_file</span><span class="p">)</span>
+        <span class="n">login</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">sum_file</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{login!r}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">login</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">students</span> <span class="ow">or</span> <span class="n">login</span> <span class="ow">in</span> <span class="n">tas</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;skipping login </span><span class="si">{login}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">contents</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;&lt;pre&gt;{f.read()}&lt;/pre&gt;&#39;</span>
+
+        <span class="n">em</span> <span class="o">=</span> <span class="n">login_to_email</span><span class="p">[</span><span class="n">login</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">override_email</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">send_to</span> <span class="o">=</span> <span class="n">em</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">send_to</span> <span class="o">=</span> <span class="n">override_email</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Sending </span><span class="si">{login}</span><span class="s1"> summary to </span><span class="si">{send_to}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">yag</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">to</span><span class="o">=</span><span class="n">send_to</span><span class="p">,</span>
+                 <span class="n">subject</span><span class="o">=</span><span class="s1">&#39;Aggregated grade report&#39;</span><span class="p">,</span>
+                 <span class="n">contents</span><span class="o">=</span><span class="p">[</span><span class="n">contents</span><span class="p">])</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
