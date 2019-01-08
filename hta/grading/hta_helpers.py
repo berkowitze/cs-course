@@ -119,35 +119,6 @@ def latest_submission_path(base: str,
     return os.path.join(sub_path, latest)
 
 
-def line_read(filename: str, delim: Optional[str] = None) -> list:
-    """read lines from a file. returns list of strings with whitespace
-    right-stripped with delim=None, or list of lists of strings with
-    whitespace stripped with delim=str
-    (I don't use csv module because I'm unsure exactly how it parses lines
-    and it sometimes has weird results; this way there's full control)
-
-    Args:
-        filename (str): name of file to open
-        delim (Optional[str], optional): if None, reads filename as
-        list of strings, otherwise will split each line on delim
-        i.e. delim=',' a line 'hi,there' -> ['hi', 'there']
-
-    Returns:
-        list: if delim is None, a list of strings (one string for each
-        line). if delim is not None, a list of lists of strings, one
-        list for each line in the file and that list contains the split
-        up line based on delim
-    """
-    with locked_file(filename) as f:
-        raw: str = f.read()
-
-    lines = [line.rstrip() for line in raw.strip().split('\n')]
-    if delim is not None:
-        return [line.split(delim) for line in lines]
-    else:
-        return lines
-
-
 def get_blocklists() -> Dict[str, List[str]]:
     """
 
@@ -159,13 +130,21 @@ def get_blocklists() -> Dict[str, List[str]]:
     :rtype: {Dict[str, List[str]]}
 
     """
-    mapping: Dict[str, List[str]] = defaultdict(list)
-    bl1 = os.path.join(BASE_PATH, 'ta/t-s-blocklist.txt')
-    bl2 = os.path.join(BASE_PATH, 'hta/s-t-blocklist.txt')
-    bl = line_read(bl1, delim=',')
-    bl.extend(line_read(bl2, delim=','))
-    blocklist = set(l.split(',') for l in bl)
-    for entry in blocklist:
-        mapping[entry[0]].append(entry[1])
+    bl1 = os.path.join(BASE_PATH, 'ta/t-s-blocklist.json')
+    bl2 = os.path.join(BASE_PATH, 'hta/s-t-blocklist.json')
+    with locked_file(bl1) as f:
+        ts_bl = json.load(f)
 
-    return mapping
+    with locked_file(bl2) as f:
+        st_bl = json.load(f)
+
+    for ta in st_bl:
+        if ta not in ts_bl:
+            ts_bl[ta] = []
+
+        ts_bl[ta].extend(st_bl[ta])
+
+    for ta in ts_bl:
+        ts_bl[ta] = list(set(ts_bl[ta]))
+
+    return ts_bl

@@ -60,7 +60,6 @@ class HTA_Assignment(Assignment):
             assert self.anon_path != '', 'error with anon path tell eli'
 
         if self.started:  # load list of logins that handed in this assignment
-            # probably useless to do this but is used in asgn hub
             with locked_file(self.anon_path) as f:
                 d = json.load(f)
 
@@ -80,18 +79,16 @@ class HTA_Assignment(Assignment):
 
         """
         assert not self.started, f'Cannot init_grading on started {self}'
-        self.check_startable()
-        # make log files (/ta/grading/data/logs/mini_name)
-        self.create_log()
-        self.started = True
+        self._check_startable()
+        self._setup_anon_map()
+        self._create_logs()
+        self._transfer_handins()
+        self._setup_blocklist()
+        self._setup_grade_dir()
+        self._record_start()
+        print('Grading started.')
 
-        # transfer handins from hta/handin to ta/grading/data/sfiles
-        # and set up anonymization
-        self.transfer_handins()
-        self.setup_blocklist()
-        self.record_start()  # update assignments.json
-
-    def check_startable(self) -> None:
+    def _check_startable(self) -> None:
         """
 
         checks that grading can start for the assignment
@@ -107,22 +104,95 @@ class HTA_Assignment(Assignment):
             raise OSError(err)
 
         for i in range(len(self._json['questions'])):
-            qn = Question(self, i)
-            if not os.path.exists(qn.rubric_filepath):
+            qn = i + 1
+            rubric_filepath = pjoin(self.rubric_path,
+                                    f'q{qn}.json')
+            if not os.path.exists(rubric_filepath):
                 err = (
                        f'{self} does not have rubric for {qn} '
-                       f'(should be in {qn.rubric_filepath})'
+                       f'(should be in {rubric_filepath})'
                       )
                 raise OSError(err)
 
-        if not os.path.exists(self.bracket_path):
-            err = (
-                   f'{self} does not have bracket file '
-                   f'(should be in {self.bracket_path})'
-                  )
-            raise OSError(err)
+            try:
+                rubric_check(rubric_filepath)
+            except (AssertionError, KeyError) as e:
+                err = f'Invalid rubric file {rubric_filepath}'
+                raise ValueError(err) from e
 
-    def setup_blocklist(self) -> None:
+        if not os.path.exists(self.bracket_path):
+            print(f'Warning: No bracket for {self.full_name}.')
+
+    def _setup_anon_map(self):
+        """
+
+        setup anonymous mapping (login -> id) for this assignment
+        generates random unique ID for each student that submitted
+        and puts the data into a JSON file in ta/grading/data/anonymization
+        or hta/grading/anonymization (depending on if the assignment is
+        being graded anonymously or not).
+
+        """
+        sub_paths = []
+        anon_map: Dict[str, int] = {}
+
+        file_sys = os.walk(self.handin_path)
+        students = next(file_sys)[1]
+        submitted_students = []
+        for i, student in enumerate(students):
+            final_path = latest_submission_path(self.handin_path,
+                                                student,
+                                                self.mini_name)
+            if final_path is None:
+                continue  # student didn't submit for this hw
+
+            submitted_students.append(student)
+
+        idents = range(1, len(submitted_students) + 1)
+        random.shuffle(idents)
+        for i, login in enumerate(submitted_students):
+            anon_map[login] = idents[i]
+
+        with locked_file(self.anon_path, 'w') as f:
+            json.dump(anon_map, f, sort_keys=True, indent=2)
+
+        self.__login_to_id_map: Dict[str, int]
+        self.__login_to_id_map = anon_map
+        self.__id_to_login_map: Dict[int, str]
+        self.__id_to_login_map = {anon_map[k]: k for k in anon_map}
+
+    def _create_logs(self):
+        """
+
+        creates a log file for this assignment. should only be called while
+        creating the assignment
+
+        :raises ValueError: log file has already been created
+
+        """
+        if os.path.exists(self.log_path):
+            e = 'create_log called on a log that already exists'
+            raise ValueError(e)
+        else:
+            os.makedirs(self.log_path)
+
+        # create a log file for each question in the assignment
+        log_data = []
+        for ident in self.__id_to_login_map:
+            log_item: LogItem = {'id': ident, 'flag_reason': None,
+                                 'complete': False, 'grader': None}
+            log_data.append(log_item)
+
+        logs = []
+        for i, q in enumerate(self._json['questions']):
+            qn = i + 1
+            log_filepath = pjoin(self.log_path,
+                                 f'q{qn}.json')
+
+            with locked_file(log_filepath, 'w') as f:
+                json.dump(log_data, f)
+
+    def _setup_blocklist(self) -> None:
         """
 
         sets up blocklist for assignment (puts data into JSON file)
@@ -140,6 +210,12 @@ class HTA_Assignment(Assignment):
 
         with locked_file(self.blocklist_path, 'w') as f:
             json.dump(data, f, indent=2, sort_keys=True)
+
+    def _setup_grade_dir(self):
+        for i, q in enumerate(self._json['questions']):
+            qn = i + 1
+            grade_path = pjoin(self.grade_path, f'q{qn}')
+            os.makedirs(grade_path)
 
     def login_to_id(self, login: str) -> int:
         """
@@ -181,7 +257,7 @@ class HTA_Assignment(Assignment):
 
         raise ValueError(f'id {id} does not exist in map for {self}')
 
-    def transfer_handins(self) -> None:
+    def _transfer_handins(self) -> None:
         """
 
         takes handins from the handin folder, anonymizes them, and puts them
@@ -192,36 +268,16 @@ class HTA_Assignment(Assignment):
                             (empty directory login/mini_name)
 
         """
-        sub_paths = []
+        for student in self.__login_to_id_map:
+            ident = self.__login_to_id_map[student]
+            sub_path = latest_submission_path(self.handin_path,
+                                              student,
+                                              self.mini_name)
+            assert sub_path is not None, \
+                f'invalid student {student} in anon map'
 
-        file_sys = os.walk(self.handin_path)
-        students = next(file_sys)[1]
-        ids = random.sample(list(range(len(students))), len(students))
-        for i, student in enumerate(students):
-            final_path = latest_submission_path(self.handin_path,
-                                                student,
-                                                self.mini_name)
-            if final_path is None:
-                continue  # student didn't submit for this hw
-            elif not os.path.exists(final_path):
-                e = 'latest_submission_path returned nonexisting path'
-                raise ValueError(e)
-
-            sub_paths.append((student, ids[i], final_path))
-
-        # set up a file that maps anon id back to student id,
-        # and copy over student files
-
-        data = {}
-        for student, id, _ in sub_paths:
-            data[student] = id
-
-        with locked_file(self.anon_path, 'w') as f:
-            json.dump(data, f, sort_keys=True, indent=2)
-
-        for student, ident, path in sub_paths:
             dest = pjoin(self.files_path, f'student-{ident}')
-            shutil.copytree(path, dest)
+            shutil.copytree(sub_path, dest)
             for f in os.listdir(dest):
                 fname, ext = os.path.splitext(f)
                 if ext == '.zip':
@@ -230,11 +286,6 @@ class HTA_Assignment(Assignment):
                     new_dest = pjoin(dest, new_fname)
                     with zipfile.ZipFile(full_path, 'r') as zf:
                         zf.extractall(new_dest)
-
-        self.__load_questions()
-        for _, ident, _ in sub_paths:
-            for question in self.questions:
-                question.add_handin_to_log(ident)
 
     def add_new_handin(self, login: str) -> None:
         """
@@ -271,7 +322,7 @@ class HTA_Assignment(Assignment):
         except ValueError:
             pass
 
-        rand_id = self.get_new_id()
+        rand_id = self.__get_new_id()
         final_path = latest_submission_path(self.handin_path,
                                             login,
                                             self.mini_name)
@@ -303,7 +354,7 @@ class HTA_Assignment(Assignment):
         for question in self.questions:
             question.add_handin_to_log(rand_id)
 
-    def get_new_id(self) -> int:
+    def __get_new_id(self) -> int:
         """
 
         get an unused anonymous id to use
@@ -383,29 +434,6 @@ class HTA_Assignment(Assignment):
             data = [d for d in data if d['id'] != ident]
             with locked_file(q.log_filepath, 'w') as f:
                 json.dump(data, f, indent=2, sort_keys=True)
-
-    def create_log(self):
-        """
-
-        creates a log file for this assignment. should only be called while
-        creating the assignment
-
-        :raises ValueError: log file has already been created
-
-        """
-        if os.path.exists(self.log_path):
-            e = 'create_log called on a log that already exists'
-            raise ValueError(e)
-        else:
-            os.makedirs(self.log_path)
-        # create a log file for each question in the assignment
-
-        logs = []
-        for i, q in enumerate(self._json['questions']):
-            q = Question(self, i)
-            os.makedirs(q.grade_path)  # probably shouldnt do this here
-            with locked_file(q.log_filepath, 'w') as f:
-                json.dump([], f, indent=2, sort_keys=True)
 
     def load_groups(self):
         """
@@ -857,18 +885,16 @@ class HTA_Assignment(Assignment):
         print('Assignment records removed.')
 
     @require_resource()
-    def record_start(self) -> None:
+    def _record_start(self) -> None:
         """
 
         sets grading_started in assignments.json to true for this assignment
 
         """
-        with locked_file(asgn_data_path) as f:
-            asgn_data = json.load(f)
+        with json_edit(asgn_data_path) as data:
+            data['assignments'][self.full_name]['grading_started'] = True
 
-        asgn_data['assignments'][self.full_name]['grading_started'] = True
-        with locked_file(asgn_data_path, 'w') as f:
-            json.dump(asgn_data, f, indent=2, sort_keys=True)
+        self.started = True
 
     @require_resource()
     def record_finish(self):

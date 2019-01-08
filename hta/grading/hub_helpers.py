@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+from os.path import join as pjoin
 from collections import defaultdict
 
 import yagmail
@@ -16,13 +17,13 @@ from hta_helpers import load_students
 # drill 14 was done through grading app
 
 BASE_PATH = '/course/cs0111'
-grade_dir = os.path.join(BASE_PATH, 'hta', 'grades')
-sum_path = os.path.join(BASE_PATH, 'hta', 'summaries')
-lab_base = os.path.join(BASE_PATH, 'ta', 'grading', 'data', 'labs')
-data_path = os.path.join(BASE_PATH, 'ta', 'assignments.json')
-drill_path = os.path.join(BASE_PATH, 'hta/canvas-grades-11-17.csv')
-lab_excp_path = os.path.join(BASE_PATH, 'ta/grading/data/labs/exceptions.txt')
-ta_group_path = os.path.join(BASE_PATH, 'hta/groups/tas.txt')
+grade_dir = pjoin(BASE_PATH, 'hta', 'grades')
+sum_path = pjoin(BASE_PATH, 'hta', 'summaries')
+lab_base = pjoin(BASE_PATH, 'ta', 'grading', 'data', 'labs')
+data_path = pjoin(BASE_PATH, 'ta', 'assignments.json')
+drill_path = pjoin(BASE_PATH, 'hta/canvas-grades-11-17.csv')
+lab_excp_path = pjoin(BASE_PATH, 'ta/grading/data/labs/exceptions.txt')
+ta_group_path = pjoin(BASE_PATH, 'hta/groups/tas.txt')
 with locked_file(data_path) as f:
     asgn_data = json.load(f)
 
@@ -45,26 +46,26 @@ def get_full_grade_dict(students=None):
 
 def get_student_grade_dict(login):
     full_grade = {}
-    sdir = os.path.join(grade_dir, login)
+    sdir = pjoin(grade_dir, login)
     if not os.path.exists(sdir):
-        raise ValueError('Trying to get nonexistent grade_dict for %s' % login)
-    
+        raise ValueError(f'Trying to get nonexistent grade_dict for {login}')
+
     for asgn in asgns:
         d = asgn.replace(' ', '').lower()
-        individual_path = os.path.join(sdir, d)
+        individual_path = pjoin(sdir, d)
         if not os.path.isdir(individual_path):
             full_grade[asgn] = {'Grade': 'No handin'}
             continue
 
         fs = os.listdir(individual_path)
         if 'grade-override.json' in fs:
-            p = os.path.join(individual_path, 'grade-override.json')
+            p = pjoin(individual_path, 'grade-override.json')
         else:
-            p = os.path.join(individual_path, 'grade.json')
+            p = pjoin(individual_path, 'grade.json')
 
         if not os.path.exists(p):
-            print('Nonexistent grade in %s, continuing...' % individual_path)
-        
+            print(f'Nonexistent grade in {individual_path}, continuing...')
+
         with locked_file(p) as f:
             grade = json.load(f)
 
@@ -74,17 +75,15 @@ def get_student_grade_dict(login):
 
 
 def get_drill_data():
-    email_to_user = lambda u: u.replace('@brown.edu', '')
-    descr_to_drill = lambda d: d.split(' ')[2]
-    drill_data = defaultdict(lambda: (set(), set())) # (complete, incomplete)
+    drill_data = defaultdict(lambda: (set(), set()))  # (complete, incomplete)
     with open(drill_path) as f:
         lines = list(csv.reader(f))
-    
+
     header = lines[0]
     for line in lines[1:]:
-        login = email_to_user(line[3])
+        login = line[3].replace('@brown.edu', '')
         for col in range(6, 23):
-            drill = 'drill%s' % descr_to_drill(header[col])
+            drill = f"drill{header[col].split(' ')[2]}"
             if drill == 'drill18':
                 continue
 
@@ -95,33 +94,25 @@ def get_drill_data():
                 drill_data[login][0].add(drill)
 
     return drill_data
- 
+
 
 def get_lab_data():
-    lab_data = defaultdict(lambda: set())
-    all_labs = set()
-    f_system = os.walk(lab_base)
-    root, folds, _ = next(f_system)
-    for lab_dirname in folds:
-        lab_fold = os.path.join(root, lab_dirname)
-        all_labs.add(lab_dirname)
-        for f in os.listdir(lab_fold):
-            if 'checkoff' not in f:
-                continue
+    lab_path = pjoin(lab_base, 'attendance.json')
+    with locked_file(lab_path) as f:
+        attendance_data = json.load(f)
 
-            fp = os.path.join(lab_fold, f)
-            with open(fp) as fo:
-                students = map(str.strip, fo.read().strip().split('\n'))
-                for student in students:
-                    lab_data[student].add(lab_dirname)
-    
+    all_labs = list(attendance_data.keys())
+
+    lab_data = defaultdict(set)
+    for lab in attendance_data:
+        for student in labs[lab]:
+            lab_data[student].add(lab)
+
     with locked_file(lab_excp_path) as f:
-        lines = map(str.strip, f.read().strip().split('\n'))
+        lines = f.read().strip().split('\n')
 
     for line in lines:
-        line = line.split(' ')
-        login = line[0]
-        lab   = line[1]
+        login, lab = line.split(' ')
         lab_data[login].add(lab)
 
     return lab_data, all_labs
@@ -137,7 +128,7 @@ def generate_grade_summaries(write=False, to_return=True):
     print('Generating summaries...')
     summs = {}
     for student in data:
-        S = 'Aggregated grade summary for %s\n\n' % student
+        S = f'Aggregated grade summary for {student}\n\n'
         student_data = data[student]
         for (k, v) in sorted(student_data.items()):
             if k == 'Drill 14':
@@ -147,41 +138,42 @@ def generate_grade_summaries(write=False, to_return=True):
                     drill_data[student][1].add('drill14')
 
                 continue
-            S += '%s\n' % k
+            S += f'{k}\n' % k
             mlen = max(map(len, v.keys())) + 1
 
             for (cat, grade) in sorted(v.items()):
                 spaces = (mlen - len(cat))
-                S += '%s%s%s: %s\n' % (' ' * 4, cat,  ' ' * spaces,  grade)
+                S += f"{' ' * 4}{cat}{' ' * spaces}: {grade}\n"
 
             S += '\n'
-        
+
         slabs = lab_data[student]
         unattended = all_labs.difference(slabs)
         nlabs = max(map(len, lab_data.values()))
-        lab_sum = '%s/%s labs attended\n' % (len(slabs), nlabs)
+        lab_sum = f'{len(slabs)}/{nlabs} labs attended\n'
         if unattended:
-            sorter = lambda s: int(s.replace('lab', ''))
-            un_tup = str(tuple(sorted(list(unattended), key=sorter)))
-            lab_sum += 'Labs not attended: %s\n' % un_tup
+            unattended_list = sorted(list(unattended),
+                                     key=lambda s: int(s.replace('lab', '')))
+            unattended_str = ', '.join(unattended_list)
+            lab_sum += f'Labs not attended: {unattended_str}\n'
 
         S += lab_sum
         S += '\n'
 
         complete, incomplete = drill_data[student]
         tot = len(complete) + len(incomplete)
-        drill_sum = '%s/%s drills completed\n' % (len(complete), tot)
+        drill_sum = f'{len(complete)}/{tot} drills completed\n'
         if incomplete:
             sorted_drills = sorted(list(incomplete),
                                    key=lambda s: int(s.replace('drill', '')))
-            un_tup = str(tuple(sorted_drills))
-            drill_sum += 'Drills not completed: %s\n' % un_tup
+            incomplete_str = ', '.join(sorted_drills)
+            drill_sum += f'Drills not completed: {incomplete_str}\n'
 
         S += drill_sum
 
         summs[student] = S
         if write:
-            fp = os.path.join(sum_path, '%s.txt' % student)
+            fp = pjoin(sum_path, f'{student}.txt')
             with locked_file(fp, 'w') as f:
                 f.write(S)
 
@@ -191,7 +183,7 @@ def generate_grade_summaries(write=False, to_return=True):
 
 def generate_gradebook(path=None):
     if path is None:
-        path = os.path.join(BASE_PATH, 'hta', 'gradebook.tsv')
+        path = pjoin(BASE_PATH, 'hta', 'gradebook.tsv')
 
     if os.path.splitext(path)[1] != '.tsv':
         print('Warning: Output format is tsv, but writing to non-tsv file')
@@ -207,7 +199,7 @@ def generate_gradebook(path=None):
                 descr = f'{key} {cat}'
                 categories.add(descr)
                 gradebook[descr][student] = s_data[key][cat]
-    
+
     students = sorted(data.keys())
     sorted_cats = sorted(categories)
     book = [['Student', *sorted_cats]]
@@ -227,7 +219,7 @@ def generate_gradebook(path=None):
     S = ''
     for line in book:
         line_str = '\t'.join(line)
-        S += '%s\n' % line_str
+        S += f'{line_str}\n'
 
     with locked_file(path, 'w') as f:
         f.write(S)
@@ -246,7 +238,7 @@ def send_summaries(resummarize=None):
 
     if resummarize:
         generate_grade_summaries(write=True)
-    
+
     yag = yagmail.SMTP('csci0111@brown.edu')
     full_students = load_students()
     login_to_email = dict((line[0], line[1]) for line in full_students)
@@ -255,17 +247,15 @@ def send_summaries(resummarize=None):
         tas = map(str.strip, f.read().strip().split('\n'))
 
     for sum_file in os.listdir(sum_path):
-        path = os.path.join(sum_path, sum_file)
+        path = pjoin(sum_path, sum_file)
         login = os.path.splitext(sum_file)[0]
         if login not in students or login in tas:
-            print('skipping login %s' % login)
+            print(f'skipping login {login}')
             continue
 
         with open(path) as f:
-            contents = '<pre>%s</pre>' % f.read()
-        
+            contents = f'<pre>{f.read()}</pre>'
+
         em = login_to_email[login]
-        print('Sending to %s' % em)
+        print(f'Sending to {em}')
         yag.send(to=em, subject='Aggregated grade report', contents=[contents])
-
-

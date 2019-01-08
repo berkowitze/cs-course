@@ -1,1 +1,1 @@
-prompts.py
+../../tabin/prompts.py

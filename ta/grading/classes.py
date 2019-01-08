@@ -13,8 +13,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from course_customization import full_asgn_name_to_dirname, \
     get_handin_report_str, get_empty_raw_grade, determine_grade
 from custom_types import HTMLData, Log, LogItem, Rubric
-from helpers import (loaded_rubric_check, locked_file,
-                     require_resource, update_comments)
+from helpers import (loaded_rubric_check, locked_file, json_edit,
+                     require_resource, update_comments, rubric_check)
 
 # READ BEFORE EDITING THIS FILE #
 # do not use the builtin `open` function; instead use the
