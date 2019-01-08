@@ -158,38 +158,132 @@
 <span id="hub-helpers-module"></span><h1>hub_helpers module<a class="headerlink" href="#module-hub_helpers" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="hub_helpers.generate_grade_summaries">
-<code class="descclassname">hub_helpers.</code><code class="descname">generate_grade_summaries</code><span class="sig-paren">(</span><em>write=False</em>, <em>to_return=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hub_helpers.html#generate_grade_summaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.generate_grade_summaries" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">hub_helpers.</code><code class="descname">generate_grade_summaries</code><span class="sig-paren">(</span><em>write: bool = False</em><span class="sig-paren">)</span> &#x2192; Dict[str, str]<a class="reference internal" href="_modules/hub_helpers.html#generate_grade_summaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.generate_grade_summaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate grade summaries for the course</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>write</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not to write the summaries into files in
+/hta/summaries, defaults to False</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dictionary of login -&gt; grade summary strings</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, str]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="hub_helpers.generate_gradebook">
-<code class="descclassname">hub_helpers.</code><code class="descname">generate_gradebook</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hub_helpers.html#generate_gradebook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.generate_gradebook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">hub_helpers.</code><code class="descname">generate_gradebook</code><span class="sig-paren">(</span><em>path: Optional[str] = None</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hub_helpers.html#generate_gradebook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.generate_gradebook" title="Permalink to this definition">¶</a></dt>
+<dd><p>generates gradebook for the course</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – path to put gradebook in; puts in /hta/gradebook.tsv if None.
+defaults to None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="hub_helpers.get_drill_data">
-<code class="descclassname">hub_helpers.</code><code class="descname">get_drill_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hub_helpers.html#get_drill_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_drill_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">hub_helpers.</code><code class="descname">get_drill_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Tuple[Set[str], Set[str]]]<a class="reference internal" href="_modules/hub_helpers.html#get_drill_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_drill_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>collect drill information for this course</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dictionary of login -&gt; (completed drills, uncompleted drills)
+2-tuples, the tuple is comprised of sets</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, Tuple[Set[str], Set[str]]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="hub_helpers.get_full_grade_dict">
-<code class="descclassname">hub_helpers.</code><code class="descname">get_full_grade_dict</code><span class="sig-paren">(</span><em>students=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hub_helpers.html#get_full_grade_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_full_grade_dict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">hub_helpers.</code><code class="descname">get_full_grade_dict</code><span class="sig-paren">(</span><em>students: Optional[List[str]] = None</em><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Union[int, float, str, Dict[str, str], Dict[str, int]]]]<a class="reference internal" href="_modules/hub_helpers.html#get_full_grade_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_full_grade_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>get a dictionary of student -&gt; dictionary of grades</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>students</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – students for whom to collect grade info. if None, data
+for all students will be collected. defaults to None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dictionary of login -&gt; dictionary of
+(assignment mini_name -&gt; student’s grade for that assignment)
+dictionary values</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, Dict[str, Grade]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="hub_helpers.get_lab_data">
-<code class="descclassname">hub_helpers.</code><code class="descname">get_lab_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hub_helpers.html#get_lab_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_lab_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">hub_helpers.</code><code class="descname">get_lab_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Tuple[Dict[str, Set[str]], Set[str]]<a class="reference internal" href="_modules/hub_helpers.html#get_lab_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_lab_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>collect lab information for this course</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dictionary of login -&gt; attended labs set and a set of
+all the labs for the course</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Tuple[Dict[str, Set[str]], Set[str]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="hub_helpers.get_student_grade_dict">
-<code class="descclassname">hub_helpers.</code><code class="descname">get_student_grade_dict</code><span class="sig-paren">(</span><em>login</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hub_helpers.html#get_student_grade_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_student_grade_dict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">hub_helpers.</code><code class="descname">get_student_grade_dict</code><span class="sig-paren">(</span><em>login: str</em><span class="sig-paren">)</span> &#x2192; Dict[str, Union[int, float, str, Dict[str, str], Dict[str, int]]]<a class="reference internal" href="_modules/hub_helpers.html#get_student_grade_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_student_grade_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>given a login, collect grade information for that student</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>login</strong> (<em>str</em>) – CS login of student for whom to collect grade info</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a dictionary of assignment mini_name -&gt; grade for that assignment</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, Grade]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – no grades for this student</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="hub_helpers.send_summaries">
-<code class="descclassname">hub_helpers.</code><code class="descname">send_summaries</code><span class="sig-paren">(</span><em>resummarize=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hub_helpers.html#send_summaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.send_summaries" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">hub_helpers.</code><code class="descname">send_summaries</code><span class="sig-paren">(</span><em>resummarize: Optional[bool] = None</em>, <em>override_email: Optional[str] = None</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hub_helpers.html#send_summaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.send_summaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>send course grade summaries</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>resummarize</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em><em>, </em><em>optional</em>) – whether or not to regenerate grade summaries, or None
+to have program prompt whether or not to regenerate</li>
+<li><strong>override_email</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – email to send summaries to (for testing) or None
+to send to the student. defaults to None</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 

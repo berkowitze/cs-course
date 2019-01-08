@@ -6,7 +6,9 @@ from collections import defaultdict
 
 import yagmail
 
-from hta_classes import locked_file
+from typing import Optional, List, Dict, Tuple, Set
+from helpers import locked_file
+from custom_types import Grade
 from hta_helpers import load_students
 
 # WARNING:
@@ -33,19 +35,46 @@ for asgn in asgn_data['assignments']:
         asgns.append(asgn)
 
 
-def get_full_grade_dict(students=None):
+def get_full_grade_dict(students: Optional[List[str]] = None
+                        ) -> Dict[str, Dict[str, Grade]]:
+    """
+
+    get a dictionary of student -> dictionary of grades
+
+    :param students: students for whom to collect grade info. if None, data
+                     for all students will be collected. defaults to None
+    :type students: Optional[List[str]], optional
+    :returns: dictionary of login -> dictionary of
+              (assignment mini_name -> student's grade for that assignment)
+              dictionary values
+    :rtype: Dict[str, Dict[str, Grade]]
+
+    """
     if students is None:
-        students = map(lambda s: s[0], load_students())
+        logins = list(map(lambda s: s[0], load_students()))
+    else:
+        logins = students
 
     data = {}
-    for student in students:
-        data[student] = get_student_grade_dict(student)
+    for login in logins:
+        data[login] = get_student_grade_dict(login)
 
     return data
 
 
-def get_student_grade_dict(login):
-    full_grade = {}
+def get_student_grade_dict(login: str) -> Dict[str, Grade]:
+    """
+
+    given a login, collect grade information for that student
+
+    :param login: CS login of student for whom to collect grade info
+    :type login: str
+    :returns: a dictionary of assignment mini_name -> grade for that assignment
+    :rtype: Dict[str, Grade]
+    :raises ValueError: no grades for this student
+
+    """
+    full_grade: Dict[str, Grade] = {}
     sdir = pjoin(grade_dir, login)
     if not os.path.exists(sdir):
         raise ValueError(f'Trying to get nonexistent grade_dict for {login}')
@@ -65,16 +94,27 @@ def get_student_grade_dict(login):
 
         if not os.path.exists(p):
             print(f'Nonexistent grade in {individual_path}, continuing...')
+            continue
 
         with locked_file(p) as f:
-            grade = json.load(f)
+            grade: Grade = json.load(f)
 
         full_grade[asgn] = grade
 
     return full_grade
 
 
-def get_drill_data():
+def get_drill_data() -> Dict[str, Tuple[Set[str], Set[str]]]:
+    """
+
+    collect drill information for this course
+
+    :returns: dictionary of login -> (completed drills, uncompleted drills)
+              2-tuples, the tuple is comprised of sets
+    :rtype: Dict[str, Tuple[Set[str], Set[str]]]
+
+    """
+    drill_data: Dict[str, Tuple[Set[str], Set[str]]]
     drill_data = defaultdict(lambda: (set(), set()))  # (complete, incomplete)
     with open(drill_path) as f:
         lines = list(csv.reader(f))
@@ -96,7 +136,17 @@ def get_drill_data():
     return drill_data
 
 
-def get_lab_data():
+def get_lab_data() -> Tuple[Dict[str, Set[str]], Set[str]]:
+    """
+
+    collect lab information for this course
+
+    :returns: dictionary of login -> attended labs set and a set of
+              all the labs for the course
+    :rtype: Tuple[Dict[str, Set[str]], Set[str]]
+
+    """
+    lab_data: Dict[str, Set[str]]
     lab_path = pjoin(lab_base, 'attendance.json')
     with locked_file(lab_path) as f:
         attendance_data = json.load(f)
@@ -118,7 +168,17 @@ def get_lab_data():
     return lab_data, all_labs
 
 
-def generate_grade_summaries(write=False, to_return=True):
+def generate_grade_summaries(write: bool = False) -> Dict[str, str]:
+    """
+
+    generate grade summaries for the course
+
+    :param write: whether or not to write the summaries into files in
+                  /hta/summaries, defaults to False
+    :type write: bool, optional
+    :returns: dictionary of login -> grade summary strings
+    :rtype: Dict[str, str]
+    """
     print('Gathering grading app grade info...')
     data = get_full_grade_dict()
     print('Gathering lab info...')
@@ -140,16 +200,20 @@ def generate_grade_summaries(write=False, to_return=True):
                 continue
             S += f'{k}\n'
             mlen = max(map(len, v.keys())) + 1
-
-            for (cat, grade) in sorted(v.items()):
-                spaces = (mlen - len(cat))
-                S += f"{' ' * 4}{cat}{' ' * spaces}: {grade}\n"
+            if isinstance(v, (int, str, float)):
+                S += f'{" " * 4}Grade: {v}'
+            else:
+                cats = v.keys()
+                for cat in v:
+                    grade = v[cat]
+                    spaces = (mlen - len(cat))
+                    S += f"{' ' * 4}{cat}{' ' * spaces}: {grade}\n"
 
             S += '\n'
 
         slabs = lab_data[student]
         unattended = all_labs.difference(slabs)
-        nlabs = max(map(len, lab_data.values()))
+        nlabs = len(all_labs)
         lab_sum = f'{len(slabs)}/{nlabs} labs attended\n'
         if unattended:
             unattended_list = sorted(list(unattended),
@@ -177,11 +241,19 @@ def generate_grade_summaries(write=False, to_return=True):
             with locked_file(fp, 'w') as f:
                 f.write(S)
 
-    if to_return:
-        return summs
+    return summs
 
 
-def generate_gradebook(path=None):
+def generate_gradebook(path: Optional[str] = None) -> None:
+    """
+
+    generates gradebook for the course
+
+    :param path: path to put gradebook in; puts in /hta/gradebook.tsv if None.
+                defaults to None
+    :type path: Optional[str], optional
+
+    """
     if path is None:
         path = pjoin(BASE_PATH, 'hta', 'gradebook.tsv')
 
@@ -190,15 +262,19 @@ def generate_gradebook(path=None):
 
     data = get_full_grade_dict()
     categories = set()
-    gradebook = defaultdict(lambda: {})
+    gradebook: Dict[str, dict] = defaultdict(lambda: {})
     for student in data.keys():
         s_data = data[student]
-        for key in s_data.keys():
-            cats = s_data[key].keys()
-            for cat in cats:
-                descr = f'{key} {cat}'
-                categories.add(descr)
-                gradebook[descr][student] = s_data[key][cat]
+        for asgn in s_data.keys():
+            grade = s_data[asgn]
+            if isinstance(grade, (int, str, float)):
+                gradebook[asgn][student] = grade
+            else:
+                cats = grade.keys()
+                for cat in cats:
+                    descr = f'{asgn} {cat}'
+                    categories.add(descr)
+                    gradebook[descr][student] = grade[cat]
 
     students = sorted(data.keys())
     sorted_cats = sorted(categories)
@@ -208,11 +284,11 @@ def generate_gradebook(path=None):
         summary = [student]
         for descr in sorted_cats:
             if student in gradebook[descr]:
-                grade = gradebook[descr][student]
+                book_grade = gradebook[descr][student]
             else:
-                grade = '(No data)'
+                book_grade = '(No data)'
 
-            summary.append(grade)
+            summary.append(book_grade)
 
         book.append(summary)
 
@@ -225,7 +301,20 @@ def generate_gradebook(path=None):
         f.write(S)
 
 
-def send_summaries(resummarize=None, override_email=None):
+def send_summaries(resummarize: Optional[bool] = None,
+                   override_email: Optional[str] = None) -> None:
+    """
+
+    send course grade summaries
+
+    :param resummarize: whether or not to regenerate grade summaries, or None
+                        to have program prompt whether or not to regenerate
+    :type resummarize: Optional[bool], optional
+    :param override_email: email to send summaries to (for testing) or None
+                           to send to the student. defaults to None
+    :type override_email: Optional[str], optional
+
+    """
     if resummarize is None:
         print('Regenerate summaries? [y/n]')
         resp = input('> ').lower()

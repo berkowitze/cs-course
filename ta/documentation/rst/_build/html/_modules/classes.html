@@ -153,13 +153,14 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span> <span class="k">as</span> <span class="n">dt</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">pjoin</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">exists</span> <span class="k">as</span> <span class="n">pexists</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">from</span> <span class="nn">course_customization</span> <span class="k">import</span> <span class="n">full_asgn_name_to_dirname</span><span class="p">,</span> \
     <span class="n">get_handin_report_str</span><span class="p">,</span> <span class="n">get_empty_raw_grade</span><span class="p">,</span> <span class="n">determine_grade</span>
 <span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="n">HTMLData</span><span class="p">,</span> <span class="n">Log</span><span class="p">,</span> <span class="n">LogItem</span><span class="p">,</span> <span class="n">Rubric</span>
-<span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">loaded_rubric_check</span><span class="p">,</span> <span class="n">locked_file</span><span class="p">,</span>
-                     <span class="n">require_resource</span><span class="p">,</span> <span class="n">update_comments</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">loaded_rubric_check</span><span class="p">,</span> <span class="n">locked_file</span><span class="p">,</span> <span class="n">json_edit</span><span class="p">,</span>
+                     <span class="n">require_resource</span><span class="p">,</span> <span class="n">update_comments</span><span class="p">,</span> <span class="n">rubric_check</span><span class="p">)</span>
 
 <span class="c1"># READ BEFORE EDITING THIS FILE #</span>
 <span class="c1"># do not use the builtin `open` function; instead use the</span>
@@ -183,7 +184,7 @@
 <span class="n">s_files_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;sfiles&#39;</span><span class="p">)</span>
 <span class="n">anon_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;anonymization&#39;</span><span class="p">)</span>
 <span class="n">blocklist_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;blocklists&#39;</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">),</span> <span class="s1">&#39;No data file &quot;</span><span class="si">{asgn_data_path}</span><span class="s1">&quot;&#39;</span>
+<span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">),</span> <span class="s1">&#39;No data file &quot;</span><span class="si">{asgn_data_path}</span><span class="s1">&quot;&#39;</span>
 
 <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">asgn_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -341,10 +342,10 @@
 <span class="sd">                             this assignment</span>
 <span class="sd">    :ivar _json: JSON data for this assignment from assignments.json</span>
 <span class="sd">    :vartype _json: dict</span>
-<span class="sd">    :ivar __login_to_id_map: a map from login to anonymous ID for this asgn</span>
-<span class="sd">    :vartype __login_to_id_map: Dict[str, int]</span>
-<span class="sd">    :ivar __id_to_login_map: a map from anonymous ID to login for this asgn</span>
-<span class="sd">    :vartype __id_to_login_map: Dict[int, str]</span>
+<span class="sd">    :ivar _login_to_id_map: a map from login to anonymous ID for this asgn</span>
+<span class="sd">    :vartype _login_to_id_map: Dict[str, int]</span>
+<span class="sd">    :ivar _id_to_login_map: a map from anonymous ID to login for this asgn</span>
+<span class="sd">    :vartype _id_to_login_map: Dict[int, str]</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Assignment.__init__"><a class="viewcode-back" href="../classes.html#classes.Assignment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">full_load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -409,28 +410,28 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># checking that assignment has correct paths</span>
         <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span>
-        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_path</span><span class="p">),</span> \
+        <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_path</span><span class="p">),</span> \
             <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no log directory&#39;</span>
-        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rubric_path</span><span class="p">),</span> \
+        <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rubric_path</span><span class="p">),</span> \
             <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no rubric directory&#39;</span>
-        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">),</span> \
+        <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">),</span> \
             <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no grade directory&#39;</span>
-        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocklist_path</span><span class="p">),</span> \
+        <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocklist_path</span><span class="p">),</span> \
             <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no blocklist file&#39;</span>
-        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files_path</span><span class="p">),</span> \
+        <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files_path</span><span class="p">),</span> \
             <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no student code directory&#39;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anon_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">__login_to_id_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__id_to_login_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">data</span><span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_login_to_id_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_login_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">data</span><span class="p">}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">__load_questions</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_questions</span><span class="p">()</span></div>
 
     <span class="nd">@is_started</span>
-    <span class="k">def</span> <span class="nf">__load_questions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_load_questions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;load all log files, creating Question instances stored into</span>
 <span class="sd">        self.questions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -480,16 +481,16 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot get login on anonymous assignment&#39;</span><span class="p">)</span>
 
         <span class="c1">#  first try using cached info</span>
-        <span class="k">if</span> <span class="n">login</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__login_to_id_map</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__login_to_id_map</span><span class="p">[</span><span class="n">login</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">login</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_login_to_id_map</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_login_to_id_map</span><span class="p">[</span><span class="n">login</span><span class="p">]</span>
 
         <span class="c1">#  next try reloading anonymization information</span>
         <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anon_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__login_to_id_map</span><span class="p">[</span><span class="n">login</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__id_to_login_map</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]]</span> <span class="o">=</span> <span class="n">login</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_login_to_id_map</span><span class="p">[</span><span class="n">login</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_login_map</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]]</span> <span class="o">=</span> <span class="n">login</span>
             <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="c1">#  then fail</span>
@@ -512,8 +513,8 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot get login on anonymous assignment&#39;</span><span class="p">)</span>
 
         <span class="c1">#  first try using cached info</span>
-        <span class="k">if</span> <span class="n">ident</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__id_to_login_map</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__id_to_login_map</span><span class="p">[</span><span class="n">ident</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ident</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_login_map</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_login_map</span><span class="p">[</span><span class="n">ident</span><span class="p">]</span>
 
         <span class="c1">#  next try reloading anonymization information</span>
         <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anon_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -521,8 +522,8 @@
 
         <span class="k">for</span> <span class="n">login</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">login</span><span class="p">]</span> <span class="o">==</span> <span class="n">ident</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__id_to_login_map</span><span class="p">[</span><span class="n">ident</span><span class="p">]</span> <span class="o">=</span> <span class="n">login</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__login_to_id_map</span><span class="p">[</span><span class="n">login</span><span class="p">]</span> <span class="o">=</span> <span class="n">ident</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_login_map</span><span class="p">[</span><span class="n">ident</span><span class="p">]</span> <span class="o">=</span> <span class="n">login</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_login_to_id_map</span><span class="p">[</span><span class="n">login</span><span class="p">]</span> <span class="o">=</span> <span class="n">ident</span>
                 <span class="k">return</span> <span class="n">login</span>
 
         <span class="c1">#  then fail</span>
@@ -566,8 +567,9 @@
 <span class="sd">    :vartype _qnumb: int</span>
 <span class="sd">    :ivar rubric_filepath: filepath for the base rubric for this question</span>
 <span class="sd">    :vartype rubric_filepath: str</span>
-<span class="sd">    :ivar test_path: base filepath for the testsuite for this question</span>
-<span class="sd">    :vartype test_path: str</span>
+<span class="sd">    :ivar test_path: base filepath for the testsuite for this question, or</span>
+<span class="sd">                     None if there is no testsuite for this question.</span>
+<span class="sd">    :vartype test_path: Optional[str]</span>
 <span class="sd">    :ivar _json: JSON for this question from /ta/assignments.json</span>
 <span class="sd">    :vartype _json: dict</span>
 
@@ -616,9 +618,13 @@
                                        <span class="n">f</span><span class="s1">&#39;q</span><span class="si">{qn}</span><span class="s1">.json&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">code_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span>
-        <span class="n">test_filename</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;q</span><span class="si">{qn}</span><span class="s1">.</span><span class="si">{self._json[&quot;test-ext&quot;]}</span><span class="s1">&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">test_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">parent_assignment</span><span class="o">.</span><span class="n">test_path</span><span class="p">,</span>
-                                    <span class="n">test_filename</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;test-ext&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">test_filename</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;q</span><span class="si">{qn}</span><span class="s1">.</span><span class="si">{self._json[&quot;test-ext&quot;]}</span><span class="s1">&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">parent_assignment</span><span class="o">.</span><span class="n">test_path</span><span class="p">,</span> <span class="n">test_filename</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">load_handins</span><span class="p">()</span></div>
 
@@ -958,7 +964,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">filepath</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">code_filename</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">(</span>
                     <span class="n">f</span><span class="s1">&#39;No submission (or code issue). &#39;</span>
                     <span class="n">f</span><span class="s1">&#39;Check </span><span class="si">{self.handin_path}</span><span class="s1"> to make sure&#39;</span>
@@ -1233,6 +1239,8 @@
             <span class="k">if</span> <span class="n">grade</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">grade</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
+        <span class="nb">print</span><span class="p">(</span><span class="n">grade</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">report_str</span><span class="p">,</span> <span class="n">grade</span></div>
 
 <div class="viewcode-block" id="Handin.run_test"><a class="viewcode-back" href="../classes.html#classes.Handin.run_test">[docs]</a>    <span class="k">def</span> <span class="nf">run_test</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1245,7 +1253,9 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">test_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;test-ext&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">test_type</span> <span class="o">==</span> <span class="s1">&#39;arr&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">test_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;No defined testsuite&#39;</span>
+        <span class="k">elif</span> <span class="n">test_type</span> <span class="o">==</span> <span class="s1">&#39;arr&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pyret_test</span><span class="p">()</span>
         <span class="k">elif</span> <span class="n">test_type</span> <span class="o">==</span> <span class="s1">&#39;py&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">python_test</span><span class="p">()</span>
@@ -1261,6 +1271,7 @@
 <span class="sd">        :rtype: str</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">test_filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;tabin&#39;</span><span class="p">,</span> <span class="s1">&#39;python-test&#39;</span><span class="p">),</span>
                <span class="n">test_filepath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">]</span>
@@ -1275,20 +1286,21 @@
 <span class="sd">        :rtype: str</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">filepath</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">code_filename</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
             <span class="k">return</span> <span class="s1">&#39;No handin or missing handin&#39;</span>
 
         <span class="n">test_dir</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span><span class="p">,</span> <span class="s1">&#39;TA_TESTS&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">test_dir</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="n">test_dir</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">test_dir</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">):</span>
             <span class="k">return</span> <span class="s1">&#39;No test file for this question: contact HTA&#39;</span>
 
         <span class="n">test_filepath</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">test_dir</span><span class="p">,</span>
                               <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">):</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">,</span> <span class="n">test_filepath</span><span class="p">)</span>
 
             <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>

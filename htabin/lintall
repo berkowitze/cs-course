@@ -2,7 +2,13 @@
 # lints all relevant python files
 # should use after editing grading app code
 
+function linecount() {
+    lc=`/course/cs0111/ta/venv/bin/python -c "print(len(open('$1').read().split('\n')))"`
+}
 cd /course/cs0111
 cat /course/cs0111/lintfiles | while read p; do
-    mypy $p --ignore-missing-imports
+    mypy $p --ignore-missing-imports;
 done
+
+lines=`cat /course/cs0111/lintfiles | python -c "import sys; fs = sys.stdin.read().strip().split('\n'); print(sum(map(lambda f: len(open(f).read().strip().split('\n')), fs)))"`
+echo "$lines lines of code"
