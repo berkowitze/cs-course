@@ -8,6 +8,7 @@ import subprocess
 from datetime import datetime as dt
 from functools import wraps
 from os.path import join as pjoin
+from os.path import exists as pexists
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from course_customization import full_asgn_name_to_dirname, \
@@ -38,7 +39,7 @@ grade_base_path = pjoin(DATA_PATH, 'grades')
 s_files_base_path = pjoin(DATA_PATH, 'sfiles')
 anon_base_path = pjoin(DATA_PATH, 'anonymization')
 blocklist_path = pjoin(DATA_PATH, 'blocklists')
-assert os.path.exists(asgn_data_path), 'No data file "{asgn_data_path}"'
+assert pexists(asgn_data_path), 'No data file "{asgn_data_path}"'
 
 with locked_file(asgn_data_path) as f:
     asgn_data = json.load(f)
@@ -196,10 +197,10 @@ class Assignment:
                              this assignment
     :ivar _json: JSON data for this assignment from assignments.json
     :vartype _json: dict
-    :ivar __login_to_id_map: a map from login to anonymous ID for this asgn
-    :vartype __login_to_id_map: Dict[str, int]
-    :ivar __id_to_login_map: a map from anonymous ID to login for this asgn
-    :vartype __id_to_login_map: Dict[int, str]
+    :ivar _login_to_id_map: a map from login to anonymous ID for this asgn
+    :vartype _login_to_id_map: Dict[str, int]
+    :ivar _id_to_login_map: a map from anonymous ID to login for this asgn
+    :vartype _id_to_login_map: Dict[int, str]
 
     """
     def __init__(self, key: str, full_load: bool = False) -> None:
@@ -264,28 +265,28 @@ class Assignment:
         """
         # checking that assignment has correct paths
         n = self.full_name
-        assert os.path.exists(self.log_path), \
+        assert pexists(self.log_path), \
             f'started assignment f"{n}" with no log directory'
-        assert os.path.exists(self.rubric_path), \
+        assert pexists(self.rubric_path), \
             f'started assignment f"{n}" with no rubric directory'
-        assert os.path.exists(self.grade_path), \
+        assert pexists(self.grade_path), \
             f'started assignment f"{n}" with no grade directory'
-        assert os.path.exists(self.blocklist_path), \
+        assert pexists(self.blocklist_path), \
             f'started assignment f"{n}" with no blocklist file'
-        assert os.path.exists(self.files_path), \
+        assert pexists(self.files_path), \
             f'started assignment f"{n}" with no student code directory'
 
         if not self.anonymous:
             with locked_file(self.anon_path) as f:
                 data: Dict[str, int] = json.load(f)
 
-            self.__login_to_id_map: Dict[str, int] = data
-            self.__id_to_login_map: Dict[int, str] = {data[k]: k for k in data}
+            self._login_to_id_map: Dict[str, int] = data
+            self._id_to_login_map: Dict[int, str] = {data[k]: k for k in data}
 
-        self.__load_questions()
+        self._load_questions()
 
     @is_started
-    def __load_questions(self) -> None:
+    def _load_questions(self) -> None:
         """load all log files, creating Question instances stored into
         self.questions.
         """
@@ -335,16 +336,16 @@ class Assignment:
             raise ValueError('Cannot get login on anonymous assignment')
 
         #  first try using cached info
-        if login in self.__login_to_id_map:
-            return self.__login_to_id_map[login]
+        if login in self._login_to_id_map:
+            return self._login_to_id_map[login]
 
         #  next try reloading anonymization information
         with locked_file(self.anon_path) as f:
             data: Dict[str, int] = json.load(f)
 
         try:
-            self.__login_to_id_map[login] = data[login]
-            self.__id_to_login_map[data[login]] = login
+            self._login_to_id_map[login] = data[login]
+            self._id_to_login_map[data[login]] = login
             return data[login]
         except KeyError:
             #  then fail
@@ -367,8 +368,8 @@ class Assignment:
             raise ValueError('Cannot get login on anonymous assignment')
 
         #  first try using cached info
-        if ident in self.__id_to_login_map:
-            return self.__id_to_login_map[ident]
+        if ident in self._id_to_login_map:
+            return self._id_to_login_map[ident]
 
         #  next try reloading anonymization information
         with locked_file(self.anon_path) as f:
@@ -376,8 +377,8 @@ class Assignment:
 
         for login in data:
             if data[login] == ident:
-                self.__id_to_login_map[ident] = login
-                self.__login_to_id_map[login] = ident
+                self._id_to_login_map[ident] = login
+                self._login_to_id_map[login] = ident
                 return login
 
         #  then fail
@@ -818,7 +819,7 @@ class Handin:
 
         """
         filepath = pjoin(self.handin_path, self.question.code_filename)
-        if not os.path.exists(filepath):
+        if not pexists(filepath):
             return (
                     f'No submission (or code issue). '
                     f'Check {self.handin_path} to make sure'
@@ -1093,6 +1094,8 @@ class Handin:
             if grade[key] < 0:
                 grade[key] = 0
 
+        print(grade)
+
         return report_str, grade
 
     def run_test(self) -> str:
@@ -1140,19 +1143,19 @@ class Handin:
         """
         assert self.question.test_path is not None
         filepath = pjoin(self.handin_path, self.question.code_filename)
-        if not os.path.exists(filepath):
+        if not pexists(filepath):
             return 'No handin or missing handin'
 
         test_dir = pjoin(self.handin_path, 'TA_TESTS')
-        if not os.path.exists(test_dir):
+        if not pexists(test_dir):
             os.mkdir(test_dir)
 
-        if not os.path.exists(self.question.test_path):
+        if not pexists(self.question.test_path):
             return 'No test file for this question: contact HTA'
 
         test_filepath = pjoin(test_dir,
                               os.path.split(self.question.test_path)[1])
-        if not os.path.exists(test_filepath):
+        if not pexists(test_filepath):
             shutil.copyfile(self.question.test_path, test_filepath)
 
             with locked_file(test_filepath, 'r') as f:

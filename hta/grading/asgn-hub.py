@@ -1,333 +1,294 @@
 import json
 import os
-from hta_classes import get_hta_asgn_list, asgn_data_path, \
-                        BASE_PATH, student_list, User, login_to_email
+import prompts
+import subprocess
 import sys
 import tabulate
 import yagmail
-import subprocess
+from typing import List
 
-def send_asgn_emails(asgn, handins):
-    """ this needs to be cleaned up for project groups
-    (send to groups that handed in only, including partners) """
-    # this is convoluted logic but it's so that I can see
-    # what kind of issues come up; will make it better
-    # during semester (maybe)
+from hta_classes import (BASE_PATH, User, asgn_data_path, get_hta_asgn_list,
+                         login_to_email, student_list, HTA_Assignment)
+from hub_helpers import *
+
+asgns: List[HTA_Assignment] = get_hta_asgn_list()
+
+
+def send_grade_reports(asgn: HTA_Assignment, logins: List[str]) -> None:
     yag = yagmail.SMTP('csci0111@brown.edu')
-    for student in list(handins.keys()):
-        if student == 'csci0111':
-            continue
+    asgn.send_emails(yag, logins, override_send_to='eliberkowitz@gmail.com')
 
-        asgn.send_email(student, login_to_email(student), yag)
 
-    asgn.set_emails_sent()
-    return
-    tosend = asgn.login_handin_list[:] # make copy of login list
-    for student in list(handins.keys()):
-        hpath = os.path.join(BASE_PATH, 'hta/handin/students',
-                             student, asgn.mini_name)
-        if not os.path.exists(hpath): # if no submission for hw...
-            print(('no submission for %s, not sending email' % student))
-            continue
+print('At any time, press ctrl-c to quit')
+STATE = 0
+while True:
+    if STATE == 0:
+        resp1 = prompts.opt_prompt(['Generate gradebook',
+                                    'Generate and send grade summaries',
+                                    'Work with assignment'
+                                    ])
+        if resp1 is None:
+            break
+        elif resp1 == 1:
+            STATE = 1
+        elif resp1 == 2:
+            STATE = 2
+        elif resp1 == 3:
+            STATE = 3
 
-        try:
-            tosend.remove(student)
-            em = login_to_email(student)
-            asgn.send_email(student, em, yag)
-        except ValueError:
-            print(('%s has handin but no grade. Not sending email.' % student))
-            continue
-
-    if tosend:
-        print('Graded students that will not receive email:')
-        print(('\t%s' % tosend))
-        print('This is likely because they are not in student list.')
-
-    asgn.set_emails_sent()
-
-def send_grade_report(asgn, login):
-    yag = yagmail.SMTP('csci0111@brown.edu')
-    asgn.send_email(login, login_to_email(login), yag)
-
-def get_student_labcount(student):
-    count = 0
-    p = '/course/cs0111/ta/grading/data/labs'
-    f_system = os.walk(p)
-    root, folds, _ = next(f_system)
-    for lab_fold in folds:
-        lab_fold = os.path.join(root, lab_fold)
-        labc = False
-        for f in os.listdir(lab_fold):
-            if 'checkoff' not in f:
+    elif STATE == 1:
+        path = pjoin(BASE_PATH, 'hta/gradebook.tsv')
+        print(f'gradebook will be saved as "{path}".')
+        print('Press enter to continue, or enter custom path (absolute and')
+        print('with filename ending with .tsv)')
+        resp2 = prompts.ez_prompt('> ')
+        if resp2 is None:
+            break
+        elif resp2:
+            dirname, fname = os.path.split(resp2)
+            if not os.path.exists(dirname) or not fname.endswith('.tsv'):
                 continue
-            fp = os.path.join(lab_fold, f)
-            with open(fp) as fo:
-                students = list(map(str.strip, fo.read().strip().split('\n')))
-                if student in students:
-                    labc = True
-                    break
 
-        if labc:
-            count += 1
+            gradebook_path = resp2
 
-    return count
-
-opt = get_opt('> ', ['Generate gradebook', 'Work with assignment'])
-asgns = get_hta_asgn_list()
-if opt == 0:
-    path = os.path.join(BASE_PATH, 'hta', 'gradebook.tsv')
-    print(('gradebook will be saved as "%s".' % path))
-    print('Press enter to continue, or enter custom path (absolute)')
-    res = eval(input('> '))
-    if res != '':
-        dirname, fname = os.path.split(res)
-        assert os.path.exists(dirname), \
-            'directory %s does not exist' % dirname
-        print(fname)
-        if not fname.endswith('.tsv'):
-            print('Warning: gradebook should end with .tsv.')
-            print('Enter to continue or ctrl-c to cancel.')
-            eval(input())
-
-        path = res
-
-    print('Collecting grades for:')
-    # i hope there's a better way to do this...
-    # there is! todo
-    students = os.listdir(os.path.join(BASE_PATH, 'hta', 'grades'))
-    tas = subprocess.check_output(['/course/cs0111/htabin/better-members', 'cs-0111ta']).strip()
-    tas = tas.split(' ')
-    students = [student for student in students if student not in tas]
-    header = ['Student']
-    for asgn in asgns:
-        if asgn.grading_completed:
-            cats = sorted(asgn.get_empty_grade().keys())
-            string = '('
-            for cat in cats:
-                header.append('%s %s' % (asgn.full_name, cat))
-                string += cat
-                string += ', '
-
-
-            string = string[:-2]
-            string += ')'
-            print(('\t%s %s' % (asgn.full_name, string)))
-
-    header.append('Labs attended')
-    rows = []
-    for student in students:
-        row = list(range(len(header)))
-        row[0] = student
-        spath = os.path.join(BASE_PATH, 'hta', 'grades', student)
-        for asgn in asgns:
-            if not asgn.grading_completed:
-                continue
-            
-            egrade = asgn.get_empty_grade()
-            override_path = os.path.join(spath, asgn.mini_name,
-                                         'grade-override.json')
-            if os.path.exists(override_path):
-                with open(override_path) as f:
-                    student_grade = json.load(f)
-            else:
-                grade_path = os.path.join(spath, asgn.mini_name, 'grade.json')
-                try:
-                    with open(grade_path) as f:
-                        student_grade = json.load(f)
-                except IOError:
-                    student_grade = {}
-                    for key in list(egrade.keys()):
-                        student_grade[key] = "No handin"
-
-            for key in egrade:
-                colname = '%s %s' % (asgn.full_name, key)
-                ndx = header.index(colname)
-                try:
-                    row[ndx] = student_grade[key]
-                except:
-                    print((student_grade, key, asgn, student))
-                    raise
-        
-        row.append(get_student_labcount(student))
-        rows.append(row)
-
-    with open(path, 'w') as f:
-        f.truncate()
-
-    with open(path, 'a') as f:
-        f.write('\t'.join(map(str, header)) + '\n')
-        for row in rows:
-            f.write('\t'.join(map(str, row)) + '\n')
-
-    print(('Gradebook outputted to %s' % path))
-    sys.exit(0)
-
-else:
-    rows = []
-    header = ["#", "Asgn", "Due", "Grading Started",
-              "Grading Done", "Regrading Done"]
-    maxlen = len(max(header)) + 3
-    rows = []
-    for i, Asgn in enumerate(asgns):
-        row = [i + 1, Asgn.full_name, Asgn.due, Asgn.started,
-               Asgn.grading_completed, False]
-        row = list(map(str, row))
-        rm = len(max(row)) + 3
-        maxlen = rm if rm > maxlen else maxlen
-        rows.append(row)
-
-    print((tabulate.tabulate(rows, header)))
-    print('')
-    print('Which assignment # would you like to work on?')
-    ndx = get_opt('> ', list(range(1, len(asgns) + 1)), False)
-    asgn = asgns[ndx]
-    x = (80 - len(asgn.full_name) - 2) // 2
-    print('')
-    print((('-' * x) + ' ' + asgn.full_name + ' ' + ('-' * x)))
-    print('')
-    if not asgn.started:
-        print(('%s grading unstarted. Start it?' % asgn.full_name))
-        if get_opt('> ', ['Yes', 'No']) == 0:
-            if not asgn.due:
-                s = 'Students can still hand in for this assignment.'
-                print((s + ' Continue anyway?'))
-                choice = get_opt('> ', ['Yes', 'No'])
-                if choice != 0:
-                    print('Exiting...')
-                    sys.exit(0)
-            try:
-                asgn.init_grading()
-            except:
-                asgn.reset_grading(True)
-                print('Error starting assignment:')
-                raise
-            print('Grading started...')
         else:
-            print('Cancelling...')
-    else:
-        new_header = ["Problem #", "# Handins", "# Graded", "# Flagged"]
-        opts = []
-        rows = []
-        for question in asgn.questions:
-            row = ['%s (%s)' % (question._qnumb, question.code_filename),
-                   question.handin_count,
-                   question.completed_count,
-                   question.flagged_count]
+            gradebook_path = path
 
+        generate_gradebook(gradebook_path)
+        print(f'Gradebook generated in "{gradebook_path}"')
+        STATE = 0
+
+    elif STATE == 2:
+        # generate grade summaries
+        resp3 = prompts.opt_prompt(['Generate grade summaries',
+                                    'Send grade summaries',
+                                    'Go back'])
+
+        if resp3 is None:
+            break
+        elif resp3 == 1:
+            generate_grade_summaries(write=True, to_return=False)
+            print(f'Summaries output in {sum_path}')
+            continue
+        elif resp3 == 2:
+            send_summaries(resummarize=False, override_email='eliberkowitz@gmail.com')
+        elif resp3 == 3:
+            STATE = 0
+
+    elif STATE == 3:
+        # assignment chooser
+        print('Which assignment would you like to work on?')
+        rows: List[List[str]] = []
+        header = ["Asgn", "Due", "Grading Started",
+                  "Grading Done"]
+
+        rows = []
+        for asgn in asgns:
+            row = [asgn.full_name, str(asgn.due), str(asgn.started),
+                   str(asgn.grading_completed)]
             rows.append(row)
 
-        print((tabulate.tabulate(rows, new_header)))
+        resp5 = prompts.table_prompt(rows, header)
+        if resp5 is None:
+            break
+        asgn = asgns[resp5 - 1]
+        if asgn.started:
+            asgn.load()
+            STATE = 5
+        else:
+            STATE = 4
+
+    elif STATE == 4:
+        # starting assignment grading
+        print(f'{asgn.full_name} grading unstarted. Start it?')
+
+        resp6 = prompts.opt_prompt(['Yes', 'No', 'Go back'])
+        if resp6 is None:
+            break
+        elif resp6 == 3 or resp6 == 2:
+            STATE = 3
+            continue
+
+        if not asgn.due:
+            print('Students can still hand in for this assignment.')
+            print('Continue anyway?')
+            resp7 = (['Yes', 'No', 'Go back'])
+            if resp7 is None:
+                break
+            elif resp7 == 3 or resp7 == 2:
+                STATE = 3
+                continue
+
+        try:
+            asgn.init_grading()
+        except Exception:
+            asgn.reset_grading(True)
+            print('Error starting assignment (grading reset)')
+            print('Error message:')
+            raise
+        else:
+            STATE = 5
+
+    elif STATE == 5:
+        # assignment modifier
+        print('')
+        if not asgn.started:
+            print('Got assignment modifier state with unstarted assignment...')
+            STATE = 3
+            continue
+
+        print(asgn)
+        asgn_header = ["Filename", "# Handins", "# Graded", "# Flagged"]
+        rows = asgn.table_summary()
+        print(tabulate.tabulate(rows, asgn_header))
         print('')
 
         print('What would you like to do?')
-        opt = get_opt('> ', ['Reset Assignment Grading',
-                             'Generate [and email] Grade Reports',
-                             'Email Grade Report(s)',
-                             'View flagged handins',
-                             'Add handin',
-                             'Deanonymize (for regrading)'])
-        if opt == 0:
-            print('Resetting the assignment will delete any grades given.')
-            if input('Confirm [y/n]: ').lower() != 'y':
-                print('Exiting...')
-                sys.exit(0)
+        option = prompts.opt_prompt(['Reset Assignment Grading',
+                                     'Generate Grade Reports',
+                                     'Email Grade Report(s)',
+                                     'View flagged handins',
+                                     'Add handin',
+                                     'Deanonymize (for regrading)',
+                                     'Go back'])
+        if option is None:
+            break
+        elif option == 1:  # reset assignment grading
+            STATE = 6
+        elif option == 2:  # generate grade reports
+            STATE = 7
+        elif option == 3:  # email grade reports
+            STATE = 8
+        elif option == 4:  # view flagged handins
+            STATE = 9
+        elif option == 5:  # add handin
+            STATE = 10
+        elif option == 6:  # deanonymize assignment
+            STATE = 11
+        elif option == 7:
+            STATE = 3
 
+    elif STATE == 6:
+        # resetting assignment grading
+        print('Resetting the assignment will delete any grades given.')
+        resp8 = prompts.opt_prompt(['Confirm removal', 'Go Back'])
+        if resp8 is None:
+            break
+        elif resp8 == 2:
+            STATE = 3
+            continue
+        else:
             asgn.reset_grading(True)
+            STATE = 3
 
-        elif opt == 1:
-            if asgn.emails_sent:
-                print('Emails have already been sent. Generate override reports? [y/n]')
-                if input('> ').lower() != 'y':
-                    print('Exiting...')
-                    sys.exit(0)
-
-            import getpass
-            username = getpass.getuser()
-            user = User(username)
-            print('Generating grade reports...')
-            logins = student_list()
-
-            handins = asgn.get_handin_dict(logins, user)
-            for student in list(handins.keys()):
-                asgn._generate_report(handins[student],
-                                     student_id=student,
-                                     soft=False,
-                                     overrides=asgn.emails_sent)
-            print('Assignments generated.\n')
-            print('Send report emails? [yes/n]')
-            if input('> ').lower() != 'yes':
-                print('Exiting... Run cs111-asgn-hub again to send emails.')
-                sys.exit(0)
+    elif STATE == 7:
+        # generating grade reports
+        if asgn.emails_sent:
+            print('Emails have already been sent. Regenerate reports?')
+            resp9 = prompts.opt_prompt(['Yes', 'No/Go back'])
+            if resp9 is None:
+                break
+            elif resp9 == 2:
+                STATE = 5
+                continue
             else:
-                send_asgn_emails(asgn, handins)
+                overrides = True
+        else:
+            overrides = False
 
-        elif opt == 2:
-            import getpass
-            username = getpass.getuser()
-            user = User(username)
-            r = get_opt('> ',
-                        ['Send to individual student (by login)',
-                         'Send to individual student (by anon id)',
-                         'Send to all students'])
-            if r == 0 or r == 1:
-                if r == 0:
-                    login = input('Enter student login: ')
-                elif r == 1:
-                    i = input('Enter anonymous id: ')
-                    login = asgn.id_to_login(i)
-                else:
-                    raise Exception('whut')
-                handins = asgn.get_handin_dict([login], user)
-                handin_list = handins[login]
+        print('Generating grade reports...')
+        logins = student_list()
+        handins = asgn.get_handin_dict(logins)
+        for student in handins:
+            asgn._generate_report(handins[student], login=student,
+                                  soft=False, overrides=overrides)
 
-                if asgn.report_already_generated(l):
-                    print('A grade report has already been generated for this student.')
-                    print('Re-generate report or email existing report?')
-                    s = get_opt('> ', ['Regenerate report', 'Send existing report'])
-                    if s == 0:
-                        asgn._generate_report(handin_list,
-                                              student_id=l,
-                                              soft=False,
-                                              overrides=True)
+        print('Grade reports generated.')
+        STATE = 5
 
-                else:
+    elif STATE == 8:
+        # emailing grade reports
+        resp11 = prompts.opt_prompt(['Send to individual student',
+                                     'Send to all students'])
+        if resp11 is None:
+            break
+        elif resp11 == 1:
+            # send to one student
+            login2 = prompts.ez_prompt('Enter student login: ')
+            if login2 is None:
+                break
+
+            handins = asgn.get_handin_dict([login2])
+            handin_list = handins[login2]
+
+            if asgn.report_already_generated(login2):
+                print(f'Grade report already generated for {login2}')
+                print('Re-generate report or email existing report?')
+                resp12 = prompts.opt_prompt(['Regenerate report',
+                                             'Send existing report'])
+                if resp12 is None:
+                    break
+                elif resp12 == 1:
                     asgn._generate_report(handin_list,
-                                          student_id=l,
+                                          login=login2,
                                           soft=False,
                                           overrides=True)
+                    print('Report regenerated')
 
-                send_grade_report(asgn, l)
+            to_send = [login2]
 
-            else:
-                logins = student_list()
-                handins = asgn.get_handin_dict(logins, user)
-                send_asgn_emails(asgn, handins)
+        else:
+            # send reports to all students
+            # TODO : change to those who handed in? careful for group projects
+            to_send = student_list()
 
-        elif opt == 3:
-            header = ['Anon ID', 'Login', 'Grader', 'Flag Reason']
-            for q in asgn.questions:
-                print(q)
-                full_data = []
-                for h in q.handins:
-                    if h.flagged:
-                        data = [h.id, asgn.id_to_login(h.id),
-                                h.grader, h.flag_reason]
+        send_grade_reports(asgn, to_send)
+        STATE = 5
 
-                        full_data.append(data)
+    elif STATE == 9:
+        # view flagged handins
+        flag_header = ['Anon ID', 'Login', 'Grader',
+                       'Flag Reason', 'Code Path']
+        for q in asgn.questions:
+            print(q)
+            full_data = []
+            for h in q.handins:
+                if h.flagged:
+                    data = [h.id, asgn.id_to_login(h.id),
+                            h.grader, h.flag_reason, h.filepath]
 
-                table = tabulate.tabulate(full_data, header)
-                lines = table.split('\n')
-                indented = ['  ' + l for l in lines]
-                print(('\n'.join(indented)))
+                    full_data.append(data)
 
-            print('')
-            print(('To unflag, go to %s' % asgn.log_path))
+            table = tabulate.tabulate(full_data, flag_header)
+            lines = table.split('\n')
+            indented = ['  ' + l for l in lines]
+            print('\n'.join(indented))
+
+        print('')
+        print(f'To unflag, go to {asgn.log_path}')
+        resp13 = prompts.ez_prompt('Press enter to continue')
+        if resp13 is None:
+            break
+
+        STATE = 5
+
+    elif STATE == 10:
+        # add new handin
+        login = input('Enter student login: ')
+        if login is None:
+            break
+
+        asgn.add_new_handin(login)
+        print(f'Handin for {login} added')
+        STATE = 5
+        input('Press enter to continue')
+
+    elif STATE == 11:
+        # deanonymize assignment
+        asgn.deanonymize()
+        print('Assignment deanonymized')
+        STATE = 5
+        input('Press enter to continue')
 
 
-        elif opt == 4:
-            login = eval(input('Enter student login: '))
-            asgn.add_new_handin(login)
-
-        elif opt == 5:
-            asgn.deanonymize()
-            print('Assignment deanonymized')
+print('\nExiting...')
