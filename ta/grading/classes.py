@@ -15,7 +15,8 @@ from course_customization import full_asgn_name_to_dirname, \
     get_handin_report_str, get_empty_raw_grade, determine_grade
 from custom_types import HTMLData, Log, LogItem, Rubric
 from helpers import (loaded_rubric_check, locked_file, json_edit,
-                     require_resource, update_comments, rubric_check)
+                     require_resource, update_comments, rubric_check,
+                     remove_duplicates)
 
 # READ BEFORE EDITING THIS FILE #
 # do not use the builtin `open` function; instead use the
@@ -660,35 +661,95 @@ class Question:
         with locked_file(self.rubric_filepath, 'w') as f:
             json.dump(rubric, f, indent=2, sort_keys=True)
 
-    @require_resource()  # using this here is definitely important
-    def add_ungiven_comment(self, category: Optional[str], comment: str):
+    def add_ungiven_comment(self,
+                            category: Optional[str],
+                            comment: str) -> bool:
         """
 
-        add a comment to the rubric & all extracted students
+        try to add a comment to the rubric & all extracted students; do
+        nothing if the comment is already a global comment
 
         :param category: the category to give the comment in, or
                          None if giving a general comment
         :type category: Optional[str]
         :param comment: the comment to add to the ungiven comments list
         :type comment: str
+        :returns: whether or not the comment was added (True if added, False
+                  if the comment was already a global comment)
+        :rtype: bool
 
         """
-        def add_comment(path: str) -> None:
+        def add_comment(rubric: Rubric) -> None:
             """ helper to take in a path and add the global comment to
             the rubric in that file """
-            rubric: Rubric
-            with json_edit(path) as rubric:
-                if category is None:
-                    rubric['comments']['un_given'].append(comment)
-                else:
-                    comments = rubric['rubric'][category]['comments']
-                    comments['un_given'].append(comment)
+            if category is None:
+                comments = rubric['comments']
+            else:
+                comments = rubric['rubric'][category]['comments']
 
-        add_comment(self.rubric_filepath)  # add to main rubric
+            comments['un_given'].append(comment)
+            comments['un_given'] = remove_duplicates(comments['un_given'])
 
-        for handin in self.handins:        # add to all extracted handins
-            if handin.extracted:
-                add_comment(handin.grade_path)
+        rubric = self.copy_rubric()
+        if category is None:
+            cs = rubric['comments']
+            if comment in cs['un_given'] or comment in cs['given']:
+                return False
+        else:
+            cs = rubric['rubric'][category]['comments']
+            if comment in cs['un_given'] or comment in cs['given']:
+                return False
+
+        print('starting')
+        self.magic_update(add_comment)
+        print('ending')
+        return True
+
+    def magic_update(self, func: Callable[[Rubric], None]) -> None:
+        """
+
+        using a rubric updating function, changes a) the base rubric, and
+        b) each extracted rubric. updated rubrics are checked for validity
+        before file writing (as of after homework 8 2018 rip)
+
+        This is most easily done in asgnipython
+
+        :param func: a function that takes in a rubric, returns None, and
+                     mutates the rubric.
+        :type func: Callable[[Rubric], None]
+        :raises TypeError: invalid input types
+        :raises AssertionError: func improperly modifies rubrics
+
+        **Example**:
+
+        .. code-block:: python
+
+            asgn = HTA_Assignment("Homework 6")
+            qn = asgn.questions[0]
+
+            def updater(rubric):
+                items = rubric['rubric']['Functionality']['rubric_items']
+                items[2]['options'][3]['point-val'] = 5
+
+            qn.magic_update(updater)
+
+        """
+        if not callable(func):
+            raise TypeError('func must be callable')
+
+        self.load_handins()
+        d: Rubric = self.copy_rubric()
+        func(d)
+        loaded_rubric_check(d)
+        self.rewrite_rubric(d)
+
+        for handin in self.handins:
+            if not handin.extracted:
+                continue
+
+            d = handin.get_rubric()
+            func(d)
+            handin.write_grade(d)
 
     def __repr__(self):
         return f'Question(file={self.code_filename})'
@@ -822,14 +883,16 @@ class Handin:
             return msg
         else:
             # only ever reading this file, no need for lock
-            with open(filepath) as f:
-                code = f.read()
-
             try:
-                json.dumps(code)
+                with open(filepath, encoding='utf-8') as f:
+                    code = f.read()
+                    json.dumps(code)
             except UnicodeDecodeError:
-                code = 'Students code could not be decoded. Look at'
-                code += ' original handin & contact an HTA'
+                code = (
+                        f'Student code not decodable. Look at original handin'
+                        f' in\n{filepath}\nand contact HTA if necessary'
+                        )
+                return code
 
             return code
 
@@ -922,14 +985,18 @@ class Handin:
         self.flagged = False
 
     @is_extracted
-    def set_complete(self) -> None:
+    def set_complete(self) -> bool:
         """
 
-        handin grading complete
+        handin grading complete, checks if complete first
 
         """
-        self.write_line(complete=True)
-        self.complete = True
+        if self.check_complete():
+            self.write_line(complete=True)
+            self.complete = True
+            return True
+        else:
+            return False
 
     def write_grade(self, rubric: Rubric) -> None:
         """
@@ -946,9 +1013,9 @@ class Handin:
 
     @is_extracted
     def save_data(self,
-                  data: Dict[str, Dict[str, Optional[int]]],
-                  new_comments: Tuple[List[str], Dict[str, List[str]]],
-                  force_complete: bool = False) -> bool:
+                  data: dict,
+                  new_comments: Dict[str, Any],
+                  emoji: bool):
         """
 
         Saves new data from grading app to rubric file
@@ -959,43 +1026,39 @@ class Handin:
         :param new_comments: a tuple of general new comments to give and a
                              dictionary of (category -> comments to give)
         :type new_comments: Tuple[List[str], Dict[str, List[str]]]
-        :param force_complete: whether or not the handin is
-                               marked as complete, defaults to False
-        :type force_complete: bool, optional
         :returns: whether or not the operation was succesfully completed
         :rtype: bool
 
         """
-        def check_rubric_complete() -> bool:
-            """ check if rubric is complete (any unfilled rubric options) """
-            for cat in data:
-                if any(map(lambda descr: data[cat][descr] is None, data[cat])):
-                    return False
-
-            return True
 
         rubric: Rubric = self.get_rubric()
-        rub_complete = check_rubric_complete()
+
+        rubric['emoji'] = emoji
 
         # update comments irregardless of whether rubric is complete
-        update_comments(rubric['comments'], new_comments[0])
-        for cat in new_comments[1]:
+        update_comments(rubric['comments'], new_comments['general'])
+        for cat in new_comments['categorized']:
             update_comments(rubric['rubric'][cat]['comments'],
-                            new_comments[1][cat])
-
-        if force_complete and not rub_complete:
-            # attempting to finish grading but has empty rubric cells
-            return False
+                            new_comments['categorized'][cat])
 
         for cat in data:
-            for descr in data[cat]:
-                val = data[cat][descr]
-                for ri in rubric['rubric'][cat]['rubric_items']:
-                    if ri['descr'] == descr:
-                        ri['selected'] = val
-                        break
+            rub_cat = rubric['rubric'][cat]
+            fudge_points = float(data[cat]['fudge'])
+            rub_cat['fudge_points'][0] = fudge_points
+            for ndx in data[cat]['options']:
+                val = data[cat]['options'][ndx]
+                rub_cat['rubric_items'][int(ndx)]['selected'] = val
 
         self.write_grade(rubric)
+
+    def check_complete(self) -> bool:
+        """ check if rubric is complete (any unfilled rubric options) """
+        rubric: Rubric = self.get_rubric()
+        for cat in rubric['rubric']:
+            for item in rubric['rubric'][cat]['rubric_items']:
+                if item['selected'] is None:
+                    return False
+
         return True
 
     def gradeable_by(self, uname: str) -> bool:
@@ -1087,8 +1150,6 @@ class Handin:
             if grade[key] < 0:
                 grade[key] = 0
 
-        print(grade)
-
         return report_str, grade
 
     def run_test(self) -> str:
@@ -1121,9 +1182,12 @@ class Handin:
         """
         assert self.question.test_path is not None
         test_filepath = self.question.test_path
+        if not pexists(test_filepath):
+            return 'No testsuite for this question'
+
         cmd = [pjoin(BASE_PATH, 'tabin', 'python-test'),
                test_filepath, self.filepath]
-        return subprocess.check_output(cmd)
+        return subprocess.check_output(cmd).decode('utf-8')
 
     def pyret_test(self) -> str:
         """
@@ -1135,34 +1199,41 @@ class Handin:
 
         """
         assert self.question.test_path is not None
-        filepath = pjoin(self.handin_path, self.question.code_filename)
-        if not pexists(filepath):
-            return 'No handin or missing handin'
-
-        test_dir = pjoin(self.handin_path, 'TA_TESTS')
-        if not pexists(test_dir):
-            os.mkdir(test_dir)
-
-        if not pexists(self.question.test_path):
-            return 'No test file for this question: contact HTA'
-
-        test_filepath = pjoin(test_dir,
-                              os.path.split(self.question.test_path)[1])
+        test_filepath = self.question.test_path
         if not pexists(test_filepath):
-            shutil.copyfile(self.question.test_path, test_filepath)
-
-            with locked_file(test_filepath, 'r') as f:
-                lines = f.readlines()
-                relpath = os.path.relpath(filepath, test_dir)
-                lines.insert(0, f'import file("{relpath}") as SC\n')
-
-            with locked_file(test_filepath, 'w') as f:
-                f.writelines(lines)
+            return 'No testsuite for this question'
 
         cmd = [pjoin(BASE_PATH, 'tabin', 'pyret-test'),
-               filepath, test_filepath, test_dir]
+               test_filepath, self.filepath]
+        return subprocess.check_output(cmd).decode('utf-8')
 
-        return subprocess.check_output(cmd)
+        # if not pexists(filepath):
+        #     return 'No handin or missing handin'
+
+        # test_dir = pjoin(self.handin_path, 'TA_TESTS')
+        # if not pexists(test_dir):
+        #     os.mkdir(test_dir)
+
+        # if not pexists(self.question.test_path):
+        #     return 'No test file for this question: contact HTA'
+
+        # test_filepath = pjoin(test_dir,
+        #                       os.path.split(self.question.test_path)[1])
+        # if not pexists(test_filepath):
+        #     shutil.copyfile(self.question.test_path, test_filepath)
+
+        #     with locked_file(test_filepath, 'r') as f:
+        #         lines = f.readlines()
+        #         relpath = os.path.relpath(filepath, test_dir)
+        #         lines.insert(0, f'import file("{relpath}") as SC\n')
+
+        #     with locked_file(test_filepath, 'w') as f:
+        #         f.writelines(lines)
+
+        # cmd = [pjoin(BASE_PATH, 'tabin', 'pyret-test'),
+        #        filepath, test_filepath, test_dir]
+
+        # return subprocess.check_output(cmd).decode('utf-8')
 
     def __repr__(self) -> str:
         if self.question.assignment.anonymous:

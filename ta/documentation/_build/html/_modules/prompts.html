@@ -78,7 +78,10 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes.html">Plain English READMEs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../customization.html">Customizing the grading/handin scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules.html">ta/grading</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules.html#hta-grading">hta/grading</a></li>
 </ul>
@@ -152,7 +155,8 @@
 
 <div class="viewcode-block" id="ez_prompt"><a class="viewcode-back" href="../prompts.html#prompts.ez_prompt">[docs]</a><span class="k">def</span> <span class="nf">ez_prompt</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
               <span class="n">checker</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-              <span class="n">fail_check_msg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+              <span class="n">fail_check_msg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">raise_on_ctrl_c</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">resp</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">checker</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -164,7 +168,10 @@
                 <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid input (</span><span class="si">{fail_check_msg}</span><span class="s2">)...&quot;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">ez_prompt</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">checker</span><span class="p">,</span> <span class="n">fail_check_msg</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+        <span class="k">if</span> <span class="n">raise_on_ctrl_c</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="int_prompt"><a class="viewcode-back" href="../prompts.html#prompts.int_prompt">[docs]</a><span class="k">def</span> <span class="nf">int_prompt</span><span class="p">(</span><span class="n">maximum</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&gt; &#39;</span><span class="p">,</span>

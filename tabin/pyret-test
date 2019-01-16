@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 
-IMPL=$(readlink -f $1)
-TEST=$(readlink -f $2)
-OUTP=$(readlink -f $3)
-TESTP=$OUTP/tests.arr
+printf '# Copy this into code.pyret.org/editor\n# Student code starts\n';
+cat $2;
+printf '\n# Student code ends\n# Start TA tests\n';
+cat $1;
+printf '\n'
 
-cd $OUTP
-echo $IMPL $TEST $OUTP | /home/jswrenn/projects/powder-monkey/evaluate/evaluate-many.sh &>/dev/null
+# IMPL=$(readlink -f $1)
+# TEST=$(readlink -f $2)
+# OUTP=$(readlink -f $3)
+# TESTP=$OUTP/tests.arr
 
-python /course/cs0111/tabin/print_results.py pyret $OUTP
+# cd $OUTP
+# echo $IMPL $TEST $OUTP | /home/jswrenn/projects/powder-monkey/evaluate/evaluate-many.sh &>/dev/null
+
+# python /course/cs0111/tabin/print_results.py pyret $OUTP
 

@@ -2,19 +2,28 @@
 <head>
   <title>CS-A Grading</title>
   <script src="/static/jquery.js"></script>
+  <script src="/static/jquery-ui.min.js"></script>
   <script src="/static/main.js"></script>
   <script src="/static/progressbar.min.js"></script>
   <script src="/static/confetti.js"></script>
+  <script src="/static/toastr.min.js"></script>
+  <link rel="stylesheet" href="/static/toastr.min.css">
   <link rel="stylesheet" href="/static/atom-one-dark.min.css">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <script src="/static/jquery-ui.min.js"></script>
   <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.ico">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-  <script src="/static/materialize.min.js"></script>
+
+  <!-- jQuery Modal -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
   <link href='/static/prism.css' rel='stylesheet' />
-  <link rel="stylesheet" href="/static/materialize.min.css">
+  <link rel="stylesheet" href="/static/materialize.css">
+  <script src='/static/jquery.caret.min.js'></script>
+  <link rel='stylesheet' href='/static/jquery.tag-editor.css' />
+  <script src='/static/jquery.tag-editor.min.js'></script>
   <link rel="stylesheet" type="text/css" href="/static/style.css">
 </head>
 <body>
@@ -48,7 +57,7 @@
         <li class='center-align'>
           <div id='prob-list-div' class='form-group col s4 hidden'>
             <select id='prob-list' class='browser-default form-control' onchange="loadProb(this)">
-              <option id='base-prob-opt'>Select Problem</option>
+              <option id='base-prob-opt'>Select Question</option>
             </select>
           </div>
           <div id='problem-status' class='hidden col s4'>
@@ -65,20 +74,9 @@
   </ul>
 </header>
 <main>
-  <div class='modal' id='code-modal'>
-    <h5 class='modal-header'>Double-click to select all. Open <a target="_blank" href="https://code.pyret.org/editor">CPO</a>. <input id='code-link' type='text'/><button onclick='copyCodeLink(this)' class='browser-default waves-effect waves-teal btn-flat'>Copy Link to Code Directory</button></h5>
-    <pre class="line-numbers"><code id="code-content" class='language-python'></code></pre>
-  </div>
-  <div class='modal' id='test-modal'>
-    <h5 class='modal-header'>Test Results</h5>
-    <pre><code id="test-content" class='json'></code></pre>
-  </div>
-  <div class='modal' id='report-modal'>
-    <pre id='report-contents'></pre>
-  </div>
   <div class='modal' id='student-list-modal'>
     <p>If you do not see a student on this list, it is because they are being graded by someone else, or you are blacklisted.</p>
-    <select id='student-select'>
+    <select id='student-select' class='browser-default'>
       <option class='nodel' value='NONE'>Select a student...</option>
     </select>
     <button onclick='extractByLogin(this)' class='btn green darken-1 waves-light'>Extract</button>
@@ -88,9 +86,9 @@
 <footer class='page-footer col s8 white nodisp'>
   <div class='row' id='handin-options'>
     <button class='btn green handin-button extract-button darken-1 waves-light' id='extract-handin' onclick='extract(this)'>New handin</button>
-    <button class='btn modal-trigger extract-button green handin-button darken-1 waves-light' id='extract-by-login' data-target="student-list-modal">Extract by login</button>
-    <button class='btn green handin-button darken-1 waves-light' id='handin-complete' onclick='completeHandin(this)' disabled>Save &amp; done</button>
-    <button class='btn green handin-button darken-1 waves-light' id='handin-save' onclick='saveHandin(this)' disabled>Save</button>
+    <button class='btn extract-button green handin-button darken-1 waves-light' id='extract-by-login' onclick='$("#student-list-modal").modal()'>Extract by login</button>
+    <button class='btn green handin-button darken-1 waves-light' id='handin-complete' onclick='completeHandin(true)' disabled>Save &amp; done</button>
+    <button class='btn green handin-button darken-1 waves-light' id='handin-save' onclick='saveHandin(false)' disabled>Save</button>
     <button class='btn green handin-button darken-1 waves-light' id='handin-flag' onclick='flagToggle(this)' disabled>Flag</button>
     <button class='btn green handin-button darken-1 waves-light' id='handin-unextract' onclick='unextractHandin(this)' disabled>Unextract</button>
     <button class='btn green handin-button darken-1 waves-light' id='handin-report-view' data-target='report-modal' onclick='viewReport(this)' disabled>View Report</button>

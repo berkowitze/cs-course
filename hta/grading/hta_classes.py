@@ -275,6 +275,7 @@ class HTA_Assignment(Assignment):
                             (empty directory login/mini_name)
 
         """
+        os.mkdir(self.files_path)
         for student in self._login_to_id_map:
             ident = self._login_to_id_map[student]
             sub_path = latest_submission_path(self.handin_path,
@@ -631,7 +632,7 @@ class HTA_Assignment(Assignment):
                          login: str,
                          soft=True,
                          overrides=False
-                         ) -> Tuple[str, Optional[RawGrade], Grade, str]:
+                         ) -> GradeData:
         """
 
         given a list of Handins and student login,
@@ -1012,53 +1013,3 @@ def get_hta_asgn_list() -> List[HTA_Assignment]:
 
     return assignments
 
-
-def magic_update(question: Question, func: Callable[[Rubric], None]) -> None:
-    """
-
-    using a rubric updating function, changes a) the base rubric, and b) each
-    extracted rubric. updated rubrics are checked for validity before file
-    writing (as of after homework 8 2018 rip)
-
-    This is most easily done in asgnipython
-
-    :param question: the question for which to update all rubrics
-    :type question: Question
-    :param func: a function that takes in a rubric, returns None, and mutates
-                 the rubric.
-    :type func: Callable[[Rubric], None]
-    :raises TypeError: invalid input types
-    :raises AssertionError: func improperly modifies rubrics
-
-    **Example**:
-
-    .. code-block:: python
-
-        asgn = HTA_Assignment("Homework 6")
-        qn = asgn.questions[0]
-
-        def updater(rubric):
-            items = rubric['rubric']['Functionality']['rubric_items']
-            items[2]['options'][3]['point-val'] = 5
-
-        magic_update(qn, updater)
-
-    """
-    if not isinstance(question, Question):
-        raise TypeError('question must be a Question instance')
-    if not callable(func):
-        raise TypeError('func must be callable')
-
-    question.load_handins()
-    d = question.copy_rubric()
-    func(d)
-    loaded_rubric_check(d)
-    question.rewrite_rubric(d)
-
-    for handin in question.handins:
-        if not handin.extracted:
-            continue
-
-        d = handin.get_rubric()
-        func(d)
-        handin.write_grade(d)

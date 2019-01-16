@@ -103,17 +103,9 @@ main > .container {
     width: 85%;
 }
 
-main .category-div {
-    display: grid;
-    grid-column-gap: 0.5em;
-    grid-row-gap: 0.5em;
-    grid-template-columns: 2fr 2fr;
-    border-bottom: 1px solid #eee;
-}
-
 main .category-name, main .general-name {
     text-align: center;
-    grid-column: 1/3;
+    /*grid-column: 1/3;*/
     font-size: 1.5em;
 }
 
@@ -123,11 +115,11 @@ main .category-div {
 }
 
 main .rubric-desc, main .rubric-desc-column {
-    grid-column: 1/2;
+    /*grid-column: 1/2;*/
 }
 
 main .rubric-sel, main .rubric-sel-column{
-    grid-column: 2/4;
+    /*grid-column: 2/4;*/
 }
 
 
@@ -144,11 +136,6 @@ main .rubric-sel, main .rubric-sel-column{
     color: black !important;
     opacity: 0.55;
 }
-/*
-.handin-list-item:nth-child(4) {
-    margin-top: 1em !important;
-    border-top: 3px solid #eee;
-}*/
 
 .secondary-content {
     color: black;
@@ -190,13 +177,6 @@ button.modal-trigger {
     z-index: -999;
 }
 
-li.select2-selection__choice {
-    max-width: 100%;
-    overflow: hidden;
-    /*Altered two below to make word wrap work */
-    word-wrap: normal !important;
-    white-space: normal;
-}
 ul.select2-selection__rendered {
     padding-right: 12px !important;
 }
@@ -213,7 +193,64 @@ button.ui-button.ui-corner-all.ui-widget:focus {
     padding: 0.5em;
 }
 
+#student-select {
+    margin-bottom: 1em;
+}
+
 .handin-button {
     width: 20%;
 }
 
+.category-div .rubric-item, .category-div .comments, .category-div .fudge-points {
+    display: flex;
+}
+
+.category-div .rubric-item .rubric-descr {
+    width: 55%;
+    padding-right: 4em;
+    padding-top: 0.6em;
+}
+
+.category-div .rubric-item .rubric-sel {
+    width: 45%;
+}
+
+hr {
+    height: 1px;
+    color: #ededed;
+    background-color: #ededed;
+    border: none;
+}
+
+.tag-editor .tag-editor-tag {
+    white-space: normal !important;
+}
+
+.category-div .comment-desc {
+    width: 30%;
+}
+
+.category-div .fudge-points-desc {
+    width: 65%;
+}
+
+.category-div .fudge-points-inp {
+    width: 8% !important;
+    float: left;
+}
+
+ul.tag-editor.ui-sortable, .category-div .comments-sel {
+    width: 70% !important;
+}
+
+.tag-editor {
+    width: 100%;
+}
+
+.tag-editor .tag-editor-delete {
+    height: 20px;
+}
+
+#emoji-div {
+    margin-top: 1em;
+}

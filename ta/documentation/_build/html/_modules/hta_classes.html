@@ -78,7 +78,10 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes.html">Plain English READMEs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../customization.html">Customizing the grading/handin scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules.html">ta/grading</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules.html#hta-grading">hta/grading</a></li>
 </ul>
@@ -777,7 +780,7 @@
                          <span class="n">login</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                          <span class="n">soft</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                          <span class="n">overrides</span><span class="o">=</span><span class="kc">False</span>
-                         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RawGrade</span><span class="p">],</span> <span class="n">Grade</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+                         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GradeData</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        given a list of Handins and student login,</span>
@@ -1158,56 +1161,6 @@
 
     <span class="k">return</span> <span class="n">assignments</span></div>
 
-
-<div class="viewcode-block" id="magic_update"><a class="viewcode-back" href="../hta_classes.html#hta_classes.magic_update">[docs]</a><span class="k">def</span> <span class="nf">magic_update</span><span class="p">(</span><span class="n">question</span><span class="p">:</span> <span class="n">Question</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Rubric</span><span class="p">],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">    using a rubric updating function, changes a) the base rubric, and b) each</span>
-<span class="sd">    extracted rubric. updated rubrics are checked for validity before file</span>
-<span class="sd">    writing (as of after homework 8 2018 rip)</span>
-
-<span class="sd">    This is most easily done in asgnipython</span>
-
-<span class="sd">    :param question: the question for which to update all rubrics</span>
-<span class="sd">    :type question: Question</span>
-<span class="sd">    :param func: a function that takes in a rubric, returns None, and mutates</span>
-<span class="sd">                 the rubric.</span>
-<span class="sd">    :type func: Callable[[Rubric], None]</span>
-<span class="sd">    :raises TypeError: invalid input types</span>
-<span class="sd">    :raises AssertionError: func improperly modifies rubrics</span>
-
-<span class="sd">    **Example**:</span>
-
-<span class="sd">    .. code-block:: python</span>
-
-<span class="sd">        asgn = HTA_Assignment(&quot;Homework 6&quot;)</span>
-<span class="sd">        qn = asgn.questions[0]</span>
-
-<span class="sd">        def updater(rubric):</span>
-<span class="sd">            items = rubric[&#39;rubric&#39;][&#39;Functionality&#39;][&#39;rubric_items&#39;]</span>
-<span class="sd">            items[2][&#39;options&#39;][3][&#39;point-val&#39;] = 5</span>
-
-<span class="sd">        magic_update(qn, updater)</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">Question</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;question must be a Question instance&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;func must be callable&#39;</span><span class="p">)</span>
-
-    <span class="n">question</span><span class="o">.</span><span class="n">load_handins</span><span class="p">()</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">question</span><span class="o">.</span><span class="n">copy_rubric</span><span class="p">()</span>
-    <span class="n">func</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-    <span class="n">loaded_rubric_check</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-    <span class="n">question</span><span class="o">.</span><span class="n">rewrite_rubric</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">handin</span> <span class="ow">in</span> <span class="n">question</span><span class="o">.</span><span class="n">handins</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">handin</span><span class="o">.</span><span class="n">extracted</span><span class="p">:</span>
-            <span class="k">continue</span>
-
-        <span class="n">d</span> <span class="o">=</span> <span class="n">handin</span><span class="o">.</span><span class="n">get_rubric</span><span class="p">()</span>
-        <span class="n">func</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-        <span class="n">handin</span><span class="o">.</span><span class="n">write_grade</span><span class="p">(</span><span class="n">d</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

@@ -19,7 +19,9 @@ os.umask(0o007) # set file permissions
 
 BASE_PATH = '/course/cs0111'
 data_file = os.path.join(BASE_PATH, 'ta/assignments.json')
-data = load_data(data_file)
+with locked_file(data_file) as f:
+    data = json.load(f)
+
 log_path = data['handin_log_path']
 add_sub_path = os.path.join(BASE_PATH, 'hta', 'grading', 'add-student-submission')
 proj_base = os.path.join(BASE_PATH, 'ta/grading/data/projects')
@@ -42,7 +44,6 @@ class Question:
         self.q_data = question
         col = self.q_data['col']
         ind = col_str_to_num(col) - 1
-
         self.link = row[ind] if ind < len(row) and row[ind] != '' else None
         self.completed = self.link != None
         self.fname = self.q_data['filename']
@@ -138,7 +139,7 @@ class Response:
         self.ident     = ident
         self.row       = row
         self.confirmed = self.ident in confirmed_responses(log_path)
-        self.asgn      = data['assignments'][self.asgn_name.lower()]
+        self.asgn      = data['assignments'][self.asgn_name]
         if not self.confirmed and self.asgn['partner_data'] is not None:
             self.set_partner_data(row)
 
@@ -372,6 +373,7 @@ def fetch_submissions():
     ss_id = data['sheet_id']
     rng = '%s!%s%s:%s' % (data['sheet_name'], data['start_col'],
                           data['start_row'], data['end_col'])
+    # print(rng)
     service = sheets_api()
 
     spreadsheets = service.spreadsheets().values()
@@ -379,6 +381,7 @@ def fetch_submissions():
     
     try:
         vals = result['values']
+        # print(list(map(len, vals)))
     except KeyError:
         print('Empty spreadsheet')
         sys.exit(1)
@@ -392,10 +395,8 @@ def fetch_submissions():
             else:
                 raise
 
-    confirms = 0
     for response in responses:
         if response is not None and not response.confirmed:
-            confirms += 1
             try:
                 response.download()
             except:

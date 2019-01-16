@@ -61,10 +61,15 @@ class RubricCategory(TypedDict):
     :type comments: Comments
     :param rubric_items: the rubric items for this category
     :type rubric_items: List[RubricItem]
+    :param fudge_points: a list of [selected fudge points, maximum fudge points]
+                         floats; for base rubrics, the first element
+                         should usually be 0.0
+    :type fudge_points: List[float]
 
     """
     comments: Comments
     rubric_items: List[RubricItem]
+    fudge_points: List[float]
 
 
 class Rubric(TypedDict):
@@ -76,10 +81,14 @@ class Rubric(TypedDict):
     :type comments: Comments
     :param rubric: rubric categories for this rubric
     :type rubric: Dict[str, RubricCategory]
+    :param emoji: whether or not to put an animal text art emoji on
+                  the student's grade report :)
+    :type emoji: bool
 
     """
     comments: Comments
     rubric: Dict[str, RubricCategory]
+    emoji: bool
 
 
 class BracketItem(TypedDict):
@@ -178,10 +187,13 @@ if __name__ == '__main__':
     ri3: RubricItem = {"descr": 'hi', "selected": 1, "options": [ropt1, ropt2]}
 
     # example of RubricCategory
-    rc1: RubricCategory = {"comments": c, "rubric_items": [ri1, ri2]}
+    rc1: RubricCategory = {"comments": c, "rubric_items": [ri1, ri2],
+                           "fudge_points": [0.0, 10.0]}
 
     # examples of Rubric
-    r1: Rubric = {"comments": c, "rubric": {"Functionality": rc1}}
+    r1: Rubric = {"comments": c,
+                  "rubric": {"Functionality": rc1},
+                  "emoji": True}
 
     # examples of BracketItem
     bi1: BracketItem = {"grade": "Check", "upper_bound_inclusive": 10.0}

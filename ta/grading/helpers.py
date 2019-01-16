@@ -5,7 +5,7 @@ import json
 import os
 from contextlib import contextmanager
 from functools import wraps
-from typing import Generator, Callable, Any, List, Optional
+from typing import Generator, Callable, Any, List, Optional, Dict, Mapping
 
 from filelock import FileLock
 
@@ -117,7 +117,7 @@ def require_resource(resource: str = res_path) -> Callable[[Callable], Any]:
         @wraps(f)
         def magic(*args, **kwargs):
             """ runs the wrapped functions while a lock is acquired """
-            with FileLock(resource):
+            with FileLock(resource, timeout=10):
                 return f(*args, **kwargs)
 
         return magic
@@ -172,13 +172,22 @@ def loaded_rubric_check(rubric: Rubric) -> None:
 
     """
 
+    def has_keys(d: Mapping, keys: List[str]) -> bool:
+        return all(map(lambda k: k in d, keys))
+
     def check_rubric_category(rc: RubricCategory) -> bool:
+        assert has_keys(rc, ['fudge_points', 'comments', 'rubric_items'])
         assert check_comments(rc['comments'])
         assert isinstance(rc['rubric_items'], list)
         assert all(map(check_item, rc['rubric_items']))
+        assert isinstance(rc['fudge_points'], list)
+        assert isinstance(rc['fudge_points'][0], float)
+        assert isinstance(rc['fudge_points'][1], float)
+        assert len(rc['fudge_points']) == 2
         return True
 
     def check_item(ri: RubricItem) -> bool:
+        assert has_keys(ri, ['descr', 'selected', 'options'])
         assert isinstance(ri['descr'], str)
         assert isinstance(ri['selected'], (type(None), int))
         assert isinstance(ri['options'], list)
@@ -186,12 +195,14 @@ def loaded_rubric_check(rubric: Rubric) -> None:
         return True
 
     def check_opt(ro: RubricOption):
+        assert has_keys(ro, ['point_val', 'descr'])
         assert isinstance(ro, dict)
         assert isinstance(ro['point_val'], int)
         assert isinstance(ro['descr'], str)
         return True
 
     def check_comments(comments: Comments) -> bool:
+        assert has_keys(comments, ['given', 'un_given'])
         assert isinstance(comments, dict)
         assert isinstance(comments['given'], list)
         assert isinstance(comments['un_given'], list)
@@ -201,10 +212,11 @@ def loaded_rubric_check(rubric: Rubric) -> None:
                        comments['un_given']))
         return True
 
-    assert isinstance(rubric, dict)  # loaded rubric is a dictionary
+    assert has_keys(rubric, ['rubric', 'comments', 'emoji'])
     assert check_comments(rubric['comments'])
 
-    assert isinstance(rubric['rubric'], dict)  # rubric key exists
+    assert isinstance(rubric, dict)  # loaded rubric is a dictionary
+    assert isinstance(rubric['rubric'], dict)  # rubric key is dict
     assert all(map(check_rubric_category, rubric['rubric'].values()))
 
 
@@ -304,3 +316,28 @@ def line_read(filename: str, delim: Optional[str] = None) -> list:
         return [line.split(delim) for line in lines]
     else:
         return lines
+
+
+def remove_duplicates(lst: list) -> list:
+    """
+
+    removes all duplicates from the input list. order is maintained.
+    input list is not modified
+
+    :param lst: any list
+    :type lst: list
+    :returns: the same list as lst with any duplicates removed
+    :rtype: list
+
+    """
+
+    # Create an empty list to store unique elements
+    unique_list: list = []
+
+    # Iterate over the original list and for each element
+    # add it to uniqueList, if its not already there.
+    for elem in lst:
+        if elem not in unique_list:
+            unique_list.append(elem)
+
+    return unique_list
