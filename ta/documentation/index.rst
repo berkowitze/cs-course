@@ -10,8 +10,13 @@ CS Grading App documentation
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
-   
-   README
+
+   readmes
+   getting-started
+   .. first-time-setup
+   .. yearly-setup
+   filesystem
+   customization
    modules
 
 Indices and tables

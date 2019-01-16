@@ -6,7 +6,8 @@ import tabulate
 
 def ez_prompt(prompt: str,
               checker: Optional[Callable[[str], bool]] = None,
-              fail_check_msg: Optional[str] = None) -> Optional[str]:
+              fail_check_msg: Optional[str] = None,
+              raise_on_ctrl_c: bool = False) -> Optional[str]:
     try:
         resp = input(prompt)
         if checker is None:
@@ -18,7 +19,10 @@ def ez_prompt(prompt: str,
                 print(f"Invalid input ({fail_check_msg})...")
                 return ez_prompt(prompt, checker, fail_check_msg)
     except KeyboardInterrupt:
-        return None
+        if raise_on_ctrl_c:
+            raise
+        else:
+            return None
 
 
 def int_prompt(maximum: int, prompt: str = '> ',

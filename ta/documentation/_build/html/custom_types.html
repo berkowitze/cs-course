@@ -80,6 +80,9 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">ta/grading</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="classes.html">classes module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="course_customization.html">course_customization module</a></li>
@@ -169,6 +172,8 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>comments</strong> (<a class="reference internal" href="#custom_types.Comments" title="custom_types.Comments"><em>Comments</em></a>) – general comments</li>
 <li><strong>rubric</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="#custom_types.RubricCategory" title="custom_types.RubricCategory"><em>RubricCategory</em></a><em>]</em>) – rubric categories for this rubric</li>
+<li><strong>emoji</strong> (<em>bool</em>) – whether or not to put an animal text art emoji on
+the student’s grade report :)</li>
 </ul>
 </td>
 </tr>
@@ -207,6 +212,9 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>comments</strong> (<a class="reference internal" href="#custom_types.Comments" title="custom_types.Comments"><em>Comments</em></a>) – the comments given for this category</li>
 <li><strong>rubric_items</strong> (<em>List</em><em>[</em><a class="reference internal" href="#custom_types.RubricItem" title="custom_types.RubricItem"><em>RubricItem</em></a><em>]</em>) – the rubric items for this category</li>
+<li><strong>fudge_points</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – a list of [selected fudge points, maximum fudge points]
+floats; for base rubrics, the first element
+should usually be 0.0</li>
 </ul>
 </td>
 </tr>

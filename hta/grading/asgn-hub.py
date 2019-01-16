@@ -112,7 +112,7 @@ while True:
         if not asgn.due:
             print('Students can still hand in for this assignment.')
             print('Continue anyway?')
-            resp7 = (['Yes', 'No', 'Go back'])
+            resp7 = prompts.opt_prompt(['Yes', 'No', 'Go back'])
             if resp7 is None:
                 break
             elif resp7 == 3 or resp7 == 2:
@@ -127,6 +127,7 @@ while True:
             print('Error message:')
             raise
         else:
+            asgn.load()
             STATE = 5
 
     elif STATE == 5:

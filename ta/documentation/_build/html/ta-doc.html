@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>UTA Relevant Documentation &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">ta/grading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#hta-grading">hta/grading</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>UTA Relevant Documentation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ta-doc.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="uta-relevant-documentation">
+<span id="uta-relevant-documentation"></span><h1>UTA Relevant Documentation<a class="headerlink" href="#uta-relevant-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-to-grade">
+<span id="how-to-grade"></span><h2>How to grade<a class="headerlink" href="#how-to-grade" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li>Login to a department machine.</li>
+<li>Open a terminal (ctrl-alt-t usually)</li>
+<li>Run <code class="docutils literal notranslate"><span class="pre">cs111-grade</span></code>. If you get a command not found error:<ul>
+<li>talk to someone who knows bash about adding <code class="docutils literal notranslate"><span class="pre">/course/cs0111/tabin</span></code> to
+your PATH, or</li>
+<li>run <code class="docutils literal notranslate"><span class="pre">/course/cs0111/tabin/cs111-grade</span></code>.</li>
+</ul>
+</li>
+<li>Open your browser and go to <code class="docutils literal notranslate"><span class="pre">0.0.0.0:6924</span></code></li>
+<li>Start grading! There are buttons that will help at the bottom of the page,
+and at the top of the page there is a button to view the student code.</li>
+</ol>
+<div class="section" id="updated-grading-app">
+<span id="updated-grading-app"></span><h3>Updated grading app<a class="headerlink" href="#updated-grading-app" title="Permalink to this headline">¶</a></h3>
+<p>The grading app has been updated after the Fall 2018 semester ended.</p>
+<p>The major changes are:</p>
+<div class="section" id="new-comments">
+<span id="new-comments"></span><h4>New comments<a class="headerlink" href="#new-comments" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>You can now drag comments around to re-order them. <em>This means that the order
+you give comments in is the order they will show up in on the student’s grade
+report (before it was based on comment length)</em>.</li>
+<li>You can now click away from comments without losing your progress.</li>
+<li>You can now left click comments to edit them.</li>
+<li>You can now delete old comments.</li>
+<li>To make a comment usuable by all TAs, <strong>right click</strong> on the comment.</li>
+</ul>
+</div>
+<div class="section" id="fudge-points">
+<span id="fudge-points"></span><h4>Fudge points<a class="headerlink" href="#fudge-points" title="Permalink to this headline">¶</a></h4>
+<p>Every category will have an option for you to give a student fudge points.
+If you are using numerical grading (not category grading like Check Check Plus
+etc) you should explain why you are giving the fudge points and how many
+in a comment.</p>
+</div>
+<div class="section" id="emoji">
+<span id="emoji"></span><h4>Emoji<a class="headerlink" href="#emoji" title="Permalink to this headline">¶</a></h4>
+<p>If a student did a great job, you can select the checkbox at the bottom of
+the grading form to give them a text art emoji like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>   /                       \
+ /X/                       \X\
+|XX\         _____         /XX|
+|XXX\     _/       \_     /XXX|___________
+ \XXXXXXX             XXXXXXX/            \\\
+   \XXXX    /     \    XXXXX/                \\\
+        |   0     0   |                         \
+         |           |                           \
+          \         /                            |______//
+           \       /                             |
+            | O_O | \                            |
+             \ _ /   \________________           |
+                        | |  | |      \         /
+  Good work!          / |  / |       \______/
+                      \ |  \ |        \ |  \ |
+                      __| |__| |      __| |__| |
+                      |___||___|      |___||___|
+</pre></div>
+</div>
+<p>Note that the emoji given is randomly selected and will not be the same one
+on the student’s emailed report as the one you will see if you click
+the <code class="docutils literal notranslate"><span class="pre">View</span> <span class="pre">report</span></code> button.</p>
+</div>
+</div>
+</div>
+<div class="section" id="how-to-write-rubrics-and-testsuites">
+<span id="how-to-write-rubrics-and-testsuites"></span><h2>How to write rubrics and testsuites<a class="headerlink" href="#how-to-write-rubrics-and-testsuites" title="Permalink to this headline">¶</a></h2>
+<p>Each Assignment is comprised of a list of Questions. Each Question has a single
+file associated with it that students will upload. For example, Homework 2
+might have a <code class="docutils literal notranslate"><span class="pre">safety.arr</span></code> and <code class="docutils literal notranslate"><span class="pre">reflections.txt</span></code> questions. That means two
+rubrics need to be written for homework 2.</p>
+<p>The directory structure may then look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">ta</span><span class="o">/</span><span class="n">grading</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">rubrics</span>
+    <span class="o">...</span>
+    <span class="n">homework2</span>
+        <span class="n">q1</span><span class="o">.</span><span class="n">json</span> <span class="c1"># rubric for safety.arr</span>
+        <span class="n">q2</span><span class="o">.</span><span class="n">json</span> <span class="c1"># rubric for reflections.txt</span>
+</pre></div>
+</div>
+<p>Each rubric is a dictionary. At the top level, the dictionary has three keys:
+- <code class="docutils literal notranslate"><span class="pre">emoji</span></code>: value is a boolean, whether or not the student gets an ascii art
+emoji for their handin. For rubrics you put in <code class="docutils literal notranslate"><span class="pre">/ta/grading/data/rubrics</span></code>
+(question-level rubrics), this value should be <code class="docutils literal notranslate"><span class="pre">false</span></code>.
+- <code class="docutils literal notranslate"><span class="pre">comments</span></code>: a dictionary of given and un_given comments. For
+question-level rubrics, the given key should have an empty list value, and
+the un_given key should have a list of any global comments as the value.
+- <code class="docutils literal notranslate"><span class="pre">rubric</span></code>: a dictionary with one key per grade category (with the key
+describing the grade category) and the value being a dictionary with
+a comments key, a rubric_items key, and a fudge_points key.
+- The fudge points key should have a list with two floats in it as its
+value. For question-level rubrics, the first value should be 0.0 as it is
+the number of fudge points given. The second value should be the (positive)
+maximum number of fudge points to allow giving.</p>
+<p>Once you have written a rubric, check that is valid by running
+<code class="docutils literal notranslate"><span class="pre">cs111-check-rubric</span> <span class="pre">path-to-rubric.json</span></code></p>
+<p>For example:
+<code class="docutils literal notranslate"><span class="pre">cs111-check-rubric</span> <span class="pre">/course/cs0111/ta/grading/data/rubrics/homework2/q1.json</span></code></p>
+<div class="section" id="example">
+<span id="example"></span><h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;emoji&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+    <span class="nt">&quot;comments&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;given&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nt">&quot;un_given&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Great work!&quot;</span><span class="p">]</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;rubric&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;Functionality&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;fudge_points&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">],</span>
+            <span class="nt">&quot;comments&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;given&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="nt">&quot;un_given&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Your base case for append is wrong; ...&quot;</span><span class="p">]</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;rubric_items&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="nt">&quot;descr&quot;</span><span class="p">:</span> <span class="s2">&quot;Base case for append&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;selected&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                    <span class="nt">&quot;options&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span>
+                            <span class="nt">&quot;descr&quot;</span><span class="p">:</span> <span class="s2">&quot;Correctly returns second list&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;point_val&quot;</span><span class="p">:</span> <span class="mi">3</span>
+                        <span class="p">},</span>
+                        <span class="p">{</span>
+                            <span class="nt">&quot;descr&quot;</span><span class="p">:</span> <span class="s2">&quot;Incorrectly returns first list&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;point_val&quot;</span><span class="p">:</span> <span class="mi">1</span>
+                        <span class="p">},</span>
+                        <span class="p">{</span>
+                            <span class="nt">&quot;descr&quot;</span><span class="p">:</span> <span class="s2">&quot;No attempt&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;point_val&quot;</span><span class="p">:</span> <span class="mi">0</span>
+                        <span class="p">}</span>
+                    <span class="p">]</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                    <span class="nt">&quot;same keys&quot;</span><span class="p">:</span> <span class="s2">&quot;same value types&quot;</span>
+                <span class="p">}</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;More categories&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;same&quot;</span><span class="p">:</span> <span class="s2">&quot;same value types&quot;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

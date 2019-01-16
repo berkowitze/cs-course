@@ -78,7 +78,10 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readmes.html">Plain English READMEs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../customization.html">Customizing the grading/handin scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules.html">ta/grading</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules.html#hta-grading">hta/grading</a></li>
 </ul>
@@ -151,7 +154,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span>
 
 <span class="kn">from</span> <span class="nn">filelock</span> <span class="k">import</span> <span class="n">FileLock</span>
 
@@ -263,7 +266,7 @@
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">magic</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot; runs the wrapped functions while a lock is acquired &quot;&quot;&quot;</span>
-            <span class="k">with</span> <span class="n">FileLock</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">FileLock</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">magic</span>
@@ -318,13 +321,22 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="k">def</span> <span class="nf">has_keys</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="p">,</span> <span class="n">keys</span><span class="p">))</span>
+
     <span class="k">def</span> <span class="nf">check_rubric_category</span><span class="p">(</span><span class="n">rc</span><span class="p">:</span> <span class="n">RubricCategory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">has_keys</span><span class="p">(</span><span class="n">rc</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fudge_points&#39;</span><span class="p">,</span> <span class="s1">&#39;comments&#39;</span><span class="p">,</span> <span class="s1">&#39;rubric_items&#39;</span><span class="p">])</span>
         <span class="k">assert</span> <span class="n">check_comments</span><span class="p">(</span><span class="n">rc</span><span class="p">[</span><span class="s1">&#39;comments&#39;</span><span class="p">])</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rc</span><span class="p">[</span><span class="s1">&#39;rubric_items&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">check_item</span><span class="p">,</span> <span class="n">rc</span><span class="p">[</span><span class="s1">&#39;rubric_items&#39;</span><span class="p">]))</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rc</span><span class="p">[</span><span class="s1">&#39;fudge_points&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rc</span><span class="p">[</span><span class="s1">&#39;fudge_points&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rc</span><span class="p">[</span><span class="s1">&#39;fudge_points&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">rc</span><span class="p">[</span><span class="s1">&#39;fudge_points&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span>
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">check_item</span><span class="p">(</span><span class="n">ri</span><span class="p">:</span> <span class="n">RubricItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">has_keys</span><span class="p">(</span><span class="n">ri</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;descr&#39;</span><span class="p">,</span> <span class="s1">&#39;selected&#39;</span><span class="p">,</span> <span class="s1">&#39;options&#39;</span><span class="p">])</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ri</span><span class="p">[</span><span class="s1">&#39;descr&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ri</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">],</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">int</span><span class="p">))</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ri</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span>
@@ -332,12 +344,14 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">check_opt</span><span class="p">(</span><span class="n">ro</span><span class="p">:</span> <span class="n">RubricOption</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">has_keys</span><span class="p">(</span><span class="n">ro</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;point_val&#39;</span><span class="p">,</span> <span class="s1">&#39;descr&#39;</span><span class="p">])</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ro</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ro</span><span class="p">[</span><span class="s1">&#39;point_val&#39;</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ro</span><span class="p">[</span><span class="s1">&#39;descr&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">check_comments</span><span class="p">(</span><span class="n">comments</span><span class="p">:</span> <span class="n">Comments</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">has_keys</span><span class="p">(</span><span class="n">comments</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;given&#39;</span><span class="p">,</span> <span class="s1">&#39;un_given&#39;</span><span class="p">])</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">comments</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">comments</span><span class="p">[</span><span class="s1">&#39;given&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">comments</span><span class="p">[</span><span class="s1">&#39;un_given&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span>
@@ -347,10 +361,11 @@
                        <span class="n">comments</span><span class="p">[</span><span class="s1">&#39;un_given&#39;</span><span class="p">]))</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rubric</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>  <span class="c1"># loaded rubric is a dictionary</span>
+    <span class="k">assert</span> <span class="n">has_keys</span><span class="p">(</span><span class="n">rubric</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">,</span> <span class="s1">&#39;comments&#39;</span><span class="p">,</span> <span class="s1">&#39;emoji&#39;</span><span class="p">])</span>
     <span class="k">assert</span> <span class="n">check_comments</span><span class="p">(</span><span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;comments&#39;</span><span class="p">])</span>
 
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span>  <span class="c1"># rubric key exists</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rubric</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>  <span class="c1"># loaded rubric is a dictionary</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span>  <span class="c1"># rubric key is dict</span>
     <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">check_rubric_category</span><span class="p">,</span> <span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span></div>
 
 
@@ -450,6 +465,31 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">delim</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">lines</span></div>
+
+
+<div class="viewcode-block" id="remove_duplicates"><a class="viewcode-back" href="../helpers.html#helpers.remove_duplicates">[docs]</a><span class="k">def</span> <span class="nf">remove_duplicates</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    removes all duplicates from the input list. order is maintained.</span>
+<span class="sd">    input list is not modified</span>
+
+<span class="sd">    :param lst: any list</span>
+<span class="sd">    :type lst: list</span>
+<span class="sd">    :returns: the same list as lst with any duplicates removed</span>
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Create an empty list to store unique elements</span>
+    <span class="n">unique_list</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Iterate over the original list and for each element</span>
+    <span class="c1"># add it to uniqueList, if its not already there.</span>
+    <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">elem</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_list</span><span class="p">:</span>
+            <span class="n">unique_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">unique_list</span></div>
 </pre></div>
 
            </div>

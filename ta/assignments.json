@@ -80,6 +80,22 @@
       ],
       "sent_emails": true
     },
+    "Example": {
+      "anonymous": true,
+      "available": "01/01/2050 09:00PM",
+      "due": "01/01/2050 09:00PM",
+      "grading_completed": false,
+      "grading_started": true,
+      "group_asgn": false,
+      "questions": [
+        {
+          "col": "ZZZ",
+          "filename": "fun.py",
+          "test-ext": "py"
+        }
+      ],
+      "sent_emails": false
+    },
     "Homework 1": {
       "anonymous": false,
       "available": "06/01/2018 03:00PM",
@@ -157,11 +173,11 @@
       "sent_emails": true
     },
     "Homework 4": {
-      "anonymous": false,
+      "anonymous": true,
       "available": "10/02/2018 09:00PM",
       "due": "10/02/2018 09:00PM",
       "grading_completed": true,
-      "grading_started": true,
+      "grading_started": false,
       "group_asgn": false,
       "partner_data": null,
       "questions": [

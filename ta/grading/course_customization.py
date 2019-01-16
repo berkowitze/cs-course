@@ -165,22 +165,27 @@ def get_handin_report_str(rubric: Rubric,
     :rtype: str
 
     """
-    report_str = f'{question.code_filename}\n'
-    pre_string = '  '  # each problem is nested by pre_string in email
-    for cat in rubric['rubric']:
-        given_cs = sorted(rubric['rubric'][cat]['comments']['given'],
-                          key=lambda s: -len(s))
-        given_cs.sort(key=lambda s: -len(s))
-        for comment in given_cs:
-            comment_lines = fill(comment, 74,
-                                 initial_indent=(pre_string * 2 + '- '),
-                                 subsequent_indent=(pre_string * 3))
-            report_str += f'{comment_lines}\n\n'
+    def comment_section(category: str, comments: List[str]) -> str:
+        if not comments:
+            return ''
 
-    gen_comments = sorted(rubric['comments']['given'], key=lambda s: -len(s))
-    for comment in gen_comments:
-        comment_lines = fill(comment, 74, initial_indent=f'{pre_string}- ')
-        report_str += f'{comment_lines}\n\n'
+        pre_string = '  '
+        s = f'{pre_string}{category}\n'
+        for comment in comments:
+            comment_lines = fill(comment, 74,
+                                 initial_indent=f'{pre_string}{pre_string}- ',
+                                 subsequent_indent=f'{pre_string * 2}  ')
+            s += f'{comment_lines}\n\n'
+
+        return s
+
+    report_str = f'{question.code_filename}\n'
+    for cat in rubric['rubric']:
+        given_cs = rubric['rubric'][cat]['comments']['given']
+        report_str += comment_section(cat, given_cs)
+
+    gen_comments = rubric['comments']['given']
+    report_str += comment_section('General Comments', gen_comments)
 
     report_str += f'Grader: {grader_login} ({grader_login}@cs.brown.edu)'
     report_str += f'\n\n{"-" * 74}\n'

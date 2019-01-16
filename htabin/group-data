@@ -16,7 +16,7 @@ import smtplib
 import subprocess
 import sys
 
-from helpers import locked_file
+from helpers import locked_file, BASE_PATH
 from io import StringIO
 from typing import List, Tuple
 
@@ -94,7 +94,7 @@ def get_logins_from_group(group_name: str) -> List[str]:
     :raises subprocess.CalledProcessError: Usually invalid group name
 
     """
-    cmd = ['/course/cs0111/tabin/better-members', group_name]
+    cmd = [f'{BASE_PATH}/tabin/better-members', group_name]
     sp = subprocess.Popen(cmd,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE)

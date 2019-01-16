@@ -80,6 +80,9 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">ta/grading</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html#hta-grading">hta/grading</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">hta_classes module</a></li>
@@ -549,45 +552,6 @@ student’s Brown email address (by default)</li>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="function">
-<dt id="hta_classes.magic_update">
-<code class="descclassname">hta_classes.</code><code class="descname">magic_update</code><span class="sig-paren">(</span><em>question: classes.Question, func: Callable[[importlib._bootstrap.Rubric], None]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#magic_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.magic_update" title="Permalink to this definition">¶</a></dt>
-<dd><p>using a rubric updating function, changes a) the base rubric, and b) each
-extracted rubric. updated rubrics are checked for validity before file
-writing (as of after homework 8 2018 rip)</p>
-<p>This is most easily done in asgnipython</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>question</strong> (<a class="reference internal" href="classes.html#classes.Question" title="classes.Question"><em>Question</em></a>) – the question for which to update all rubrics</li>
-<li><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="custom_types.html#custom_types.Rubric" title="custom_types.Rubric"><em>Rubric</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – a function that takes in a rubric, returns None, and mutates
-the rubric.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><strong>TypeError</strong> – invalid input types</li>
-<li><strong>AssertionError</strong> – func improperly modifies rubrics</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Example</strong>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">asgn</span> <span class="o">=</span> <span class="n">HTA_Assignment</span><span class="p">(</span><span class="s2">&quot;Homework 6&quot;</span><span class="p">)</span>
-<span class="n">qn</span> <span class="o">=</span> <span class="n">asgn</span><span class="o">.</span><span class="n">questions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="k">def</span> <span class="nf">updater</span><span class="p">(</span><span class="n">rubric</span><span class="p">):</span>
-    <span class="n">items</span> <span class="o">=</span> <span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;rubric&#39;</span><span class="p">][</span><span class="s1">&#39;Functionality&#39;</span><span class="p">][</span><span class="s1">&#39;rubric_items&#39;</span><span class="p">]</span>
-    <span class="n">items</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">][</span><span class="s1">&#39;point-val&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
-
-<span class="n">magic_update</span><span class="p">(</span><span class="n">qn</span><span class="p">,</span> <span class="n">updater</span><span class="p">)</span>
-</pre></div>
-</div>
 </dd></dl>
 
 </div>

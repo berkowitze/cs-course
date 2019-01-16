@@ -28,28 +28,29 @@ args = parser.parse_args()
 # intro course (don't assume TAs/HTAs know how databases work)
 # but i also suppose that all these files arent exactly convenient
 
-if __name__ == '__main__':
-    # set up the web app
-    app = Flask(__name__)
+# set up the web app
+app = Flask(__name__)
+app.jinja_env.trim_blocks = True
+app.jinja_env.lstrip_blocks = True
 
-    # i have no idea what this is for but i just button mashed
-    # (not sure if/how this can be used to hack the program)
-    app.secret_key = '815tu28g78h8934tgju2893t0j83u2tfjt'
+# i have no idea what this is for but i just button mashed
+# (not sure if/how this can be used to hack the program)
+app.secret_key = '815tu28g78h8934tgju2893t0j83u2tfjt'
 
-    # this dictionary will be used to track what the user is doing;
-    # which assignment, question, and handin they are working on.
-    # it's reset if you edit grading_app.py or classes.py while grading
-    # so you need to refresh the page
-    # todo: make this better. a lot better. if it's a problem.
-    workflow = {}
+# this dictionary will be used to track what the user is doing;
+# which assignment, question, and handin they are working on.
+# it's reset if you edit grading_app.py or classes.py while grading
+# so you need to refresh the page
+# todo: make this better. a lot better. if it's a problem.
+workflow = {}
 
-    # get logged in username
-    username = getpass.getuser()
-    user = User(username)
-    if user.hta and args.user is not None:
-        user = User(args.user)
+# get logged in username
+username = getpass.getuser()
+user = User(username)
+if user.hta and args.user is not None:
+    user = User(args.user)
 
-    print(user)
+print(user)
 
 
 def is_logged_in(f: Callable) -> Callable:
@@ -179,28 +180,27 @@ def save_handin():
         'trying to unextract inactive handin'
 
     data = json.loads(request.args['formData'])
-    comments = tuple(json.loads(request.args['comments']))  # (general, all)
-    completed = json.loads(request.args['completed'])
-    # don't force a completely filled out form unless completing
-    result = workflow['handin'].save_data(data, comments,
-                                          force_complete=completed)
-    return json.dumps(result)
+    comments = json.loads(request.args['comments'])
+    emoji = json.loads(request.args['emoji'])
+    workflow['handin'].save_data(data, comments, emoji)
+    return 'true'
 
 
-@app.route('/add_global_comment')
+@app.route('/add_global_comment', methods=['GET'])
 @is_logged_in
 def add_global_comment():
-    ident = request.args['id']
-    assert workflow['handin'].id == int(ident), \
-        'trying to comment on inactive handin'
-
+    print('hi')
     category = request.args['category']
     if category == '':
         category = None
 
     comment = request.args['comment']
-    workflow['question'].add_ungiven_comment(category, comment)
-    return 'true'
+    if workflow['question'].add_ungiven_comment(category, comment):
+        print('no')
+        return 'added'
+    else:
+        print('yes')
+        return 'not added'
 
 
 # handin complete; don't save it though, that should be done separately
@@ -211,18 +211,7 @@ def complete_handin():
     assert workflow['handin'].id == int(ident), \
         'trying to unextract inactive handin'
 
-    workflow['handin'].set_complete()
-    return 'good'
-
-
-@app.route('/preview_report')
-@is_logged_in
-def preview_report():
-    ident = request.args['id']
-    assert workflow['handin'].id == int(ident), \
-        'trying to preview report of inactive handin'
-
-    return json.dumps(workflow['handin'].generate_report_str())
+    return json.dumps(workflow['handin'].set_complete())
 
 
 @app.route('/view_code')
@@ -242,7 +231,19 @@ def run_test():
     ident = request.args['id']
     assert workflow['handin'].id == int(ident), \
         'trying to preview report of inactive handin'
+    res = workflow['handin'].run_test()
+    return render_template('testsuite.html', results=res)
     return json.dumps(workflow['handin'].run_test())
+
+
+@app.route('/preview_report')
+@is_logged_in
+def preview_report():
+    ident = request.args['id']
+    assert workflow['handin'].id == int(ident), \
+        'trying to preview report of inactive handin'
+    report = workflow['handin'].generate_report_str()
+    return render_template('preview_report.html', report=report)
 
 
 # handle authentication
@@ -266,6 +267,22 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+
+@is_logged_in
+@app.route('/render_rubric')
+def rubric():
+    print(workflow['handin'])
+    # asgn = Assignment("Homework 7")
+    # asgn.load()
+    # handin = asgn.questions[0].handins[0]
+    # print(handin)
+    return render_template('rubric.html', handin=workflow['handin'])
+
+
+@app.route('/sandbox')
+def sandbox():
+    return render_template('sandbox.html')
 
 
 if __name__ == '__main__':

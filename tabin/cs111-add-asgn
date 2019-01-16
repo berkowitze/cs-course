@@ -41,7 +41,7 @@ if g_asgn:
 url_base = 'https://docs.google.com/a/brown.edu/spreadsheets/d'
 ssid = '1WBNNlcFQAnIau1AKgUTR_HmOTgl_C1VtPHOKkwvbO0A'
 url = f'{url_base}/{ssid}'
-print(f'Google sheet is at {url}' % url)
+print(f'Google sheet is at {url}')
 
 qs: List[dict] = []
 while True:

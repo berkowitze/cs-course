@@ -54,7 +54,6 @@ function probLoaded(x) {
         frac = data['complete_count'] /data['handin_count'];
         bar.animate(frac);
         $(bar.text).text(`${data['complete_count']}/${data['handin_count']} graded`);
-        // $(bar.text).text(data['complete_count'] + '/' + data['handin_count'] + ' completed.');
     }
     try {
         if (data['handin_count'] == data['complete_count']) {
@@ -78,6 +77,7 @@ function probLoaded(x) {
 }
 
 function populateStudentList(s) {
+    a= s;
     sel = $('#student-select');
     sel.find('option').not('.nodel').remove();
     for (var i = 0; i < s.length; i++) {
@@ -86,7 +86,7 @@ function populateStudentList(s) {
         opt.text(s[i]);
         sel.append(opt);
     }
-    sel.select2();
+    // sel.select2();
     // $('#student-list-modal').modal('open');
 }
 
@@ -152,8 +152,7 @@ function extract(x) {
         success: function(data) {
             pdata = JSON.parse(data)
             if (pdata == "None") {
-                M.toast({'html': 'No more to grade!',
-                         'displayLength': 3000});
+                toastr.success("No more to grade!");
                 return;
             }
             populateSidebar([pdata]);
@@ -165,8 +164,7 @@ function extract(x) {
 function extractByLogin(x) {
     s = $('#student-select').val();
     if (s == 'NONE') {
-        M.toast({'html': 'Select a student...',
-                 'displayLength': 2000})
+        toastr.failure("Select a student...");
         return;
     }
     $('.extract-button').prop('disabled', 'true');
@@ -176,13 +174,13 @@ function extractByLogin(x) {
         success: function(data) {
             pdata = JSON.parse(data)
             if (pdata == "None") {
-                M.toast({'html': 'No more to grade!',
-                         'displayLength': 3000});
+                toastr.success("No more to grade!");
                 return;
             }
             populateSidebar([pdata]);
             handinLoaded(data);
-            $('#student-list-modal').modal('close');
+            $.modal.close();
+            // $('#student-list-modal').modal('close');
         }
     });
 }
@@ -204,13 +202,6 @@ function resetContainer() {
     $('.active-li').removeClass('active-li'); // deselect selected sidebar items
 }
 
-function copyCodeLink(x) {
-    button = $(x);
-    $('#code-link').select();
-    document.execCommand('copy');
-    M.toast({html: 'Copied'});
-}
-
 function handinLoaded(problemData) {
     var problemData = JSON.parse(problemData);
     resetContainer();
@@ -228,13 +219,8 @@ function handinLoaded(problemData) {
         $('#handin-flag').text('Flag');
         $('#handin-flag').data('flag', true);
     }
-    var gradingForm = rubricToForm(problemData['rubric']);
-    var codeButton = $('<button onclick="openCode(this)" class="btn">');
-    codeButton.text(`View student code (${problemData['filename']})`);
-    gradingForm.prepend(codeButton);
-    $('main .container').html(gradingForm);
-    $('pre code').each(function(i, block) {
-        Prism.highlightElement(block);
+    $('main .container').load('/render_rubric', function(){
+        $('.tag-editor-tag').attr('oncontextmenu', 'return tagRightClick(this)');
     });
 }
 
@@ -246,113 +232,6 @@ function sidebarById(id) {
         }
     }
     return undefined;
-}
-
-function rubricToForm(rubric) {
-    r = rubric;
-    var container = $('<div class="container">'); // container with entire rubric for student
-    var keys = Object.keys(rubric['rubric']);
-    keys.sort();
-    for (var i = 0; i < keys.length; i++) {          // **for each category...
-        var cat = keys[i];
-        var catDiv = $('<div class="category-div">'); // div for this category
-        var catName = $('<div class="category-name">'); // category div headre
-        catDiv.data('category', cat);
-        catName.text(cat);
-        catDiv.append(catName);
-        var category = rubric['rubric'][cat]['rubric_items']; // list of rubric items
-        for (var j = 0; j < category.length; j++) {   // **for each rubric item...
-            rubric_item = category[j];
-            // generate description of rubric item (left side of HTML)
-            var rubric_desc = $('<div class="rubric-desc">');
-            rubric_desc.text(rubric_item['descr']);
-            // just in case text is somehow modified, add the name as data too
-            catDiv.append(rubric_desc);
-
-            // generate select dropdown for the rubric item options
-            var rubric_select = $('<select class="rubric-sel browser-default">');
-            rubric_select.data('description', rubric_item['descr']);
-            for (var k = 0; k < rubric_item['options'].length; k++) { // for each option of each rubric item
-                var opt = $('<option>');
-                opt.val(k);
-                opt.text(rubric_item['options'][k]['descr']);
-                opt.data('index', k);
-                rubric_select.append(opt);
-            }
-            if ('value' in rubric_item && rubric_item['value'] != null) {
-                rubric_select.val(rubric_item['value']); // set value if it's set
-            }
-            else if (rubric_item['default'] != null) {
-                rubric_select.val(rubric_item['default']); // set default if value not set
-            }
-            else {
-                rubric_select.val(''); // set no value if null default & no value
-            }
-            catDiv.append(rubric_select);
-        }
-        // add comment row for this category...
-        var commentDivDescription = $('<div class="rubric-desc-column">');
-        commentDivDescription.text('Enter comments for ' + cat + ': ');
-
-        var commentDiv = generateCommentSection(cat, rubric['rubric'][cat]['comments'], cat);
-        commentDiv.addClass('rubric-sel-column');
-
-        catDiv.append(commentDivDescription);
-        catDiv.append(commentDiv);
-
-        catDiv.append(commentDiv);
-        container.append(catDiv);
-
-    }
-    a = rubric;
-    genCommentSel  = generateCommentSection('General', rubric['comments'], null);
-    genCommentHead = $('<div class="general-name">');
-    genCommentHead.text('General Comments');
-    container.append(genCommentHead);
-    container.append(genCommentSel);
-    $(document).ready(function(){
-        $('select.comment-select').select2({'tags': true, 
-                    createTag: function (tag) {
-                    return {
-                        id: tag.term,
-                        text: tag.term,
-                        isNew: true
-                    }
-                 }});
-    });
-    return container;
-}
-
-function generateCommentSection(category, comments, send_cat) {
-    var sel = $('<select multiple="multiple" class="form-control">');
-    sel.addClass('comment-select');
-    var data = [];
-    for (var i = 0; i < comments['given'].length; i++) {
-        var comment = comments['given'][i];
-        var new_comment = {'id': comment,
-                           'text': comment,
-                           'selected': true};
-        data.push(new_comment);
-    }
-    for (var i = 0; i < comments['un_given'].length; i++) {
-        var comment = comments['un_given'][i];
-        var new_comment = {'id': comment,
-                           'text': comment,
-                           'selected': false};
-    }
-    sel.prop('id', category);
-    sel.data('category', category);
-    sel.select2({data: data,
-                 tags: true
-                 }).on('select2:select',
-                        function(e) {
-                            console.log(e);
-                            if (e.params.data.isNew) {
-                                term = e.params.data.text;
-                                CommentDialog("Make comment useable by all TA's?", send_cat, term);
-                            }
-                        });
-    return sel;
 }
 
 function CommentDialog(message, category, comment) {
@@ -390,8 +269,7 @@ function addGlobalComment(category, comment) {
             'comment': comment,
         },
         success: function() {
-            M.toast({'html': 'Global comment added.',
-                     'displayLength': 2000});
+            toastr.success("Global comment added.")
             $('#handin-save').click();
         }
     });
@@ -462,18 +340,18 @@ function fetchFormInfo() {
     for (var i = 0; i < cats.length; i++) {
         var cat = cats.eq(i);
         var cname = cat.data('category');
-
-        rubric[cname] = {}
+        fudgePoints = Number(cat.find('input.fudge-points-inp').val());
+        rubric[cname] = {'fudge': fudgePoints, 'options': {}};
         var sels = cat.find('select.rubric-sel');
         for (var j = 0; j < sels.length; j++) {
             var sel = sels.eq(j);
-            var descr = sel.data('description');
+            var descr = sel.data('descr');
             var v = sel.val();
             if (v != null) {
-                rubric[cname][descr] = Number(v);
+                rubric[cname]['options'][descr] = Number(v);
             }
             else {
-                rubric[cname][descr] = null;
+                rubric[cname]['options'][descr] = null;
             }
             
         }
@@ -482,71 +360,68 @@ function fetchFormInfo() {
 }
 
 function getComments() {
-    data = [];
-    commentDivs = $('.category-div .comment-select');
-    data.push($('#General').val());
-    data.push({});
-    for (i = 0; i < commentDivs.length; i++) {
-        commentDiv = commentDivs.eq(i);
-        data[1][commentDiv.data('category')] = commentDiv.val();
+    cat_comments = {}
+    $('.category-div input.comments-sel')
+    .tagEditor('getTags')
+    .map(function(x) {
+        cat_comments[x.field.dataset['category']] = x.tags
+    });
+
+    gen_comments = $('input#general-comments').tagEditor('getTags')[0].tags;
+    return {
+        general: gen_comments,
+        categorized: cat_comments
     }
-    return data;
 }
 
-function saveHandin(x, complete=false) {
+function saveHandin(tryComplete) {
     formData = fetchFormInfo();
     comments = getComments();
     activeId = $('main').data('active-id');
+    emoji = $('#emoji').prop('checked');
     $.ajax({
         url: '/save_handin', // returns false if there was no error
         data:
             {
                 'formData': JSON.stringify(formData),
                 'id': JSON.stringify(activeId),
-                'completed': JSON.stringify(complete),
-                'comments': JSON.stringify(comments)
+                'comments': JSON.stringify(comments),
+                'emoji': emoji
             },
         success: function(data) {
-            if (!JSON.parse(data)) {
-                M.toast({
-                    'html': 'Must fill all dropdowns before completing.',
-                    'displayLength': 3000
-                });
-                return;
-            }
-            if (!complete) {
-                handinSaved(data);
+            if (tryComplete) {
+                handinSaved();
+                completeHandin();
             }
             else {
-                $.ajax({
-                    url: '/complete_handin',
-                    data: {'id': activeId},
-                    success: handinCompleted
-                });
+                handinSaved();
             }
         }
     })
 }
 
-function handinSaved(data) {
-    a = JSON.parse(data);
-    M.toast({
-        'html': 'Handin saved.',
-        'displayLength': 2500
-    });
+function handinSaved() {
+    toastr.success("Handin saved.")
 }
 
-function completeHandin(x) {
-    saveHandin(x, complete=true);
+function completeHandin() {
+    activeId = $('main').data('active-id');
+    $.ajax({
+        url: '/complete_handin',
+        data: {'id': activeId},
+        success: handinCompleted
+    });
 }
 
 function handinCompleted(data) {
-    M.toast({
-        'html': 'Handin completed',
-        'displayLength': 2500
-    });
-    clearMain();
-    loadProb($('select#prob-list'));
+    if (JSON.parse(data)) {
+        toastr.success('Handin complete.')
+        clearMain();
+        loadProb($('select#prob-list'));
+    }
+    else {
+        toastr.error('Must fill all dropdowns before completion.')
+    }
 }
 
 function clearMain() {
@@ -554,52 +429,8 @@ function clearMain() {
     $('.handin-button').not('.extract-button').prop('disabled', true);
 }
 
-function viewReport(x) {
-    $('#report-modal').modal('open');
-    cid = $('main').data('active-id');
-    button = $(x);
-    // reportLoaded("Hello");
-    $.ajax({
-        url: '/preview_report',
-        data: {'id': cid},
-        success: reportLoaded
-    })
-}
-
-function reportLoaded(data) {
-    $('#report-contents').html(JSON.parse(data));
-}
-
-function runTest(x) {
-    button = $(x);
-    button.prop('disabled', true);
-    button.text('Running... do not do anything!')
-    cid = $('main').data('active-id');
-    $.ajax({
-        url: '/run_test',
-        data: {'id': cid},
-        success: testsRun,
-        error: testsFailed
-    });
-}
-
-function testsRun(data) {
-    var b = $('#run-test-button')
-    b.prop('disabled', false);
-    b.text('Run tests');
-
-    res = JSON.parse(data);
-    $('#test-content').text(res);
-    $('#test-modal').modal('open');
-}
-
-function testsFailed(data) {
-    console.log(data);
-    M.toast({'html': 'Test run failed: contact HTA (console)',
-             'displayLength': 3000});
-}
-
 $(document).ready(function(){
+    toastr.options.positionClass = "toast-bottom-right"
     $('select#asgn-list').focus();
     x = 3;
     // the colorful status bar in the top left (super neccessary do not delete)
@@ -620,46 +451,77 @@ $(document).ready(function(){
           bar.path.setAttribute('stroke', state.color);
         }
     });
+    // $('#student-list-modal').removeAttr('tabindex');
 
-    // select all code on doubleclick
-    // from S.O. https://stackoverflow.com/questions/35297919/
-    $('pre').dblclick(function() {
-        $(this).select();
-
-        var text = this,
-            range, selection;
-
-        if (document.body.createTextRange) {
-            range = document.body.createTextRange();
-            range.moveToElementText(text);
-            range.select();
-        } else if (window.getSelection) {
-            selection = window.getSelection();
-            range = document.createRange();
-            range.selectNodeContents(text);
-            selection.removeAllRanges();
-            selection.addRange(range);
-        }
-    });
-
-    // initialize code viewer
-    $('#code-modal').modal();
-    $('#report-modal').modal();
-    $('#test-modal').modal();
-    $('#student-list-modal').modal();
-    $('#student-list-modal').removeAttr('tabindex');
-
-    // initialize all selects
-    $('.select2-multiple').select2();
-    $('#student-select').select2();
 });
 
+var popups = {};
+var popup_ndx = 0;
 function newPopup(url) {
-	popupWindow = window.open(
-		url,'popUpWindow','height=800,width=1000,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes')
+    if (!(url in popups)) {
+        popup_ndx += 1
+        popups[url] = popup_ndx;
+    }
+    window.open(
+        url,
+        popups[url],
+        'height=800,width=1000,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,status=yes');
 }
 
 
 function openCode(x) {
     newPopup('/view_code?id=' + $('main').data('activeId'));
+}
+
+function runTest(x) {
+    newPopup('/run_test?id=' + $('main').data('activeId'));
+}
+
+function viewReport(x) {
+    newPopup('/preview_report?id=' + $('main').data('activeId'));
+}
+
+function preTagSave(field, editor, given, tag, giving) {
+    ungiven = field.data('options')['autocomplete']['source'];
+    debug = {field, editor, given, tag, giving, ungiven};
+    if (given.includes(giving)) {
+        // duplicate comment
+        return;
+    }
+    ung_ndx = ungiven.indexOf(giving);
+    if (ung_ndx >= 0) {
+        console.log('here');
+        // giving suggested comment
+        ungiven.splice(ung_ndx, 1); // do not resuggest
+        return;
+    }
+    // giving new unique comment
+}
+
+function tagRightClick(x) {
+    tag = $(x);
+    field = tag.parentsUntil('ul.tag-editor').parent().siblings('input');
+    category = tag.parents('.category-div').data('category');
+    if (confirm('Make comment global?')) {
+        $.ajax({
+            url: 'add_global_comment',
+            data: {
+                'category': category,
+                'comment': tag.text()
+            },
+            success: function(resp) {
+                if (resp == 'added') {
+                    console.log('success');
+                }
+                else {
+                    console.log('failure');
+                }
+            },
+            error: function(err) {
+                console.log('err');
+                console.log(err)
+            }
+        })
+    }
+    return false;
 }

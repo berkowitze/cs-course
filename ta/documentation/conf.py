@@ -14,6 +14,11 @@
 #
 import os
 import sys
+import recommonmark
+from recommonmark.transform import AutoStructify
+
+# At the bottom of conf.py
+
 sys.path.insert(0, os.path.abspath('../grading'))
 sys.path.insert(0, os.path.abspath('../../hta/grading'))
 
@@ -183,3 +188,9 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
+
+def setup(app):
+    app.add_config_value('recommonmark_config', {
+            'enable_auto_toc_tree': True
+            }, True)
+    app.add_transform(AutoStructify)
