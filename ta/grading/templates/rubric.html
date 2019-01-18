@@ -1,0 +1,89 @@
+{% set rubric = handin.get_rubric() %}
+<div class="container">
+    <button onclick="openCode(this)" class="btn">
+        View student code ({{ handin.question.code_filename }})
+    </button>
+    {% for category in rubric['rubric'] %}
+    {% set cat_rubric = rubric['rubric'][category] %}
+    {% set max_points = get_max_points(cat_rubric) %}
+    <div class="category-div" data-category="{{ category }}">
+        <div class="category-name">{{ category }} (out of {{ max_points }})</div>
+        <hr>
+        {% for rubric_item in cat_rubric['rubric_items'] %}
+        <div class='rubric-item'>
+            <div class="rubric-descr"><span>{{ rubric_item['descr'] }}</span></div>
+            <select class="rubric-sel browser-default" data-descr="{{ loop.index - 1}}">
+                <option disabled
+                        {% if rubric_item['selected'] is none %} selected {% endif %}
+                        value> -- select an option -- </option>
+                {% for option in rubric_item['options'] %}
+                    {% set i = loop.index - 1 %}
+                        <option value="{{ i }}" {% if rubric_item['selected'] == i %} selected {% endif %}>
+                            ({{ option['point_val'] }}) {{ option['descr'] }}
+                        </option>
+                {% endfor %} <!-- ending each option -->
+            </select>
+        </div>
+        <hr/>
+        {% endfor %} <!-- ending each item -->
+        <div class='comments'>
+            <div class='comment-desc'>Enter comments for {{ category }}:</div>
+            <input id='comments-{{ loop.index }}' data-category="{{ category }}" class='comments-sel'/>
+            <script>
+                var givenTags = {{ cat_rubric['comments']['given']|tojson|safe }};
+                var ungivenTags = {{ cat_rubric['comments']['un_given']|tojson|safe }};
+                $('input#comments-{{ loop.index }}').tagEditor({
+                    initialTags: givenTags,
+                    delimiter: 'º',
+                    maxLength: 100000,
+                    forceLowercase: false,
+                    onChange: function(field, editor, given) {
+                        console.log('hi3');
+                    },
+                    beforeTagSave: preTagSave,
+                    autocomplete: {source: ungivenTags},
+
+                });
+            </script>
+        </div>
+        <hr>
+        <div class='fudge-points'>
+            <div class='fudge-points-desc'>
+                Enter fudge points for {{ category }} if needed (up to &plusmn;{{ cat_rubric['fudge_points'][1] }})
+            </div>
+            <input class='fudge-points-inp'
+                   type='number'
+                   max="{{ cat_rubric['fudge_points'][1] }}"
+                   min="{{ -cat_rubric['fudge_points'][1] }}"
+                   value="{{ cat_rubric['fudge_points'][0] }}"
+                   step="0.25" />
+        </div>
+    </div>
+    {% endfor %}
+    <hr>
+    <div class='comments'>
+        <div class='comment-desc'>Enter general comments:</div>
+        <input id='general-comments' class='comments-sel'/>
+        <script>
+            var givenTags = {{ rubric['comments']['given']|tojson|safe }};
+            var ungivenTags = {{ rubric['comments']['un_given']|tojson|safe }};
+            $('input#general-comments').tagEditor({
+                initialTags: givenTags,
+                delimiter: 'º',
+                maxLength: 100000,
+                forceLowercase: false,
+                onChange: function(field, editor, given) {
+                    console.log('hi3');
+                },
+                beforeTagSave: preTagSave,
+                autocomplete: {source: ungivenTags},
+            });
+        </script>
+    </div>
+    <div id='emoji-div'>
+        <label>
+            <input id='emoji' type='checkbox' {% if rubric['emoji'] %} checked {% endif %}/>
+            <span>Give this student an emoji</span>
+        </label>
+    </div>
+</div>

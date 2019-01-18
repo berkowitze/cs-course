@@ -1,6 +1,6 @@
 *
-!.gitignore
-!README
+!./.gitignore
+!./README
 !asciianimals
 !assignments.json
 !documentation
