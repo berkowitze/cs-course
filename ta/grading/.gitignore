@@ -1,0 +1,12 @@
+*
+!.gitignore
+!classes.py
+!course_customization.py
+!grading_app.py
+!helpers.py
+!custom_types.py
+!data
+!grades
+!static
+!templates
+!todo

@@ -1,4 +1,8 @@
 *
+!.gitignore
 !setup.sh
 !lintfiles
-!.gitignore
+!ta
+!hta
+!tabin
+!htabin
