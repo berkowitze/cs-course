@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hta_helpers module &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="prompts module" href="prompts.html" />
+    <link rel="prev" title="hub_helpers module" href="hub_helpers.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">ta/grading</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html#hta-grading">hta/grading</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="hta_classes.html">hta_classes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hub_helpers.html">hub_helpers module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">hta_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html">prompts module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">ta/grading</a> &raquo;</li>
+        
+      <li>hta_helpers module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/hta_helpers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-hta_helpers">
+<span id="hta-helpers-module"></span><h1>hta_helpers module<a class="headerlink" href="#module-hta_helpers" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="hta_helpers.argmax">
+<code class="descclassname">hta_helpers.</code><code class="descname">argmax</code><span class="sig-paren">(</span><em>lst: List[int]</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/hta_helpers.html#argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.argmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get index of maximum integer of input list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lst</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – list of non-negative integers</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">index of maximum integer in lst</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – cannot operate on input list with repeated values</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.email_to_login">
+<code class="descclassname">hta_helpers.</code><code class="descname">email_to_login</code><span class="sig-paren">(</span><em>email: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/hta_helpers.html#email_to_login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.email_to_login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts brown email to CS login</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>email</strong> (<em>str</em>) – student’s Brown email (aliases will not work)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">student’s CS login</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – email not found in students.csv</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.get_blocklists">
+<code class="descclassname">hta_helpers.</code><code class="descname">get_blocklists</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, List[str]]<a class="reference internal" href="_modules/hta_helpers.html#get_blocklists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.get_blocklists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get blocklist data from both TAs blocklisting students and
+students blocklisting TAs</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a dictionary of ta logins as the keys and lists of
+students blocklisted as the values</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, List[str]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.latest_submission_path">
+<code class="descclassname">hta_helpers.</code><code class="descname">latest_submission_path</code><span class="sig-paren">(</span><em>base: str</em>, <em>login: str</em>, <em>mini_name: str</em><span class="sig-paren">)</span> &#x2192; Optional[str]<a class="reference internal" href="_modules/hta_helpers.html#latest_submission_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.latest_submission_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns None if no submission for this student on this assignment,
+and the path of the student’s latest submission if they did submit</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>base</strong> (<em>str</em>) – handin base path (i.e. /course/cs0111/hta/handin/students)</li>
+<li><strong>login</strong> (<em>str</em>) – login of student to get submission path for</li>
+<li><strong>mini_name</strong> (<em>str</em>) – minified assignment name (i.e. homework3)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">None if login has no handin for mini_name, and
+the path of the latest submission for login if they do</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Optional[str]</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latest_submission_path</span><span class="p">(</span><span class="s1">&#39;/course/cs0111/hta/handin/students&#39;</span><span class="p">,</span>
+<span class="go">                           &#39;eberkowi&#39;,</span>
+<span class="go">                           &#39;homework4&#39;)</span>
+<span class="go">&#39;/course/cs0111/hta/handin/students/eberkowi/homework4/5-submission&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">latest_submission_path</span><span class="p">(</span><span class="s1">&#39;/course/cs0111/hta/handin/students&#39;</span><span class="p">,</span>
+<span class="go">                           &#39;eberkowi&#39;,</span>
+<span class="go">                           &#39;homework3&#39;)</span>
+<span class="go">None</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.load_students">
+<code class="descclassname">hta_helpers.</code><code class="descname">load_students</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[List[str]]<a class="reference internal" href="_modules/hta_helpers.html#load_students"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.load_students" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads students from the hta/groups/students.csv file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of (login, email, name) of all enrolled students</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[List[str]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.login_to_email">
+<code class="descclassname">hta_helpers.</code><code class="descname">login_to_email</code><span class="sig-paren">(</span><em>login: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/hta_helpers.html#login_to_email"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.login_to_email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert CS login to full Brown email</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>login</strong> (<em>str</em>) – CS login of student</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">student’s full Brown email</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – Student with login not found in students.csv</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hta_helpers.student_list">
+<code class="descclassname">hta_helpers.</code><code class="descname">student_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[str]<a class="reference internal" href="_modules/hta_helpers.html#student_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_helpers.student_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of student logins from hta/groups/students.txt</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of logins of students in the class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[str]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="prompts.html" class="btn btn-neutral float-right" title="prompts module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="hub_helpers.html" class="btn btn-neutral" title="hub_helpers module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
