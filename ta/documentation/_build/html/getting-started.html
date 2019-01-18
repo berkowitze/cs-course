@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Getting started &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Filesystem" href="filesystem.html" />
+    <link rel="prev" title="CS Grading App documentation" href="index.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#documentation-to-read">Documentation to read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-the-flow-looks-like-for-students">What the flow looks like for students</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-the-flow-looks-like-for-tas">What the flow looks like for TAs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#grading">Grading</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#regrading">Regrading</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#rubrics">Rubrics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#what-the-flow-looks-like-for-htas">What the flow looks like for HTAs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#one-time-setup">One-time setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#weekly-setup">Weekly setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#regrading">Regrading</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">ta/grading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#hta-grading">hta/grading</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Getting started</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/getting-started.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="getting-started">
+<span id="getting-started"></span><h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>This repository allows courses to manage handin and grading for a computer
+science course with a wide level of customizability. By default, the system
+includes anonymous grading, TA/student blocklisting,
+group and multi-part assignments, assignments with multiple questions
+or zip file handins, automatically sending grade reports, testsuites, and more.
+There are also scripts for handling lab checkoff and allocation.</p>
+<p>As the app is relatively new, there are certainly bugs or missing features.
+Hopefully things are documented and laid out in such a way that implementing
+features or customizing the app for your own course isn’t that difficult, but
+if it is email me (eliberkowitz&#64;gmail.com) and I’ll be happy to help :)</p>
+<div class="section" id="documentation-to-read">
+<span id="documentation-to-read"></span><h2>Documentation to read<a class="headerlink" href="#documentation-to-read" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="ta-doc.html">Scripts and grading for TAs</a> (recommended for all HTAs and UTAs)</li>
+<li><a class="reference external" href="hta-doc.html">Scripts, grading, handin, and more for HTAs</a>
+(recommended for HTAs  maintaining infrastructure, regrading,
+and mid-grading rubric updates).</li>
+<li><a class="reference external" href="customization.html">Customizing the system for different courses</a></li>
+<li><a class="reference external" href="filesystem.html">App Filesystem</a></li>
+<li>First time setup</li>
+<li>Yearly setup</li>
+</ul>
+</div>
+<div class="section" id="what-the-flow-looks-like-for-students">
+<span id="what-the-flow-looks-like-for-students"></span><h2>What the flow looks like for students<a class="headerlink" href="#what-the-flow-looks-like-for-students" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li>Student hands in work on a Google Form (which are generally very intuitive
+to figure out how to upload files to).</li>
+<li>A minute or two later, they receive a confirmation email of their handin.</li>
+<li>After the TAs grade the assignment, the student will receive an email with
+their grade report and the emails of any TA they should contact in case of a
+grade complaint.</li>
+</ol>
+</div>
+<div class="section" id="what-the-flow-looks-like-for-tas">
+<span id="what-the-flow-looks-like-for-tas"></span><h2>What the flow looks like for TAs<a class="headerlink" href="#what-the-flow-looks-like-for-tas" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="grading">
+<span id="grading"></span><h3>Grading<a class="headerlink" href="#grading" title="Permalink to this headline">¶</a></h3>
+<ol class="simple">
+<li>To grade, TAs run <code class="docutils literal notranslate"><span class="pre">cs111-grade</span></code> on a department machine, which boots up a
+local Flask application to manage grading handins. They log into the
+application using a password set once at the beginning of the semester, and
+start grading.</li>
+<li>For each handin, they will fill out a series of dropdowns and give comments
+to the students. It is up to the course how to turn these values and comments
+into grades and grade reports. The TA can flag the handin for HTA review,
+view the student’s code, run testsuites, save the handin temporarily and move
+on to the next while they wait for help, etc. all in browser (no need to
+have a dozen windows open).</li>
+<li>Click “Save &amp; Done” and move on to the next handin!</li>
+</ol>
+<div class="section" id="regrading">
+<span id="regrading"></span><h4>Regrading<a class="headerlink" href="#regrading" title="Permalink to this headline">¶</a></h4>
+<ol class="simple">
+<li>Go to <code class="docutils literal notranslate"><span class="pre">/ta/grading/grades/tas-login/assignment/student</span></code> and modify the
+relevant grades.</li>
+<li>Depending on the grading scheme, the TA can notify the HTAs that a grade
+has changed and the HTAs can fully regenerate the students report, or the
+TA can directly make an override using the <code class="docutils literal notranslate"><span class="pre">/tabin/make-override</span></code> script
+then modifying the <code class="docutils literal notranslate"><span class="pre">grade-override.json</span></code> and <code class="docutils literal notranslate"><span class="pre">report-override.txt</span></code> files.</li>
+<li>The TA notifies an HTA that something has changed and the HTA will
+make sure the grade has been updated properly and email the student
+their updated report.</li>
+</ol>
+</div>
+</div>
+<div class="section" id="rubrics">
+<span id="rubrics"></span><h3>Rubrics<a class="headerlink" href="#rubrics" title="Permalink to this headline">¶</a></h3>
+<p>If a TA is working on a rubric, they will go to
+<code class="docutils literal notranslate"><span class="pre">/ta/grading/data/rubrics/asgn-name/q#.json</span></code> and enter a JSON file with the
+rubric for the assignment in it. This is probably the most tedious part of the
+grading app as writing raw JSON is frustrating, but once you’ve done it once
+or twice it’s not that bad. There are scripts to check that a rubric has been
+written correctly in <code class="docutils literal notranslate"><span class="pre">/tabin/cs111-check-rubric</span></code>.</p>
+</div>
+</div>
+<div class="section" id="what-the-flow-looks-like-for-htas">
+<span id="what-the-flow-looks-like-for-htas"></span><h2>What the flow looks like for HTAs<a class="headerlink" href="#what-the-flow-looks-like-for-htas" title="Permalink to this headline">¶</a></h2>
+<p>As the flow is meant to be easy for students and TAs, a lot of the work falls
+onto the HTAs. I did my best to simplify things as much as possible though!</p>
+<div class="section" id="one-time-setup">
+<span id="one-time-setup"></span><h3>One-time setup<a class="headerlink" href="#one-time-setup" title="Permalink to this headline">¶</a></h3>
+<p>There is a good amount of setup needed before the semester starts. The handin
+system needs the credentials of a Google account with a API client set up,
+and the system needs files with information about the students taking the class
+to function properly. This setup process is documented in ADD LINK.</p>
+<p>After this one-time setup is done, the next year all the HTAs should need to do
+is run <code class="docutils literal notranslate"><span class="pre">cs111-asgn-hub</span></code> and reset the course (which backs up then clears all
+student-related files and resets all grading/handin progress)</p>
+</div>
+<div class="section" id="weekly-setup">
+<span id="weekly-setup"></span><h3>Weekly setup<a class="headerlink" href="#weekly-setup" title="Permalink to this headline">¶</a></h3>
+<ol class="simple">
+<li>Every time there is a new assignment, it needs to go into
+<code class="docutils literal notranslate"><span class="pre">/ta/assignments.json</span></code>. There is a script to add new assignments in the proper
+format to this JSON file in <code class="docutils literal notranslate"><span class="pre">/ta/cs111-add-asgn</span></code>. The JSON is used for both
+handin and grading so the same information doesn’t need to be entered twice.</li>
+<li>When grading needs to start for an assignment, the HTA runs <code class="docutils literal notranslate"><span class="pre">cs111-asgn-hub</span></code>
+and starts the grading.</li>
+<li>Once grading is complete, the HTA runs <code class="docutils literal notranslate"><span class="pre">cs111-asgn-hub</span></code> to generate grade
+reports. Once the grade reports are reviewed (either by eye or using some
+script), grade reports are sent through <code class="docutils literal notranslate"><span class="pre">cs111-asgn-hub</span></code>.</li>
+<li>The HTA can optionally run <code class="docutils literal notranslate"><span class="pre">cs111-asgn-hub</span></code> to deanonymize assignments so
+that TAs can do grade adjustments.</li>
+</ol>
+</div>
+<div class="section" id="regrading">
+<span id="id1"></span><h3>Regrading<a class="headerlink" href="#regrading" title="Permalink to this headline">¶</a></h3>
+<p>HTAs can do grade overrides in the same way TAs do, and can email them to
+students using <code class="docutils literal notranslate"><span class="pre">cs111-asgn-hub</span></code>. They can also use <code class="docutils literal notranslate"><span class="pre">cs111-asgn-hub</span></code> to
+regenerate reports for individual students.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="filesystem.html" class="btn btn-neutral float-right" title="Filesystem" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="CS Grading App documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Customizing the grading/handin scripts &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Filesystem" href="filesystem.html" />
+    <link rel="prev" title="UTA Relevant Documentation" href="ta-doc.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Plain English READMEs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Customizing the grading/handin scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-the-grading-app-website">Customizing the grading app website</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-testsuites">Customizing testsuites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-handin">Customizing handin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#changing-grading-rubric-format">Changing grading rubric format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-grades-and-grade-reports">Customizing grades and grade reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-grade-reports">Customizing grade reports</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">ta/grading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#hta-grading">hta/grading</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="readmes.html">Plain English READMEs</a> &raquo;</li>
+        
+      <li>Customizing the grading/handin scripts</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/customization.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="customizing-the-grading-handin-scripts">
+<span id="customizing-the-grading-handin-scripts"></span><h1>Customizing the grading/handin scripts<a class="headerlink" href="#customizing-the-grading-handin-scripts" title="Permalink to this headline">¶</a></h1>
+<p>All scripts for the system are written in Python and are (largely) documented,
+so <em>hopefully</em> it won’t be that hard to customize things to match your needs.</p>
+<p>Before changing anything, it’s a good idea to understand the
+<a class="reference external" href="filesystem.html">filesystem</a> of the repository, and have a good understanding
+of the
+<a class="reference external" href="https://docs.python.org/3/library/typing.html">Python typing module</a>. All
+scripts are written in Python 3.7 and use the <code class="docutils literal notranslate"><span class="pre">/ta/venv</span></code> virtual environment.</p>
+<div class="section" id="customizing-the-grading-app-website">
+<span id="customizing-the-grading-app-website"></span><h2>Customizing the grading app website<a class="headerlink" href="#customizing-the-grading-app-website" title="Permalink to this headline">¶</a></h2>
+<p><strong>Difficulty</strong>: Depends on what you’re doing… probably not that bad.</p>
+<p>All code specific to the web app can be found in the <code class="docutils literal notranslate"><span class="pre">/ta/grading</span></code> folder.
+The most relevant files there are <code class="docutils literal notranslate"><span class="pre">static/main.js</span></code>, <code class="docutils literal notranslate"><span class="pre">templates</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">grading_app.py</span></code>. The web app interfaces with <code class="docutils literal notranslate"><span class="pre">classes.py</span></code> which handles the
+logic of extracting, saving, running tests, etc.</p>
+</div>
+<div class="section" id="customizing-testsuites">
+<span id="customizing-testsuites"></span><h2>Customizing testsuites<a class="headerlink" href="#customizing-testsuites" title="Permalink to this headline">¶</a></h2>
+<p><strong>Difficulty</strong>: Easy from the grading app perspective, but you’ll have to
+write the testsuite scripts.</p>
+<p>If you want to add a new language (right now there is just Python and Pyret),
+go to <code class="docutils literal notranslate"><span class="pre">/ta/grading/classes.py</span></code> and look for the <code class="docutils literal notranslate"><span class="pre">run_test</span></code> <code class="docutils literal notranslate"><span class="pre">Handin</span></code> method.</p>
+<p>From there, it should be relatively self-explanatory; the <code class="docutils literal notranslate"><span class="pre">python_test</span></code>
+method should give you an idea of how to start.</p>
+<p>The other thing you need to do is make sure that when you add questions to
+<code class="docutils literal notranslate"><span class="pre">/ta/assignments.json</span></code>, the <code class="docutils literal notranslate"><span class="pre">&quot;test-ext&quot;</span></code> attribute of each question is set to
+the correct file extension; it is in <code class="docutils literal notranslate"><span class="pre">run_test</span></code> that you use this extension.
+So if you are adding Java support, you might put <code class="docutils literal notranslate"><span class="pre">&quot;test-ext&quot;:</span> <span class="pre">&quot;java&quot;</span></code> in
+<code class="docutils literal notranslate"><span class="pre">assignments.json</span></code> for any questions using java testing, then add an if
+statement in <code class="docutils literal notranslate"><span class="pre">run_test</span></code> that calls the appropriate method
+<code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">test_type</span> <span class="pre">==</span> <span class="pre">'java'</span></code>.</p>
+</div>
+<div class="section" id="customizing-handin">
+<span id="customizing-handin"></span><h2>Customizing handin<a class="headerlink" href="#customizing-handin" title="Permalink to this headline">¶</a></h2>
+<p><strong>Difficulty</strong>: Easy to moderate depending on what you’re doing</p>
+<p>If you do not want to use Google Forms for handin, or would like to use Google
+Forms in a different way, that is probably fine as long as you stick with
+the current framework of “each question has one file” and put things into the
+<code class="docutils literal notranslate"><span class="pre">/hta/handin/students/login/asgn-name/#-submission/files</span></code> directories.</p>
+<p>This directory works as follows:</p>
+<p>Each student gets their own directory. Each student directory has one directory
+per assignment. In each assignment directory, there will be one directory per
+submission. The submission directory names should follow
+(sub-numb)-submission(-late). When grading starts, the latest submission will
+be copied to the grading directory for the grading app to work properly.</p>
+<p>Note: you should either require students to submit the proper filenames and
+reject any files that do not exactly match, or rename files to the proper
+filename and warn students you have done so (the default in this system).</p>
+<p>The grading app will not be able to handle filenames differing from what is
+expected (it won’t break anything but it just won’t work for testsuites etc.).</p>
+<p>The late flag should be used for late submissions, and will be passed as a
+boolean parameter to the function that determines a student’s grade.</p>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">hta</span><span class="o">/</span><span class="n">handin</span><span class="o">/</span><span class="n">students</span>
+    <span class="n">eberkowi</span>
+        <span class="n">homework1</span>
+            <span class="mi">1</span><span class="o">-</span><span class="n">submission</span>
+                <span class="n">flags</span><span class="o">.</span><span class="n">arr</span>
+            <span class="mi">2</span><span class="o">-</span><span class="n">submission</span>
+                <span class="n">flags</span><span class="o">.</span><span class="n">arr</span>
+            <span class="mi">3</span><span class="o">-</span><span class="n">submission</span><span class="o">-</span><span class="n">late</span>
+                <span class="n">flags</span><span class="o">.</span><span class="n">arr</span>
+</pre></div>
+</div>
+<p>If you need to modify this directory structure, the scripts that will need to
+be modified are:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">/hta/handin/check_submissions.py</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">/hta/grading/hta_classes.py</span></code> under the <code class="docutils literal notranslate"><span class="pre">_generate_report</span></code> method</li>
+</ul>
+</div>
+<div class="section" id="changing-grading-rubric-format">
+<span id="changing-grading-rubric-format"></span><h2>Changing grading rubric format<a class="headerlink" href="#changing-grading-rubric-format" title="Permalink to this headline">¶</a></h2>
+<p><strong>Difficulty</strong>: V annoying</p>
+<p>Avoid doing this if you can. If you don’t want categorized grading, just
+change how reports and grades are generated
+(see <a class="reference external" href="#customizing-grade-reports">below</a>).</p>
+<p>The type for a rubric is laid out in <code class="docutils literal notranslate"><span class="pre">/ta/grading/custom_types.py</span></code>
+and is used for rubric validation and assumed as the format for all rubrics
+for all assignments. If you change the type of this, you should run <code class="docutils literal notranslate"><span class="pre">lintall</span></code>
+to check where you will need to update code logic to match your new types.</p>
+<p>You will also need to change how the web app renders the rubric. The logic
+for this is almost entirely in <code class="docutils literal notranslate"><span class="pre">/ta/grading/static/main.js</span></code> and
+<code class="docutils literal notranslate"><span class="pre">/ta/grading/templates/rubric.html</span></code>. You will also need to handle how the
+Flask application handles when a TA saves a rubric, which will be in
+<code class="docutils literal notranslate"><span class="pre">/ta/grading/grading_app.py</span></code> under the <code class="docutils literal notranslate"><span class="pre">save_handin</span></code> route and in
+<code class="docutils literal notranslate"><span class="pre">/ta/grading/classes.py</span></code> under the <code class="docutils literal notranslate"><span class="pre">save_data</span></code> method.</p>
+<p>Finally, you will need to change how rubrics are converted to raw grades
+in <code class="docutils literal notranslate"><span class="pre">/ta/grading/course_customization.py</span></code> under the <code class="docutils literal notranslate"><span class="pre">generate_grade_report</span></code>
+method.</p>
+<p>This will also break some of the scripts in <code class="docutils literal notranslate"><span class="pre">/tabin</span></code> and <code class="docutils literal notranslate"><span class="pre">/htabin</span></code> though
+I don’t think anything critical. <code class="docutils literal notranslate"><span class="pre">lintall</span></code> should help.</p>
+<p>I would highly recommend against changing rubric format during the semester.</p>
+</div>
+<div class="section" id="customizing-grades-and-grade-reports">
+<span id="customizing-grades-and-grade-reports"></span><h2>Customizing grades and grade reports<a class="headerlink" href="#customizing-grades-and-grade-reports" title="Permalink to this headline">¶</a></h2>
+<p><strong>Difficulty</strong>: Hopefully not that bad</p>
+<p>Customizing grades shouldn’t be that bad. The types for RawGrade and Grade
+are outlined in <code class="docutils literal notranslate"><span class="pre">custom_types.py</span></code>. The flow is <code class="docutils literal notranslate"><span class="pre">Rubric</span> <span class="pre">-&gt;</span> <span class="pre">RawGrade</span> <span class="pre">-&gt;</span> <span class="pre">Grade</span></code>.
+I would mess only with the <code class="docutils literal notranslate"><span class="pre">RawGrade</span> <span class="pre">-&gt;</span> <span class="pre">Grade</span></code> bit, which is in the
+<code class="docutils literal notranslate"><span class="pre">determine_grade</span></code> function in <code class="docutils literal notranslate"><span class="pre">/ta/grading/course_customization.py</span></code> file.</p>
+<p>If possible, stick with grades being strings floats or dictionaries of strings
+mapping to either floats or strings, so nothing will have to be updated except
+how reports and grades are generated in <code class="docutils literal notranslate"><span class="pre">course_customization.py</span></code>.</p>
+<p><strong>Example</strong>: You want all grades to be numeric. You would go to
+<code class="docutils literal notranslate"><span class="pre">course_customization.py</span></code> and change <code class="docutils literal notranslate"><span class="pre">determine_grade</span></code> to output something like
+“52 / 60” (summing the student’s points / summing the total possible points).</p>
+<p><strong>Example</strong>: You want to use a different grading scheme for one assignment.
+You would go to  <code class="docutils literal notranslate"><span class="pre">course_customization.py</span></code> and under <code class="docutils literal notranslate"><span class="pre">determine_grade</span></code> add
+logic to check which assignment is being graded or how to read the bracket file
+so that it outputs <code class="docutils literal notranslate"><span class="pre">&quot;52</span> <span class="pre">/</span> <span class="pre">60&quot;</span></code> for certain assignments and</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;Functionality&quot;</span><span class="p">:</span> <span class="s2">&quot;13 / 15&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Clarity&quot;</span><span class="p">:</span> <span class="s2">&quot;12 / 16&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>for others.</p>
+</div>
+<div class="section" id="customizing-grade-reports">
+<span id="customizing-grade-reports"></span><h2>Customizing grade reports<a class="headerlink" href="#customizing-grade-reports" title="Permalink to this headline">¶</a></h2>
+<p><strong>Difficulty</strong>: Relatively easy?</p>
+<p>The logic for grade report generating is in the <code class="docutils literal notranslate"><span class="pre">get_handin_report_str</span></code>
+function in <code class="docutils literal notranslate"><span class="pre">/ta/grading/course_customization.py</span></code> and the <code class="docutils literal notranslate"><span class="pre">_generate_report</span></code>
+method in <code class="docutils literal notranslate"><span class="pre">/hta/grading/hta_classes.py</span></code>.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="filesystem.html" class="btn btn-neutral float-right" title="Filesystem" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="ta-doc.html" class="btn btn-neutral" title="UTA Relevant Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
