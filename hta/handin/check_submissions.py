@@ -315,7 +315,6 @@ class Response:
     def add_to_log(self):
         with open(log_path, 'a') as f:
             f.write('%s\n' % self.ident)
-            f.flush()
 
     def create_directory(self):
         base = data['base_path'] #change to /course/cs0111/hta/...
