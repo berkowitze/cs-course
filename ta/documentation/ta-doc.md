@@ -21,7 +21,7 @@ The major changes are:
 #### New comments
 - You can now drag comments around to re-order them. *This means that the order
 you give comments in is the order they will show up in on the student's grade
-report (before it was based on comment length)*.
+report* (before it was based on comment length).
 - You can now click away from comments without losing your progress.
 - You can now left click comments to edit them.
 - You can now delete old comments.
@@ -32,6 +32,10 @@ Every category will have an option for you to give a student fudge points.
 If you are using numerical grading (not category grading like Check Check Plus
 etc) you should explain why you are giving the fudge points and how many
 in a comment.
+
+#### Rubrics
+Point values are now displayed for each rubric category (i.e. out of 14 points)
+and for each rubric option.
 
 #### Emoji
 If a student did a great job, you can select the checkbox at the bottom of
@@ -61,6 +65,15 @@ on the student's emailed report as the one you will see if you click
 the `View report` button.
 
 ## How to write rubrics
+
+To be able to write rubrics, you should have an idea of what JSON is. At a
+high level, JSON is a format for data and is an easy way to store data in a
+file. To learn more about JSON, read this link:
+https://realpython.com/python-json/
+You definitely don't need to read the whole article; just get the idea of
+what JSON is and if you want, how to interface with it using Python. No need
+to read the "A Real World Example (sort of)" example.
+
 Each Assignment is comprised of a list of Questions. Each Question has a single
 file associated with it that students will upload. For example, Homework 2
 might have a `safety.arr` and `reflections.txt` questions. That means two
@@ -76,19 +89,20 @@ The directory structure may then look like this:
 ```
 
 Each rubric is a dictionary. At the top level, the dictionary has three keys:
-    - `emoji`: value is a boolean, whether or not the student gets an ascii art
-    emoji for their handin. For rubrics you put in `/ta/grading/data/rubrics`
-    (question-level rubrics), this value should be `false`.
-    - `comments`: a dictionary of given and un_given comments. For
-    question-level rubrics, the given key should have an empty list value, and
-    the un_given key should have a list of any global comments as the value.
-    - `rubric`: a dictionary with one key per grade category (with the key
-    describing the grade category) and the value being a dictionary with
-    a comments key, a rubric_items key, and a fudge_points key.
-    - The fudge points key should have a list with two floats in it as its
-    value. For question-level rubrics, the first value should be 0.0 as it is
-    the number of fudge points given. The second value should be the (positive)
-    maximum number of fudge points to allow giving.
+
+- `emoji`: value is a boolean, whether or not the student gets an ascii art
+emoji for their handin. For rubrics you put in `/ta/grading/data/rubrics`
+(question-level rubrics), this value should be `false`.
+- `comments`: a dictionary of given and un_given comments. For
+question-level rubrics, the given key should have an empty list value, and
+the un_given key should have a list of any global comments as the value.
+- `rubric`: a dictionary with one key per grade category (with the key
+describing the grade category) and the value being a dictionary with
+a comments key, a rubric_items key, and a fudge_points key.
+- The fudge points key should have a list with two floats in it as its
+value. For question-level rubrics, the first value should be 0.0 as it is
+the number of fudge points given. The second value should be the (positive)
+maximum number of fudge points to allow giving.
 
 Once you have written a rubric, check that is valid by running
 `cs111-check-rubric path-to-rubric.json`

@@ -1,14 +1,20 @@
 from __future__ import annotations
 
+import os
 import json
+import random
 from textwrap import fill
 from typing import Sequence, TYPE_CHECKING
 
 from custom_types import *
-from helpers import locked_file
+from helpers import locked_file, BASE_PATH
 
 if TYPE_CHECKING:
     from classes import Question, Assignment
+
+
+emoji_path = os.path.join(BASE_PATH, 'ta/asciianimals')
+emojis = os.listdir(emoji_path)
 
 
 def increasing(lst: list) -> bool:
@@ -186,6 +192,14 @@ def get_handin_report_str(rubric: Rubric,
 
     gen_comments = rubric['comments']['given']
     report_str += comment_section('General Comments', gen_comments)
+
+    if rubric['emoji']:
+        emoji = random.choice(emojis)
+        em_path = os.path.join(emoji_path, emoji)
+        with locked_file(em_path) as f:
+            emoji_text = f.read()
+
+        report_str += f'\n{emoji_text}\n\n'
 
     report_str += f'Grader: {grader_login} ({grader_login}@cs.brown.edu)'
     report_str += f'\n\n{"-" * 74}\n'

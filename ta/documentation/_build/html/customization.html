@@ -28,8 +28,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="ta/grading" href="modules.html" />
-    <link rel="prev" title="Filesystem" href="filesystem.html" /> 
+    <link rel="next" title="Filesystem" href="filesystem.html" />
+    <link rel="prev" title="UTA Relevant Documentation" href="ta-doc.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -80,9 +80,12 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Plain English READMEs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Customizing the grading/handin scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-the-grading-app-website">Customizing the grading app website</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#customizing-testsuites">Customizing testsuites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#customizing-handin">Customizing handin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#changing-grading-rubric-format">Changing grading rubric format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#customizing-grades-and-grade-reports">Customizing grades and grade reports</a></li>
@@ -136,6 +139,8 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
+          <li><a href="readmes.html">Plain English READMEs</a> &raquo;</li>
+        
       <li>Customizing the grading/handin scripts</li>
     
     
@@ -164,6 +169,30 @@ so <em>hopefully</em> it won’t be that hard to customize things to match your 
 of the
 <a class="reference external" href="https://docs.python.org/3/library/typing.html">Python typing module</a>. All
 scripts are written in Python 3.7 and use the <code class="docutils literal notranslate"><span class="pre">/ta/venv</span></code> virtual environment.</p>
+<div class="section" id="customizing-the-grading-app-website">
+<span id="customizing-the-grading-app-website"></span><h2>Customizing the grading app website<a class="headerlink" href="#customizing-the-grading-app-website" title="Permalink to this headline">¶</a></h2>
+<p><strong>Difficulty</strong>: Depends on what you’re doing… probably not that bad.</p>
+<p>All code specific to the web app can be found in the <code class="docutils literal notranslate"><span class="pre">/ta/grading</span></code> folder.
+The most relevant files there are <code class="docutils literal notranslate"><span class="pre">static/main.js</span></code>, <code class="docutils literal notranslate"><span class="pre">templates</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">grading_app.py</span></code>. The web app interfaces with <code class="docutils literal notranslate"><span class="pre">classes.py</span></code> which handles the
+logic of extracting, saving, running tests, etc.</p>
+</div>
+<div class="section" id="customizing-testsuites">
+<span id="customizing-testsuites"></span><h2>Customizing testsuites<a class="headerlink" href="#customizing-testsuites" title="Permalink to this headline">¶</a></h2>
+<p><strong>Difficulty</strong>: Easy from the grading app perspective, but you’ll have to
+write the testsuite scripts.</p>
+<p>If you want to add a new language (right now there is just Python and Pyret),
+go to <code class="docutils literal notranslate"><span class="pre">/ta/grading/classes.py</span></code> and look for the <code class="docutils literal notranslate"><span class="pre">run_test</span></code> <code class="docutils literal notranslate"><span class="pre">Handin</span></code> method.</p>
+<p>From there, it should be relatively self-explanatory; the <code class="docutils literal notranslate"><span class="pre">python_test</span></code>
+method should give you an idea of how to start.</p>
+<p>The other thing you need to do is make sure that when you add questions to
+<code class="docutils literal notranslate"><span class="pre">/ta/assignments.json</span></code>, the <code class="docutils literal notranslate"><span class="pre">&quot;test-ext&quot;</span></code> attribute of each question is set to
+the correct file extension; it is in <code class="docutils literal notranslate"><span class="pre">run_test</span></code> that you use this extension.
+So if you are adding Java support, you might put <code class="docutils literal notranslate"><span class="pre">&quot;test-ext&quot;:</span> <span class="pre">&quot;java&quot;</span></code> in
+<code class="docutils literal notranslate"><span class="pre">assignments.json</span></code> for any questions using java testing, then add an if
+statement in <code class="docutils literal notranslate"><span class="pre">run_test</span></code> that calls the appropriate method
+<code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">test_type</span> <span class="pre">==</span> <span class="pre">'java'</span></code>.</p>
+</div>
 <div class="section" id="customizing-handin">
 <span id="customizing-handin"></span><h2>Customizing handin<a class="headerlink" href="#customizing-handin" title="Permalink to this headline">¶</a></h2>
 <p><strong>Difficulty</strong>: Easy to moderate depending on what you’re doing</p>
@@ -268,10 +297,10 @@ method in <code class="docutils literal notranslate"><span class="pre">/hta/grad
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="modules.html" class="btn btn-neutral float-right" title="ta/grading" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="filesystem.html" class="btn btn-neutral float-right" title="Filesystem" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="filesystem.html" class="btn btn-neutral" title="Filesystem" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="ta-doc.html" class="btn btn-neutral" title="UTA Relevant Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

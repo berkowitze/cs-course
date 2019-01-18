@@ -285,6 +285,17 @@ def sandbox():
     return render_template('sandbox.html')
 
 
+def get_max_points(cat):
+    max_val = 0
+    for item in cat['rubric_items']:
+        max_val += max(map(lambda opt: opt['point_val'], item['options']))
+
+    return max_val
+
+
+app.jinja_env.globals.update(get_max_points=get_max_points)
+
+
 if __name__ == '__main__':
     port = args.port
     runtime_dir = os.path.dirname(os.path.abspath(__file__))
