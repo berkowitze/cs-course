@@ -1,0 +1,352 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hub_helpers module &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="hta_helpers module" href="hta_helpers.html" />
+    <link rel="prev" title="hta_classes module" href="hta_classes.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">ta/grading</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html#hta-grading">hta/grading</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="hta_classes.html">hta_classes module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">hub_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hta_helpers.html">hta_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html">prompts module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">ta/grading</a> &raquo;</li>
+        
+      <li>hub_helpers module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/hub_helpers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-hub_helpers">
+<span id="hub-helpers-module"></span><h1>hub_helpers module<a class="headerlink" href="#module-hub_helpers" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="hub_helpers.generate_grade_summaries">
+<code class="descclassname">hub_helpers.</code><code class="descname">generate_grade_summaries</code><span class="sig-paren">(</span><em>write: bool = False</em><span class="sig-paren">)</span> &#x2192; Dict[str, str]<a class="reference internal" href="_modules/hub_helpers.html#generate_grade_summaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.generate_grade_summaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate grade summaries for the course</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>write</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not to write the summaries into files in
+/hta/summaries, defaults to False</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dictionary of login -&gt; grade summary strings</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, str]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hub_helpers.generate_gradebook">
+<code class="descclassname">hub_helpers.</code><code class="descname">generate_gradebook</code><span class="sig-paren">(</span><em>path: Optional[str] = None</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hub_helpers.html#generate_gradebook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.generate_gradebook" title="Permalink to this definition">¶</a></dt>
+<dd><p>generates gradebook for the course</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – path to put gradebook in; puts in /hta/gradebook.tsv if None.
+defaults to None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hub_helpers.get_drill_data">
+<code class="descclassname">hub_helpers.</code><code class="descname">get_drill_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Tuple[Set[str], Set[str]]]<a class="reference internal" href="_modules/hub_helpers.html#get_drill_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_drill_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>collect drill information for this course</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dictionary of login -&gt; (completed drills, uncompleted drills)
+2-tuples, the tuple is comprised of sets</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, Tuple[Set[str], Set[str]]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hub_helpers.get_full_grade_dict">
+<code class="descclassname">hub_helpers.</code><code class="descname">get_full_grade_dict</code><span class="sig-paren">(</span><em>students: Optional[List[str]] = None</em><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Union[int, float, str, Dict[str, str], Dict[str, int]]]]<a class="reference internal" href="_modules/hub_helpers.html#get_full_grade_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_full_grade_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>get a dictionary of student -&gt; dictionary of grades</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>students</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – students for whom to collect grade info. if None, data
+for all students will be collected. defaults to None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dictionary of login -&gt; dictionary of
+(assignment mini_name -&gt; student’s grade for that assignment)
+dictionary values</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, Dict[str, Grade]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hub_helpers.get_lab_data">
+<code class="descclassname">hub_helpers.</code><code class="descname">get_lab_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Tuple[Dict[str, Set[str]], Set[str]]<a class="reference internal" href="_modules/hub_helpers.html#get_lab_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_lab_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>collect lab information for this course</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dictionary of login -&gt; attended labs set and a set of
+all the labs for the course</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Tuple[Dict[str, Set[str]], Set[str]]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hub_helpers.get_student_grade_dict">
+<code class="descclassname">hub_helpers.</code><code class="descname">get_student_grade_dict</code><span class="sig-paren">(</span><em>login: str</em><span class="sig-paren">)</span> &#x2192; Dict[str, Union[int, float, str, Dict[str, str], Dict[str, int]]]<a class="reference internal" href="_modules/hub_helpers.html#get_student_grade_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.get_student_grade_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>given a login, collect grade information for that student</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>login</strong> (<em>str</em>) – CS login of student for whom to collect grade info</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a dictionary of assignment mini_name -&gt; grade for that assignment</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Dict[str, Grade]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – no grades for this student</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hub_helpers.send_summaries">
+<code class="descclassname">hub_helpers.</code><code class="descname">send_summaries</code><span class="sig-paren">(</span><em>resummarize: Optional[bool] = None</em>, <em>override_email: Optional[str] = None</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hub_helpers.html#send_summaries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hub_helpers.send_summaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>send course grade summaries</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>resummarize</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em><em>, </em><em>optional</em>) – whether or not to regenerate grade summaries, or None
+to have program prompt whether or not to regenerate</li>
+<li><strong>override_email</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – email to send summaries to (for testing) or None
+to send to the student. defaults to None</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="hta_helpers.html" class="btn btn-neutral float-right" title="hta_helpers module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="hta_classes.html" class="btn btn-neutral" title="hta_classes module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
