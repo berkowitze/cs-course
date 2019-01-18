@@ -1,0 +1,15 @@
+*
+!.gitignore
+!asgnipython
+!better-members
+!cs111-asgn-hub
+!cs111-check-handins
+!cs111-get-grade-data
+!cs111-update-password
+!custom_types.py
+!group-data
+!helpers.py
+!hta-ta-file
+!lintall
+!login-to-email
+!update-groups

@@ -1,0 +1,12 @@
+*
+!.gitignore
+!BLOCKLIST_README
+!GRADING_README
+!INFRASTRUCTURE_README
+!fix-permissions.sh
+!grades
+!grading
+!groups
+!handin
+!s-t-blocklist.json
+!summaries

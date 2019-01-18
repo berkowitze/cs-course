@@ -1,0 +1,14 @@
+*
+!.gitignore
+!README
+!check_submissions.py
+!confirmation_template.html
+!filename_error_template.html
+!get_creds.py
+!googleapi.py
+!googlefile.py
+!helpers.py
+!reject_template.html
+!requirements.txt
+!students
+!submission_log.txt
