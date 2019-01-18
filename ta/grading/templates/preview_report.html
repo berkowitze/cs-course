@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Testsuite Results</title>
+    <script src="/static/jquery.js"></script>
+    <link rel="/static/atom-one-dark.min.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.ico">
+    <link href="/static/prism.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <script src="/static/prism.js"></script>
+    <pre><code id="code-content" class='language-python'>{{ report }}</code></pre>
+    <script>
+      $('pre code').each(function(i, block) {
+        Prism.highlightElement(block);
+      });
+    </script>
+  </body>
+</html>
