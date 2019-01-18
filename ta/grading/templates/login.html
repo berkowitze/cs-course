@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CS-A Grading Login</title>
+    <script src="/static/jquery.js"></script>
+    <script type="text/javascript">
+        function login(x) {
+            pass = $('#password').val()
+            $.post({
+                url: '/login',
+                data: {'password': pass}
+            })
+        }
+
+    </script>
+</head>
+<body>
+    {{ msg }}
+    <form action='/login' method='post' role='form'>
+        <label for='password'>Password</label>
+        <input type='password' name='password' id='password'>
+        <button type='submit'>Submit</button>
+    </form>
+</body>
+</html>

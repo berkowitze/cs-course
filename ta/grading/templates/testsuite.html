@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Testsuite Results</title>
+    <script src="/static/jquery.js"></script>
+    <link rel="/static/atom-one-dark.min.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.ico">
+    <link href="/static/prism.css" rel="stylesheet" type="text/css">
+    <script src="/static/clipboard.min.js"></script>
+    <script>
+      function copyCode(x) {
+        $(x).siblings('input').select();
+        document.execCommand('copy');
+      }
+    </script>
+  </head>
+  <body>
+    <script src='/static/prism.js'></script>
+    <button class='btn' data-clipboard-target='#code-content'>Copy results to clipboard</button>
+    <pre><code id="code-content" class='language-python'>{{ results }}</code></pre>
+    <script>
+      $('pre code').each(function(i, block) {
+        Prism.highlightElement(block);
+      });
+      new ClipboardJS('.btn', {
+        text: function(trigger) {
+          return $('#code-content').text();
+        }
+      });
+    </script>
+  </body>
+</html>
