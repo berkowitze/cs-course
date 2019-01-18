@@ -55,7 +55,7 @@ o1.wait()
 output = subprocess.check_output(['awk', '{print $2}'], stdin=o2.stdout)
 o2.wait()
 
-group_data = todict(output)
+group_data = todict(output.decode())
 
 o1 = subprocess.Popen(['ldapsearch', '-Q', '-LLL', '-E',
                       'pr=500/noprompt', f'cn={group_data["CN"]}'],
@@ -66,7 +66,7 @@ o1.wait()
 output = subprocess.check_output(['awk', '{print $2}'], stdin=o2.stdout)
 o2.wait()
 
-members = output.strip().split('\n')
+members = output.decode().strip().split('\n')
 
 data = list(map(todict, members))
 unames = [d['CN'] for d in data]

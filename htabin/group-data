@@ -42,7 +42,7 @@ def login_to_email(login: str) -> Tuple[str, bool]:
     try:
         login = login.lower().strip()
         userdata = subprocess.check_output(["ldapsearch", "-Q", f"cn={login}"])
-        ldap_email = re.search("mail:(.*)", userdata, re.MULTILINE)
+        ldap_email = re.search("mail:(.*)", userdata.decode(), re.MULTILINE)
         if ldap_email:
             email: str = ldap_email.group(1).strip()
             return email, True
@@ -71,7 +71,7 @@ def login_to_name(login: str) -> Tuple[str, bool]:
     login = login.lower().strip()
     try:
         userdata = subprocess.check_output(['ldapsearch', '-Q', f'cn={login}'])
-        ldap_name = re.search('gecos:(.*)', userdata, re.MULTILINE)
+        ldap_name = re.search('gecos:(.*)', userdata.decode(), re.MULTILINE)
         if ldap_name:
             return ldap_name.group(1).strip().split(',')[0].strip(), True
         else:
@@ -94,14 +94,14 @@ def get_logins_from_group(group_name: str) -> List[str]:
     :raises subprocess.CalledProcessError: Usually invalid group name
 
     """
-    cmd = [f'{BASE_PATH}/tabin/better-members', group_name]
+    cmd = [f'{BASE_PATH}/htabin/better-members', group_name]
     sp = subprocess.Popen(cmd,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE)
     out, err = sp.communicate()
     if out and not err:
         # success
-        return out.strip().split(' ')
+        return out.decode().strip().split(' ')
     elif not out and not err:
         # no members in group
         return []
