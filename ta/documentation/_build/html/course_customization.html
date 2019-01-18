@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>course_customization module &mdash; CS Grading App 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="custom_types module" href="custom_types.html" />
+    <link rel="prev" title="classes module" href="classes.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CS Grading App
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Plain English READMEs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">ta/grading</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="classes.html">classes module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">course_customization module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_types.html">custom_types module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="helpers.html">helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="update_rubric.html">update_rubric module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#hta-grading">hta/grading</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CS Grading App</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">ta/grading</a> &raquo;</li>
+        
+      <li>course_customization module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/course_customization.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-course_customization">
+<span id="course-customization-module"></span><h1>course_customization module<a class="headerlink" href="#module-course_customization" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="course_customization.determine_grade">
+<code class="descclassname">course_customization.</code><code class="descname">determine_grade</code><span class="sig-paren">(</span><em>raw_grade: RawGrade</em>, <em>late: bool</em>, <em>asgn: Assignment</em><span class="sig-paren">)</span> &#x2192; Grade<a class="reference internal" href="_modules/course_customization.html#determine_grade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.determine_grade" title="Permalink to this definition">¶</a></dt>
+<dd><p>given a raw grade (i.e. category -&gt; float dictionary), determine the
+student’s full grade (i.e. category -&gt; string dictionary)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>raw_grade</strong> (<em>RawGrade</em>) – a raw grade (defined in custom_types)</li>
+<li><strong>asgn</strong> (<a class="reference internal" href="classes.html#classes.Assignment" title="classes.Assignment"><em>Assignment</em></a>) – the Assignment for which to determine the grade</li>
+<li><strong>late</strong> (<em>bool</em>) – whether or not the student handed in the assignment late</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The grade to give the student (following spec from custom_types)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Grade</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">determine_grade</span><span class="p">({</span><span class="s2">&quot;Functionality&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;Design&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">},</span> <span class="s2">&quot;Homework1&quot;</span><span class="p">)</span>
+<span class="go">32</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">determine_grade</span><span class="p">({</span><span class="s2">&quot;Functionality&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;Design&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="s2">&quot;Homework 6&quot;</span><span class="p">)</span>
+<span class="go">{&quot;Functionality&quot;: &quot;Check Plus&quot;, &quot;Design&quot;: &quot;Check Minus&quot;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.full_asgn_name_to_dirname">
+<code class="descclassname">course_customization.</code><code class="descname">full_asgn_name_to_dirname</code><span class="sig-paren">(</span><em>asgn_name: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/course_customization.html#full_asgn_name_to_dirname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.full_asgn_name_to_dirname" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>asgn_name</strong> (<em>str</em>) – full name of assignment</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the string of the directory name to be used for that assignment.
+this directory name will be used for all grading app related
+filesystems</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">full_asgn_name_to_dirname</span><span class="p">(</span><span class="s2">&quot;Homework 3&quot;</span><span class="p">)</span>
+<span class="go">&quot;homework3&quot;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.get_empty_raw_grade">
+<code class="descclassname">course_customization.</code><code class="descname">get_empty_raw_grade</code><span class="sig-paren">(</span><em>asgn: Assignment</em><span class="sig-paren">)</span> &#x2192; RawGrade<a class="reference internal" href="_modules/course_customization.html#get_empty_raw_grade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.get_empty_raw_grade" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a dictionary with one key for every category on this assignment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>asgn</strong> (<a class="reference internal" href="classes.html#classes.Assignment" title="classes.Assignment"><em>Assignment</em></a>) – assignment to get empty raw grade for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">empty raw grade for this assignment</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">RawGrade</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_empty_raw_grade</span><span class="p">(</span><span class="n">Assignment</span><span class="p">(</span><span class="s2">&quot;Homework 4&quot;</span><span class="p">))</span>
+<span class="go">{&quot;Functionality&quot;: None, &quot;Design&quot;: None}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.get_handin_report_str">
+<code class="descclassname">course_customization.</code><code class="descname">get_handin_report_str</code><span class="sig-paren">(</span><em>rubric: Rubric</em>, <em>grader_login: str</em>, <em>question: Question</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/course_customization.html#get_handin_report_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.get_handin_report_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a report string that will be sent to the student with all relevant
+grade information</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rubric</strong> (<a class="reference internal" href="custom_types.html#custom_types.Rubric" title="custom_types.Rubric"><em>Rubric</em></a>) – rubric for the student</li>
+<li><strong>grader_login</strong> (<em>str</em>) – login of the grader for the assignment</li>
+<li><strong>question</strong> (<a class="reference internal" href="classes.html#classes.Question" title="classes.Question"><em>Question</em></a>) – question that was graded for this rubric</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">report string</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="course_customization.increasing">
+<code class="descclassname">course_customization.</code><code class="descname">increasing</code><span class="sig-paren">(</span><em>lst: list</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/course_customization.html#increasing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#course_customization.increasing" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns whether or not the input list is increasing (non-decreasing)
+(all numbers larger or equal to than previous numbers)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lst</strong> (<em>Sequence</em><em>[</em><em>float</em><em>]</em>) – sequence of numbers</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if lst is non-decreasing, False otherwise</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="custom_types.html" class="btn btn-neutral float-right" title="custom_types module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="classes.html" class="btn btn-neutral" title="classes module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Eli Berkowitz
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
