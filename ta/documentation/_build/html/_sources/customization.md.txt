@@ -9,6 +9,32 @@ of the
 [Python typing module](https://docs.python.org/3/library/typing.html). All
 scripts are written in Python 3.7 and use the `/ta/venv` virtual environment.
 
+## Customizing the grading app website
+**Difficulty**: Depends on what you're doing... probably not that bad.
+
+All code specific to the web app can be found in the `/ta/grading` folder.
+The most relevant files there are `static/main.js`, `templates`, and
+`grading_app.py`. The web app interfaces with `classes.py` which handles the
+logic of extracting, saving, running tests, etc.
+
+## Customizing testsuites
+**Difficulty**: Easy from the grading app perspective, but you'll have to
+write the testsuite scripts.
+
+If you want to add a new language (right now there is just Python and Pyret),
+go to `/ta/grading/classes.py` and look for the `run_test` `Handin` method.
+
+From there, it should be relatively self-explanatory; the `python_test`
+method should give you an idea of how to start.
+
+The other thing you need to do is make sure that when you add questions to
+`/ta/assignments.json`, the `"test-ext"` attribute of each question is set to
+the correct file extension; it is in `run_test` that you use this extension.
+So if you are adding Java support, you might put `"test-ext": "java"` in
+`assignments.json` for any questions using java testing, then add an if
+statement in `run_test` that calls the appropriate method
+`if test_type == 'java'`.
+
 ## Customizing handin
 **Difficulty**: Easy to moderate depending on what you're doing
 

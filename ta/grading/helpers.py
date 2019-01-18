@@ -12,8 +12,10 @@ from filelock import FileLock
 from custom_types import (Rubric, RubricCategory, RubricItem, RubricOption,
                           Bracket, BracketItem, Comments)
 
+pjoin = os.path.join
+
 BASE_PATH: str = '/course/cs0111'
-res_path: str = os.path.join(BASE_PATH, 'resource-lock.lock')
+res_path: str = pjoin(BASE_PATH, 'resource-lock.lock')
 
 
 @contextmanager

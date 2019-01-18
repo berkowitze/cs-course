@@ -1331,9 +1331,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">test_filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;No testsuite for this question&#39;</span>
+
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;tabin&#39;</span><span class="p">,</span> <span class="s1">&#39;python-test&#39;</span><span class="p">),</span>
                <span class="n">test_filepath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Handin.pyret_test"><a class="viewcode-back" href="../classes.html#classes.Handin.pyret_test">[docs]</a>    <span class="k">def</span> <span class="nf">pyret_test</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1345,34 +1348,41 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="n">filepath</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">code_filename</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
-            <span class="k">return</span> <span class="s1">&#39;No handin or missing handin&#39;</span>
-
-        <span class="n">test_dir</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span><span class="p">,</span> <span class="s1">&#39;TA_TESTS&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="n">test_dir</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">test_dir</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">):</span>
-            <span class="k">return</span> <span class="s1">&#39;No test file for this question: contact HTA&#39;</span>
-
-        <span class="n">test_filepath</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">test_dir</span><span class="p">,</span>
-                              <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">test_filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">):</span>
-            <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">,</span> <span class="n">test_filepath</span><span class="p">)</span>
-
-            <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
-                <span class="n">relpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">test_dir</span><span class="p">)</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;import file(&quot;</span><span class="si">{relpath}</span><span class="s1">&quot;) as SC</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-
-            <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s1">&#39;No testsuite for this question&#39;</span>
 
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;tabin&#39;</span><span class="p">,</span> <span class="s1">&#39;pyret-test&#39;</span><span class="p">),</span>
-               <span class="n">filepath</span><span class="p">,</span> <span class="n">test_filepath</span><span class="p">,</span> <span class="n">test_dir</span><span class="p">]</span>
+               <span class="n">test_filepath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span></div>
 
-        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span></div>
+        <span class="c1"># if not pexists(filepath):</span>
+        <span class="c1">#     return &#39;No handin or missing handin&#39;</span>
+
+        <span class="c1"># test_dir = pjoin(self.handin_path, &#39;TA_TESTS&#39;)</span>
+        <span class="c1"># if not pexists(test_dir):</span>
+        <span class="c1">#     os.mkdir(test_dir)</span>
+
+        <span class="c1"># if not pexists(self.question.test_path):</span>
+        <span class="c1">#     return &#39;No test file for this question: contact HTA&#39;</span>
+
+        <span class="c1"># test_filepath = pjoin(test_dir,</span>
+        <span class="c1">#                       os.path.split(self.question.test_path)[1])</span>
+        <span class="c1"># if not pexists(test_filepath):</span>
+        <span class="c1">#     shutil.copyfile(self.question.test_path, test_filepath)</span>
+
+        <span class="c1">#     with locked_file(test_filepath, &#39;r&#39;) as f:</span>
+        <span class="c1">#         lines = f.readlines()</span>
+        <span class="c1">#         relpath = os.path.relpath(filepath, test_dir)</span>
+        <span class="c1">#         lines.insert(0, f&#39;import file(&quot;{relpath}&quot;) as SC\n&#39;)</span>
+
+        <span class="c1">#     with locked_file(test_filepath, &#39;w&#39;) as f:</span>
+        <span class="c1">#         f.writelines(lines)</span>
+
+        <span class="c1"># cmd = [pjoin(BASE_PATH, &#39;tabin&#39;, &#39;pyret-test&#39;),</span>
+        <span class="c1">#        filepath, test_filepath, test_dir]</span>
+
+        <span class="c1"># return subprocess.check_output(cmd).decode(&#39;utf-8&#39;)</span>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span>

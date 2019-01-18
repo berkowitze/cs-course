@@ -21,7 +21,7 @@ The major changes are:
 #### New comments
 - You can now drag comments around to re-order them. *This means that the order
 you give comments in is the order they will show up in on the student's grade
-report (before it was based on comment length)*.
+report* (before it was based on comment length).
 - You can now click away from comments without losing your progress.
 - You can now left click comments to edit them.
 - You can now delete old comments.
@@ -32,6 +32,10 @@ Every category will have an option for you to give a student fudge points.
 If you are using numerical grading (not category grading like Check Check Plus
 etc) you should explain why you are giving the fudge points and how many
 in a comment.
+
+#### Rubrics
+Point values are now displayed for each rubric category (i.e. out of 14 points)
+and for each rubric option.
 
 #### Emoji
 If a student did a great job, you can select the checkbox at the bottom of
@@ -60,7 +64,7 @@ Note that the emoji given is randomly selected and will not be the same one
 on the student's emailed report as the one you will see if you click
 the `View report` button.
 
-## How to write rubrics and testsuites
+## How to write rubrics
 Each Assignment is comprised of a list of Questions. Each Question has a single
 file associated with it that students will upload. For example, Homework 2
 might have a `safety.arr` and `reflections.txt` questions. That means two
@@ -76,19 +80,20 @@ The directory structure may then look like this:
 ```
 
 Each rubric is a dictionary. At the top level, the dictionary has three keys:
-    - `emoji`: value is a boolean, whether or not the student gets an ascii art
-    emoji for their handin. For rubrics you put in `/ta/grading/data/rubrics`
-    (question-level rubrics), this value should be `false`.
-    - `comments`: a dictionary of given and un_given comments. For
-    question-level rubrics, the given key should have an empty list value, and
-    the un_given key should have a list of any global comments as the value.
-    - `rubric`: a dictionary with one key per grade category (with the key
-    describing the grade category) and the value being a dictionary with
-    a comments key, a rubric_items key, and a fudge_points key.
-    - The fudge points key should have a list with two floats in it as its
-    value. For question-level rubrics, the first value should be 0.0 as it is
-    the number of fudge points given. The second value should be the (positive)
-    maximum number of fudge points to allow giving.
+
+- `emoji`: value is a boolean, whether or not the student gets an ascii art
+emoji for their handin. For rubrics you put in `/ta/grading/data/rubrics`
+(question-level rubrics), this value should be `false`.
+- `comments`: a dictionary of given and un_given comments. For
+question-level rubrics, the given key should have an empty list value, and
+the un_given key should have a list of any global comments as the value.
+- `rubric`: a dictionary with one key per grade category (with the key
+describing the grade category) and the value being a dictionary with
+a comments key, a rubric_items key, and a fudge_points key.
+- The fudge points key should have a list with two floats in it as its
+value. For question-level rubrics, the first value should be 0.0 as it is
+the number of fudge points given. The second value should be the (positive)
+maximum number of fudge points to allow giving.
 
 Once you have written a rubric, check that is valid by running
 `cs111-check-rubric path-to-rubric.json`
@@ -142,3 +147,26 @@ For example:
     }
 }
 ```
+
+## How to write testsuites
+
+The grading app already knows how to run Python testsuites. If you want to try
+Pyret testsuites, go for it, but it's super slow and you don't get good info
+out of it so I recommend having Pyret testsuites just print out what to copy
+paste into Pyret and then just run it in browser.
+
+For Python, there is a more involved infrastructure for writing testsuites.
+If you want the testsuite results to feed into the student's grade
+automatically, you will need to update the code for that (see the 
+[customization documentation](customization.html#customizing-testsuites)).
+
+You can see an example of a Python testsuite in
+`/ta/grading/data/tests/fun.py`. If you want to modify the testsuite
+infrastructure, you will need to go into the `testing_helpers.py` file.
+
+`fun.py` is a testing file where students might write a two functions,
+`append` and `remove-3s`.
+
+If you want to add new languages, look at the
+[customization documentation](customization.html#customizing-testsuites). It
+shouldn't be too difficult!

@@ -424,6 +424,7 @@
 <span class="sd">                            (empty directory login/mini_name)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files_path</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">student</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_login_to_id_map</span><span class="p">:</span>
             <span class="n">ident</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_login_to_id_map</span><span class="p">[</span><span class="n">student</span><span class="p">]</span>
             <span class="n">sub_path</span> <span class="o">=</span> <span class="n">latest_submission_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span><span class="p">,</span>

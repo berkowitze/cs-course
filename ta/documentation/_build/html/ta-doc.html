@@ -27,7 +27,9 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Customizing the grading/handin scripts" href="customization.html" />
+    <link rel="prev" title="HTA Relevant Documentation" href="hta-doc.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -77,7 +79,25 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="readmes.html">Plain English READMEs</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="hta-doc.html">HTA Relevant Documentation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">UTA Relevant Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-grade">How to grade</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#updated-grading-app">Updated grading app</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-write-rubrics">How to write rubrics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-write-testsuites">How to write testsuites</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
@@ -128,6 +148,8 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
+          <li><a href="readmes.html">Plain English READMEs</a> &raquo;</li>
+        
       <li>UTA Relevant Documentation</li>
     
     
@@ -173,7 +195,7 @@ and at the top of the page there is a button to view the student code.</li>
 <ul class="simple">
 <li>You can now drag comments around to re-order them. <em>This means that the order
 you give comments in is the order they will show up in on the student’s grade
-report (before it was based on comment length)</em>.</li>
+report</em> (before it was based on comment length).</li>
 <li>You can now click away from comments without losing your progress.</li>
 <li>You can now left click comments to edit them.</li>
 <li>You can now delete old comments.</li>
@@ -186,6 +208,11 @@ report (before it was based on comment length)</em>.</li>
 If you are using numerical grading (not category grading like Check Check Plus
 etc) you should explain why you are giving the fudge points and how many
 in a comment.</p>
+</div>
+<div class="section" id="rubrics">
+<span id="rubrics"></span><h4>Rubrics<a class="headerlink" href="#rubrics" title="Permalink to this headline">¶</a></h4>
+<p>Point values are now displayed for each rubric category (i.e. out of 14 points)
+and for each rubric option.</p>
 </div>
 <div class="section" id="emoji">
 <span id="emoji"></span><h4>Emoji<a class="headerlink" href="#emoji" title="Permalink to this headline">¶</a></h4>
@@ -216,8 +243,8 @@ the <code class="docutils literal notranslate"><span class="pre">View</span> <sp
 </div>
 </div>
 </div>
-<div class="section" id="how-to-write-rubrics-and-testsuites">
-<span id="how-to-write-rubrics-and-testsuites"></span><h2>How to write rubrics and testsuites<a class="headerlink" href="#how-to-write-rubrics-and-testsuites" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="how-to-write-rubrics">
+<span id="how-to-write-rubrics"></span><h2>How to write rubrics<a class="headerlink" href="#how-to-write-rubrics" title="Permalink to this headline">¶</a></h2>
 <p>Each Assignment is comprised of a list of Questions. Each Question has a single
 file associated with it that students will upload. For example, Homework 2
 might have a <code class="docutils literal notranslate"><span class="pre">safety.arr</span></code> and <code class="docutils literal notranslate"><span class="pre">reflections.txt</span></code> questions. That means two
@@ -230,20 +257,22 @@ rubrics need to be written for homework 2.</p>
         <span class="n">q2</span><span class="o">.</span><span class="n">json</span> <span class="c1"># rubric for reflections.txt</span>
 </pre></div>
 </div>
-<p>Each rubric is a dictionary. At the top level, the dictionary has three keys:
-- <code class="docutils literal notranslate"><span class="pre">emoji</span></code>: value is a boolean, whether or not the student gets an ascii art
+<p>Each rubric is a dictionary. At the top level, the dictionary has three keys:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">emoji</span></code>: value is a boolean, whether or not the student gets an ascii art
 emoji for their handin. For rubrics you put in <code class="docutils literal notranslate"><span class="pre">/ta/grading/data/rubrics</span></code>
-(question-level rubrics), this value should be <code class="docutils literal notranslate"><span class="pre">false</span></code>.
-- <code class="docutils literal notranslate"><span class="pre">comments</span></code>: a dictionary of given and un_given comments. For
+(question-level rubrics), this value should be <code class="docutils literal notranslate"><span class="pre">false</span></code>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">comments</span></code>: a dictionary of given and un_given comments. For
 question-level rubrics, the given key should have an empty list value, and
-the un_given key should have a list of any global comments as the value.
-- <code class="docutils literal notranslate"><span class="pre">rubric</span></code>: a dictionary with one key per grade category (with the key
+the un_given key should have a list of any global comments as the value.</li>
+<li><code class="docutils literal notranslate"><span class="pre">rubric</span></code>: a dictionary with one key per grade category (with the key
 describing the grade category) and the value being a dictionary with
-a comments key, a rubric_items key, and a fudge_points key.
-- The fudge points key should have a list with two floats in it as its
+a comments key, a rubric_items key, and a fudge_points key.</li>
+<li>The fudge points key should have a list with two floats in it as its
 value. For question-level rubrics, the first value should be 0.0 as it is
 the number of fudge points given. The second value should be the (positive)
-maximum number of fudge points to allow giving.</p>
+maximum number of fudge points to allow giving.</li>
+</ul>
 <p>Once you have written a rubric, check that is valid by running
 <code class="docutils literal notranslate"><span class="pre">cs111-check-rubric</span> <span class="pre">path-to-rubric.json</span></code></p>
 <p>For example:
@@ -296,6 +325,25 @@ maximum number of fudge points to allow giving.</p>
 </div>
 </div>
 </div>
+<div class="section" id="how-to-write-testsuites">
+<span id="how-to-write-testsuites"></span><h2>How to write testsuites<a class="headerlink" href="#how-to-write-testsuites" title="Permalink to this headline">¶</a></h2>
+<p>The grading app already knows how to run Python testsuites. If you want to try
+Pyret testsuites, go for it, but it’s super slow and you don’t get good info
+out of it so I recommend having Pyret testsuites just print out what to copy
+paste into Pyret and then just run it in browser.</p>
+<p>For Python, there is a more involved infrastructure for writing testsuites.
+If you want the testsuite results to feed into the student’s grade
+automatically, you will need to update the code for that (see the
+<a class="reference external" href="customization.html#customizing-testsuites">customization documentation</a>).</p>
+<p>You can see an example of a Python testsuite in
+<code class="docutils literal notranslate"><span class="pre">/ta/grading/data/tests/fun.py</span></code>. If you want to modify the testsuite
+infrastructure, you will need to go into the <code class="docutils literal notranslate"><span class="pre">testing_helpers.py</span></code> file.</p>
+<p><code class="docutils literal notranslate"><span class="pre">fun.py</span></code> is a testing file where students might write a two functions,
+<code class="docutils literal notranslate"><span class="pre">append</span></code> and <code class="docutils literal notranslate"><span class="pre">remove-3s</span></code>.</p>
+<p>If you want to add new languages, look at the
+<a class="reference external" href="customization.html#customizing-testsuites">customization documentation</a>. It
+shouldn’t be too difficult!</p>
+</div>
 </div>
 
 
@@ -303,6 +351,15 @@ maximum number of fudge points to allow giving.</p>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="customization.html" class="btn btn-neutral float-right" title="Customizing the grading/handin scripts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="hta-doc.html" class="btn btn-neutral" title="HTA Relevant Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
