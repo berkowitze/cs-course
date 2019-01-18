@@ -6,7 +6,8 @@ from mypy_extensions import TypedDict
 
 from custom_types import (Comments, Rubric, RubricCategory,
                           RubricItem, RubricOption)
-
+from helpers import loaded_rubric_check, locked_file
+print(sys.argv[1])
 
 class _OldComment(TypedDict):
     comment: str
@@ -20,6 +21,7 @@ def _update_comments(comments: List[_OldComment]) -> Comments:
     :return: new comments
     """
     given = [c['comment'] for c in comments if c['value']]
+    given.sort(key=lambda s: -len(s))
     un_given = [c['comment'] for c in comments if not c['value']]
     res: Comments = {'given': given, 'un_given': un_given}
     return res
@@ -56,23 +58,30 @@ def update_rubric(old_rubric: Dict[str, Any]) -> Rubric:
     :return:
     """
     gen_comments: Comments = _update_comments(old_rubric.pop('_COMMENTS'))
+
     new_rubric: Dict[str, RubricCategory] = {}
     for key in list(old_rubric.keys()).copy():
         cat_data = old_rubric.pop(key)
         cat_comments = _update_comments(cat_data['comments'])
         cat_rub = _update_rubric_items(cat_data['rubric_items'])
-        new_cat = RubricCategory(comments=cat_comments, rubric_items=cat_rub)
+        new_cat = RubricCategory(comments=cat_comments,
+                                 rubric_items=cat_rub,
+                                 fudge_points=[0.0, 5.0])
         new_rubric[key] = new_cat
 
-    final_rubric: Rubric = Rubric(comments=gen_comments, rubric=new_rubric)
+    final_rubric: Rubric = Rubric(comments=gen_comments, rubric=new_rubric, emoji=False)
     return final_rubric
 
 
 if __name__ == '__main__':
-    with open(sys.argv[1]) as f:
-        data: Dict[str, Any] = json.load(f)
+    try:
+        with open(sys.argv[1]) as f:
+            data: Dict[str, Any] = json.load(f)
 
-    final_rubric = update_rubric(data)
-
-    with open(sys.argv[1].replace('.json', '') + '-new.json', 'w') as f:
-        json.dump(final_rubric, f, indent=2, sort_keys=True)
+        final_rubric = update_rubric(data)
+        loaded_rubric_check(final_rubric)
+        with open(sys.argv[1], 'w') as f:
+            json.dump(final_rubric, f, indent=2, sort_keys=True)
+    except:
+        with locked_file('hi.txt', 'a') as f:
+            f.write('failure in %s' % sys.argv[1])
