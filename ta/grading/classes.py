@@ -221,7 +221,6 @@ class Assignment:
         self.mini_name: str = full_asgn_name_to_dirname(self.full_name)
 
         self._json: dict = asgn_data['assignments'][self.full_name]
-
         self.due_date: dt = dt.strptime(self._json['due'], '%m/%d/%Y %I:%M%p')
         self.due: bool = self.due_date < dt.now()
         self.started: bool = self._json['grading_started']
