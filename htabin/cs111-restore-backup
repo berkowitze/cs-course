@@ -1,0 +1,57 @@
+#!/course/cs0111/ta/venv/bin/python
+
+import os
+import sys
+import subprocess
+
+from helpers import BASE_PATH, pjoin, red
+from prompts import opt_prompt, ez_prompt
+
+print('''
+The following files and folders will be restored:
+ta/assignments.json, ta/grading/data, hta/summaries, hta/handin/students,
+hta/grades, hta/groups, hta/grading/anonymization
+
+If you need finer control, you need to restore manually; the zip files
+are in /hta/data_backups.
+''')
+
+input('Press enter to continue')
+
+backup_path = pjoin(BASE_PATH, 'hta/data_backups')
+
+
+backups = [f for f in os.listdir(backup_path) if f.endswith('.zip')]
+if not backups:
+    print('No backups to restore. You can make one using cs111-asgn-hub')
+
+print('Which backup do you want to restore?')
+b = opt_prompt(backups)
+if b is None:
+    print('Exiting...')
+    sys.exit(1)
+
+backup = backups[b - 1]
+
+print(f'''
+A backup will be made before restoring this backup.
+No backups will be removed after restoration.
+
+Type CONFIRM to confirm restoration of {red(backup)}
+''')
+
+resp = ez_prompt('> ')
+if resp is None:
+    print('Exiting...')
+    sys.exit(1)
+elif resp != 'CONFIRM':
+    print('Exiting...')
+    sys.exit(1)
+
+print('Creating backup...')
+data_backup = pjoin(BASE_PATH, 'htabin/cs111-data-backup')
+subprocess.call(data_backup)
+
+os.chdir(BASE_PATH)
+subprocess.call(['unzip', '-qo', pjoin(backup_path, backup)])
+print('Restoration complete.')
