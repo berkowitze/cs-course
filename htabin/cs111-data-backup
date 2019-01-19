@@ -1,0 +1,25 @@
+#!/bin/sh
+
+BASE=/course/cs0111;
+BACKUPPATH=${BASE}/hta/data_backups;
+cd $BASE;
+
+if [[ $1 ]]; then
+    fname=$1;
+else
+    fname=$(echo `date +%Y-%m-%d_%H-%M-%S`.zip);
+fi;
+
+dest=${BACKUPPATH}/${fname};
+
+if [[ -e $dest ]]; then
+    echo "backup $1 already exists."
+    read -p "continue? [y/n]: " cont;
+    [ $cont == "y" ] || exit;
+fi;
+
+dirs=`echo ta/assignments.json ta/t-s-blocklist.json hta/s-t-blocklist.json hta/grading/anonymization ta/grading/grades ta/grading/data hta/summaries hta/handin/students hta/grades hta/groups`
+
+zip -qr $dest $dirs -x *.gitignore*;
+
+echo "backup to $fname complete.";

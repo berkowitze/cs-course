@@ -143,13 +143,8 @@
       "sent_emails": true
     }, 
     "Homework 2": {
-      "anonymous": false, 
-      "available": "06/01/2018 03:00PM", 
-      "due": "09/19/2018 06:00PM", 
       "grading_completed": true, 
       "grading_started": true, 
-      "group_asgn": false, 
-      "partner_data": null, 
       "questions": [
         {
           "col": "F", 

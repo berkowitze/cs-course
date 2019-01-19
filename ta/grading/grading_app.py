@@ -42,7 +42,7 @@ app.secret_key = '815tu28g78h8934tgju2893t0j83u2tfjt'
 # it's reset if you edit grading_app.py or classes.py while grading
 # so you need to refresh the page
 # todo: make this better. a lot better. if it's a problem.
-workflow = {}
+workflow = {'asgns': started_asgns()}
 
 # get logged in username
 username = getpass.getuser()
@@ -71,7 +71,7 @@ def is_logged_in(f: Callable) -> Callable:
 @is_logged_in
 def main():
     return render_template('index.html',
-                           asgns=started_asgns(),
+                           asgns=workflow['asgns'],
                            user=user.uname)
 
 
@@ -79,16 +79,22 @@ def main():
 @app.route('/load_asgn')
 @is_logged_in
 def load_asgn():
-    try:
-        asgn_key = request.args['asgn']
-        asgn = Assignment(asgn_key)
-        asgn.load()
-        workflow['assignment'] = asgn
-    except KeyError:  # assignment not found
+    asgn_key = request.args['asgn']
+    found = False
+    for asgn in workflow['asgns']:
+        if asgn.full_name == asgn_key:
+            workflow['assignment'] = asgn
+            found = True
+            break
+
+    if not found:
         return json.dumps("None")
-    else:  # no exceptions raised
-        lst = [f'Question {q._qnumb}' for q in asgn.questions]
-        return json.dumps(lst)
+
+    if not workflow['assignment'].loaded:
+        workflow['assignment'].load()
+
+    lst = [f'Question {q._qnumb}' for q in asgn.questions]
+    return json.dumps(lst)
 
 
 @app.route('/load_prob')
@@ -102,8 +108,7 @@ def load_prob():
         raise
         # return json.dumps("None")
     except ValueError:
-        raise
-        # return json.dumps("None")
+        return json.dumps("None")
     else:
         asgn = workflow['assignment']
         assert asgn.started, 'grading unstarted assignment %s' % asgn.full_name
@@ -272,11 +277,6 @@ def logout():
 @is_logged_in
 @app.route('/render_rubric')
 def rubric():
-    print(workflow['handin'])
-    # asgn = Assignment("Homework 7")
-    # asgn.load()
-    # handin = asgn.questions[0].handins[0]
-    # print(handin)
     return render_template('rubric.html', handin=workflow['handin'])
 
 
