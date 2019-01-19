@@ -204,16 +204,16 @@ class Assignment:
     :vartype _id_to_login_map: Dict[int, str]
 
     """
-    def __init__(self, key: str, full_load: bool = False) -> None:
+    def __init__(self, key: str, load_if_started: bool = True) -> None:
         """
 
         Create a new assignment based on the key from /ta/assignments.json
 
         :param key: Key of assignment to load (i.e. 'Homework 4')
         :type key: str
-        :param full_load: whether or not to fully load the
+        :param load_if_started: whether or not to fully load the
                           assignment and all its Questions, defaults to False
-        :type full_load: bool, optional
+        :type load_if_started: bool, optional
         :raises: ValueError if attempting to load unstarted assignment
 
         """
@@ -248,12 +248,10 @@ class Assignment:
                                        self.mini_name,
                                        'bracket.json')
         self.grading_completed = self._json['grading_completed']
+        self.loaded: bool = False
 
-        if self.started and full_load:
+        if self.started and load_if_started:
             self.load()
-        elif not self.started and full_load:
-            e = f'Attempting to fully load unstarted assignment {self}'
-            raise ValueError(e)
 
     @is_started
     def load(self):
@@ -285,6 +283,8 @@ class Assignment:
             self._id_to_login_map: Dict[int, str] = {data[k]: k for k in data}
 
         self._load_questions()
+        self.loaded = True
+        return self
 
     @is_started
     def _load_questions(self) -> None:
@@ -1262,7 +1262,7 @@ def started_asgns() -> List[Assignment]:
     """
     assignments = []
     for key in sorted(asgn_data['assignments'].keys()):
-        asgn = Assignment(key)
+        asgn = Assignment(key, load_if_started=False)
         if asgn.started:
             assignments.append(asgn)
 
@@ -1280,7 +1280,7 @@ def all_asgns() -> List[Assignment]:
     """
     assignments = []
     for key in sorted(asgn_data['assignments'].keys()):
-        asgn = Assignment(key)
+        asgn = Assignment(key, load_if_started=False)
         assignments.append(asgn)
 
     return assignments

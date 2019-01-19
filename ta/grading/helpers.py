@@ -67,6 +67,7 @@ def json_edit(filename: str) -> Generator:
 
     :param filename: filepath of the JSON file to modify
     :type filename: str
+    :raises TypeError: invalid modification to the JSON file
 
     **Example**:
 
@@ -94,8 +95,10 @@ def json_edit(filename: str) -> Generator:
         data = json.load(f)
 
     yield data
+    # failure here means the json was modified to be invalid json
+    to_write = json.dumps(data, indent=2, sort_keys=True)
     with locked_file(filename, 'w') as f:
-        json.dump(data, f, indent=2, sort_keys=True)
+        f.write(to_write)
 
 
 def require_resource(resource: str = res_path) -> Callable[[Callable], Any]:
@@ -343,3 +346,23 @@ def remove_duplicates(lst: list) -> list:
             unique_list.append(elem)
 
     return unique_list
+
+
+def red(s: str) -> str:
+    """
+
+    given a string s, return s wrapped in the escape characters required
+    to print the string in a red color to the terminal (ANSI codes)
+
+    """
+    return f'\033[31m{s}\033[0m'
+
+
+def green(s: str) -> str:
+    """
+
+    given a string s, return s wrapped in the escape characters required
+    to print the string in a green color to the terminal (ANSI codes)
+
+    """
+    return f'\033[32m{s}\033[0m'
