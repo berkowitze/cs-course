@@ -85,7 +85,7 @@
       "available": "01/01/2050 09:00PM",
       "due": "01/01/2050 09:00PM",
       "grading_completed": false,
-      "grading_started": true,
+      "grading_started": false,
       "group_asgn": false,
       "questions": [
         {
