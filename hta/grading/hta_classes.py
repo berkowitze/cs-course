@@ -1014,7 +1014,7 @@ def get_hta_asgn_list() -> List[HTA_Assignment]:
     """
     assignments = []
     for key in sorted(asgn_data['assignments'].keys()):
-        asgn = HTA_Assignment(key)
+        asgn = HTA_Assignment(key, load_if_started=False)
         assignments.append(asgn)
 
     return assignments
