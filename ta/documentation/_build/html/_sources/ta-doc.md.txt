@@ -65,6 +65,15 @@ on the student's emailed report as the one you will see if you click
 the `View report` button.
 
 ## How to write rubrics
+
+To be able to write rubrics, you should have an idea of what JSON is. At a
+high level, JSON is a format for data and is an easy way to store data in a
+file. To learn more about JSON, read this link:
+https://realpython.com/python-json/
+You definitely don't need to read the whole article; just get the idea of
+what JSON is and if you want, how to interface with it using Python. No need
+to read the "A Real World Example (sort of)" example.
+
 Each Assignment is comprised of a list of Questions. Each Question has a single
 file associated with it that students will upload. For example, Homework 2
 might have a `safety.arr` and `reflections.txt` questions. That means two
