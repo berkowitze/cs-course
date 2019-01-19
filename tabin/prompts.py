@@ -1,7 +1,8 @@
 import sys
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Set, Iterable, Union
 
 import tabulate
+from helpers import red
 
 
 def ez_prompt(prompt: str,
@@ -10,6 +11,12 @@ def ez_prompt(prompt: str,
               raise_on_ctrl_c: bool = False) -> Optional[str]:
     try:
         resp = input(prompt)
+    except KeyboardInterrupt:
+        if raise_on_ctrl_c:
+            raise
+        else:
+            return None
+    else:  # executed if resp = input(prompt) succeeds
         if checker is None:
             return resp
         else:
@@ -18,11 +25,6 @@ def ez_prompt(prompt: str,
             else:
                 print(f"Invalid input ({fail_check_msg})...")
                 return ez_prompt(prompt, checker, fail_check_msg)
-    except KeyboardInterrupt:
-        if raise_on_ctrl_c:
-            raise
-        else:
-            return None
 
 
 def int_prompt(maximum: int, prompt: str = '> ',
@@ -87,3 +89,47 @@ def yn_prompt(pre_text: str = None) -> Optional[bool]:
             return False
         else:
             retry = True
+
+
+def toggle_prompt(options: List[str],
+                  toggled: Optional[Union[List[str], Set[str]]] = None
+                  ) -> Optional[Set[str]]:
+    UP = "\033[F"
+    if toggled is None:
+        toggled = set()
+    else:
+        toggled = set(toggled)
+
+    doit = True
+    while True:  # eli having fun oops
+        opts = [red(f) if f in toggled else f for f in options]
+        for i, f in enumerate(options):
+            if f in toggled:
+                print(f'{i + 1}. {red(f)}')
+            else:
+                print(f'{i + 1}. {f}')
+
+        row_resp = ez_prompt('> \033[K')
+        if row_resp is None:
+            doit = False
+            break
+        if not row_resp:
+            break
+        try:
+            file_row = int(row_resp)
+            f = options[file_row - 1]
+        except (ValueError, IndexError):
+            print(f'  Invalid input (must be # between 1 '
+                  f'and {len(options)})')
+        else:
+            invalid = False
+            if f in toggled:
+                toggled.remove(f)
+            else:
+                toggled.add(f)
+            print('\033[F' * (len(options) + 2))
+
+    if not doit:
+        return None
+    else:
+        return toggled
