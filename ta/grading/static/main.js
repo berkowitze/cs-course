@@ -1,23 +1,23 @@
 function loadAsgn(x) {
-    sel = $(x);
+    var sel = $(x);
     $.ajax({url: '/load_asgn',
             success: asgnLoaded,
-            data: {'asgn': sel.val()}})
+            data: {asgn: sel.val()}});
 }
 
-function asgnLoaded(x) {
-    problems = JSON.parse(x);
+function asgnLoaded(jProblems) {
+    var problems = JSON.parse(jProblems);
     if (problems == "None") {
         $('div#prob-list-div').addClass('hidden');
         $('div#problem-status').addClass('hidden');
         clearSidebar();
         return;
     }
-    sel = $('select#prob-list');
+    var sel = $('select#prob-list');
     $('div#prob-list-div').removeClass('hidden');
     sel.find('option').not('#base-prob-opt').remove();
     problems.map(function(a, b) {
-        opt = $('<option>');
+        var opt = $('<option>');
         opt.text(a);
         opt.val(b+1);
         sel.append(opt);
@@ -32,31 +32,32 @@ function stopConfetti() {
 }
 
 function loadProb(x) {
-    sel = $(x);
+    var sel = $(x);
     probNumb = sel.val();
     $.ajax({
         url: '/load_prob',
         success: probLoaded,
-        data: {'prob': probNumb}
+        data: {prob: probNumb}
     });
 }
 
 function probLoaded(x) {
-    data = JSON.parse(x);
+    var data = JSON.parse(x);
+    d = data;
     if (data == "None") {
         $('div#problem-status').addClass('hidden');
         clearSidebar();
         $('div#handin-options').addClass('hidden');
         return;
     }
-    if (Number(data['handin_count']) != 0) {
+    if (Number(data.handin_count) != 0) {
         $('div#problem-status').removeClass('hidden');
-        frac = data['complete_count'] /data['handin_count'];
+        var frac = data.complete_count / data.handin_count;
         bar.animate(frac);
-        $(bar.text).text(`${data['complete_count']}/${data['handin_count']} graded`);
+        $(bar.text).text(`${data.complete_count}/${data.handin_count} graded`);
     }
     try {
-        if (data['handin_count'] == data['complete_count']) {
+        if (data.handin_count == data.complete_count) {
             // don't you dare delete this person reading this code
             confetti.start();
         }
@@ -65,29 +66,26 @@ function probLoaded(x) {
         }
     }
     catch(err) {
-        console.log("Confetti Error, talk to HTA!")
+        console.log("Confetti Error, talk to HTA!");
     }
     $('div#handin-options').removeClass('hidden');
     clearSidebar();
-    populateSidebar(data['ta_handins']);
+    populateSidebar(data.ta_handins);
     $('footer').removeClass('nodisp');
-    if (!data['anonymous']) {
-        populateStudentList(data['unextracted_logins']);
+    if (!data.anonymous) {
+        populateStudentList(data.unextracted_logins);
     }
 }
 
 function populateStudentList(s) {
-    a= s;
-    sel = $('#student-select');
+    var sel = $('#student-select');
     sel.find('option').not('.nodel').remove();
-    for (var i = 0; i < s.length; i++) {
+    for (i = 0; i < s.length; i++) {
         opt = $('<option>');
         opt.val(s[i]);
         opt.text(s[i]);
         sel.append(opt);
     }
-    // sel.select2();
-    // $('#student-list-modal').modal('open');
 }
 
 function clearSidebar() {
@@ -96,31 +94,31 @@ function clearSidebar() {
 }
 
 function generateSidebarItem(li, handin) {
-    h = handin;
+    var secondary;
     li.prop('id', '');
-    li.find('.handin-student-id').text(handin['id']);
+    li.find('.handin-student-id').text(handin.id);
     li.addClass('nontemp');
-    if (JSON.parse(handin['complete'])) {
-        secondary = 'Complete'
+    if (JSON.parse(handin.complete)) {
+        secondary = 'Complete';
         li.addClass('complete');
     }
     else {
-        secondary = 'In progress'
+        secondary = 'In progress';
         li.addClass('incomplete');
     }
-    if (JSON.parse(handin['flagged'])) {
+    if (JSON.parse(handin.flagged)) {
         li.addClass('flagged');
-        secondary += ', flagged'
+        secondary += ', flagged';
     }
     else {
         li.addClass('unflagged');
     }
-    li.data('student-id', handin['id']);
+    li.data('student-id', handin.id);
     li.find('.handin-status').text(secondary);
     li.removeClass('nodisp');
     if (handin['student-name'] != null) {
         li.find('span.sname').remove();
-        span = $("<span class='sname'>");
+        var span = $("<span class='sname'>");
         span.text('(' + handin['student-name'] + ')');
         li.append(span);
     }
@@ -128,10 +126,12 @@ function generateSidebarItem(li, handin) {
 }
 
 function populateSidebar(userHandins) {
-    sidebarItems = [];
-    for (i = 0; i < userHandins.length; i++) {
-        var handin = userHandins[i];
-        var template = $('#handin-list-item-template');
+    var sidebarItems = [];
+    var handin;
+    var template;
+    for (var i = 0; i < userHandins.length; i++) {
+        handin = userHandins[i];
+        template = $('#handin-list-item-template');
         sidebarItems.push(generateSidebarItem(template.clone(), handin));
     }
     sidebarItems = sidebarItems.sort(function(a, b) {
@@ -150,9 +150,9 @@ function extract(x) {
     $.ajax({
         url: '/extract_handin',
         success: function(data) {
-            pdata = JSON.parse(data)
+            var pdata = JSON.parse(data);
             if (pdata == "None") {
-                toastr.success("No more to grade!");
+                toast("No more to grade!", 'success', 3000);
                 return;
             }
             populateSidebar([pdata]);
@@ -161,26 +161,30 @@ function extract(x) {
     });
 }
 
+function toast(msg, type, duration) {
+    toastr.options.timeOut = duration;
+    toastr[type](msg);
+}
+
 function extractByLogin(x) {
-    s = $('#student-select').val();
+    var s = $('#student-select').val();
     if (s == 'NONE') {
-        toastr.failure("Select a student...");
+        toast('Select a student...', 'failure', 3500);
         return;
     }
     $('.extract-button').prop('disabled', 'true');
     $.ajax({
-        'url': '/extract_handin',
-        'data': {'handin_login': s},
+        url: '/extract_handin',
+        data: {handin_login: s},
         success: function(data) {
-            pdata = JSON.parse(data)
+            var pdata = JSON.parse(data);
             if (pdata == "None") {
-                toastr.success("No more to grade!");
+                toast('No more to grade!', 'success', '3000');
                 return;
             }
             populateSidebar([pdata]);
             handinLoaded(data);
             $.modal.close();
-            // $('#student-list-modal').modal('close');
         }
     });
 }
@@ -191,7 +195,7 @@ function loadHandin(x) {
     var sid = $(x).data('student-id');
     $.ajax({
         url: '/load_handin',
-        data: {'sid': sid},
+        data: {sid: sid},
         success: handinLoaded
     });
 }
@@ -202,16 +206,16 @@ function resetContainer() {
     $('.active-li').removeClass('active-li'); // deselect selected sidebar items
 }
 
-function handinLoaded(problemData) {
-    var problemData = JSON.parse(problemData);
+function handinLoaded(jProblemData) {
+    var problemData = JSON.parse(jProblemData);
     resetContainer();
     $('#code-content').text(problemData['student-code']); // set code viewer content
     $('#code-link').val(problemData['sfile-link']);
-    $('main').data('active-id', problemData['id']); // set main data to the student's id
-    var sidebarItem = sidebarById(problemData['id']); // get sidebar item for this handin
+    $('main').data('active-id', problemData.id); // set main data to the student's id
+    var sidebarItem = sidebarById(problemData.id); // get sidebar item for this handin
     $(sidebarItem).addClass('active-li'); // select current sidebar item
     $('button.handin-button').prop('disabled', false); // disable handin button
-    if (problemData['flagged']) {
+    if (problemData.flagged) {
         $('#handin-flag').text('Unflag');
         $('#handin-flag').data('flag', false);
     }
@@ -234,70 +238,36 @@ function sidebarById(id) {
     return undefined;
 }
 
-function CommentDialog(message, category, comment) {
-    $('<div></div>').appendTo('body')
-    .html('<div><h6>'+message+'?</h6></div>')
-    .dialog({
-        modal: true, title: 'Make comment global?', zIndex: 10000, autoOpen: true,
-        width: 'auto', resizable: false,
-        open: function() {
-              $(this).parents('.ui-dialog-buttonpane button:eq(1)').focus(); 
-            },
-        buttons: {
-            No: function () {
-                $(this).dialog("close");
-            },
-            Yes: function () {
-                addGlobalComment(category, comment);
-                $(this).dialog("close");
-            }
-        },
-        close: function (event, ui) {
-            // $(this).remove();
-        }
-    });
-};
-
-function addGlobalComment(category, comment) {
-    c = category;
-    $.ajax({
-        url: '/add_global_comment',
-        data:
-        {
-            'id': $('main').data('active-id'),
-            'category': category,
-            'comment': comment,
-        },
-        success: function() {
-            toastr.success("Global comment added.")
-            $('#handin-save').click();
-        }
-    });
-}
-
 
 function flagToggle(x) {
-    button = $(x);
-    activeId = $('main').data('active-id');
-    flagIt = button.data('flag');
+    var button = $(x);
+    var activeId = $('main').data('active-id');
+    var flagIt = button.data('flag');
+    var msg;
     if (flagIt) {
-        msg = prompt('Why are you flagging this?\nOnly HTAs will see this, not the student.')
+        msg = prompt('Why are you flagging this?\nOnly HTAs will see this, not the student.');
     }
     else {
-        msg = ''
+        msg = '';
+    }
+    if (msg === null) {
+        return;
     }
     $.ajax({
         url: '/flag_handin',
-        data: {'flag': flagIt, 'id': activeId, 'msg': msg},
+        data: {
+            flag: flagIt,
+            id: activeId,
+            msg: msg},
         success: toggledFlag
     });
 }
 
 
-function toggledFlag(data) {
-    data = JSON.parse(data);
-    li = sidebarById(data['id']);
-    if (JSON.parse(data['flagged'])) {
+function toggledFlag(jdata) {
+    var data = JSON.parse(jdata);
+    var li = sidebarById(data.idid);
+    if (JSON.parse(data.flagged)) {
         $('#handin-flag').text('Unflag');
         $('#handin-flag').data('flag', false);
         li.removeClass('unflagged');
@@ -309,25 +279,25 @@ function toggledFlag(data) {
         li.removeClass('flagged');
         li.addClass('unflagged');
     }
-    handin = data['problemData'];
+    var handin = data.problemData;
     generateSidebarItem(li, handin);
 }
 
 function unextractHandin(x) {
-    button = $(x);
-    activeId = $('main').data('active-id');
+    var button = $(x);
+    var activeId = $('main').data('active-id');
     if (!confirm('Confirm Removal')) {
         return;
     }
     $.ajax({
         url: '/unextract_handin',
-        data: {'id': activeId},
+        data: {id: activeId},
         success: handinUnextracted
     });
 }
 
 function handinUnextracted(data) {
-    ident = JSON.parse(data);
+    var ident = JSON.parse(data);
     sidebarById(ident).remove();
     $('main .container').html('');
     $('button.handin-button').not('.extract-button').prop('disabled', true);
@@ -335,43 +305,49 @@ function handinUnextracted(data) {
 
 function fetchFormInfo() {
     var rubric = {};
-    r = rubric;
     var cats = $('.container .category-div');
-    for (var i = 0; i < cats.length; i++) {
-        var cat = cats.eq(i);
-        var cname = cat.data('category');
+    var cat;
+    var cname;
+    var fudgePoints;
+    var sels;
+    for (i = 0; i < cats.length; i++) {
+        cat = cats.eq(i);
+        cname = cat.data('category');
         fudgePoints = Number(cat.find('input.fudge-points-inp').val());
-        rubric[cname] = {'fudge': fudgePoints, 'options': {}};
-        var sels = cat.find('select.rubric-sel');
-        for (var j = 0; j < sels.length; j++) {
+        rubric[cname] = {
+            fudge: fudgePoints,
+            options: {}
+        };
+        sels = cat.find('select.rubric-sel');
+        var j;
+        for (j = 0; j < sels.length; j++) {
             var sel = sels.eq(j);
             var descr = sel.data('descr');
             var v = sel.val();
             if (v != null) {
-                rubric[cname]['options'][descr] = Number(v);
+                rubric[cname].options[descr] = Number(v);
             }
             else {
-                rubric[cname]['options'][descr] = null;
+                rubric[cname].options[descr] = null;
             }
-            
         }
     }
     return rubric;
 }
 
 function getComments() {
-    cat_comments = {}
+    var cat_comments = {};
     $('.category-div input.comments-sel')
     .tagEditor('getTags')
     .map(function(x) {
-        cat_comments[x.field.dataset['category']] = x.tags
+        cat_comments[x.field.dataset.category] = x.tags;
     });
 
-    gen_comments = $('input#general-comments').tagEditor('getTags')[0].tags;
+    var gen_comments = $('input#general-comments').tagEditor('getTags')[0].tags;
     return {
         general: gen_comments,
         categorized: cat_comments
-    }
+    };
 }
 
 function saveHandin(tryComplete) {
@@ -397,11 +373,11 @@ function saveHandin(tryComplete) {
                 handinSaved();
             }
         }
-    })
+    });
 }
 
 function handinSaved() {
-    toastr.success("Handin saved.")
+    toast("Handin saved.", 'success', 2000);
 }
 
 function completeHandin() {
@@ -415,12 +391,12 @@ function completeHandin() {
 
 function handinCompleted(data) {
     if (JSON.parse(data)) {
-        toastr.success('Handin complete.')
         clearMain();
+        toast('Handin complete.', 'success', 2000);
         loadProb($('select#prob-list'));
     }
     else {
-        toastr.error('Must fill all dropdowns before completion.')
+        toast('Must fill all dropdowns before completion.', 'error', 3500);
     }
 }
 
@@ -430,9 +406,8 @@ function clearMain() {
 }
 
 $(document).ready(function(){
-    toastr.options.positionClass = "toast-bottom-right"
+    toastr.options.positionClass = "toast-bottom-right";
     $('select#asgn-list').focus();
-    x = 3;
     // the colorful status bar in the top left (super neccessary do not delete)
     bar = new ProgressBar.Line($('#status-slider').get(0), {
         strokeWidth: 4,
@@ -451,22 +426,23 @@ $(document).ready(function(){
           bar.path.setAttribute('stroke', state.color);
         }
     });
-    // $('#student-list-modal').removeAttr('tabindex');
-
 });
 
-var popups = {};
-var popup_ndx = 0;
-function newPopup(url) {
-    if (!(url in popups)) {
-        popup_ndx += 1
-        popups[url] = popup_ndx;
-    }
-    window.open(
-        url,
-        popups[url],
-        'height=800,width=1000,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,status=yes');
-}
+var newPopup = (function() {
+    var popups = {};
+    var popup_ndx = 0;
+    return function(url) {
+        if (!(url in popups)) {
+            popup_ndx += 1;
+            popups[url] = popup_ndx;
+        }
+        window.open(
+            url,
+            popups[url],
+            'height=800,width=1000,left=10,top=10,resizable=yes,' +
+            'scrollbars=yes,toolbar=yes,menubar=no,location=no,status=yes');
+    };
+})();
 
 
 function openCode(x) {
@@ -482,15 +458,13 @@ function viewReport(x) {
 }
 
 function preTagSave(field, editor, given, tag, giving) {
-    ungiven = field.data('options')['autocomplete']['source'];
-    debug = {field, editor, given, tag, giving, ungiven};
+    ungiven = field.data('options').autocomplete.source;
     if (given.includes(giving)) {
         // duplicate comment
         return;
     }
     ung_ndx = ungiven.indexOf(giving);
     if (ung_ndx >= 0) {
-        console.log('here');
         // giving suggested comment
         ungiven.splice(ung_ndx, 1); // do not resuggest
         return;
@@ -518,10 +492,10 @@ function tagRightClick(x) {
                 }
             },
             error: function(err) {
-                console.log('err');
-                console.log(err)
+                console.log('err:');
+                console.log(err);
             }
-        })
+        });
     }
     return false;
 }
