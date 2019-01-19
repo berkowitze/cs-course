@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; CS Grading App 2.0 documentation</title>
+  <title>cs-course &mdash; CS Grading App 2.0 documentation</title>
   
 
   
@@ -78,6 +78,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Plain English READMEs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
@@ -128,7 +129,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Installation</li>
+      <li>cs-course</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -147,61 +148,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="installation">
-<span id="installation"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="test-installation">
-<span id="test-installation"></span><h2>Test installation<a class="headerlink" href="#test-installation" title="Permalink to this headline">¶</a></h2>
-<ol class="simple">
-<li>Download and rename to /course/cs0111 (yes in root directory, sorry).</li>
-<li>Install the virtual environment with Python 3.7 (<code class="docutils literal notranslate"><span class="pre">virtualenv</span> <span class="pre">venv</span> <span class="pre">-p</span> <span class="pre">$(which</span> <span class="pre">python3.7)</span></code>)</li>
-<li>Make a groups folder <code class="docutils literal notranslate"><span class="pre">/ta/groups</span></code><ul>
-<li>Run <code class="docutils literal notranslate"><span class="pre">touch</span> <span class="pre">tas.txt</span> <span class="pre">htas.txt</span> <span class="pre">students.txt</span> <span class="pre">students.csv</span></code></li>
-<li>Put your username into tas.txt, htas.txt, and students.txt. Put username,name,email into students.csv</li>
-</ul>
-</li>
-</ol>
-</div>
-<div class="section" id="real-installation">
-<span id="real-installation"></span><h2>Real installation<a class="headerlink" href="#real-installation" title="Permalink to this headline">¶</a></h2>
-<ol>
-<li><p class="first">Download the repo and move it to /course/name-of-your-course so the directory structure looks like</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span> <span class="n">course</span>
-  <span class="o">|</span> <span class="n">your</span><span class="o">-</span><span class="n">course</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span> <span class="n">cs0111</span><span class="p">)</span>
-    <span class="o">|</span> <span class="n">ta</span>
-    <span class="o">|</span> <span class="n">hta</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">You will need to maintain a list of students in the course, of tas logins, and of htas logins.</p>
-<p>Set this up by modifying /htabin/update-groups (try running it and checking the contents of <code class="docutils literal notranslate"><span class="pre">/hta/groups/</span></code> to see if it works for your course). you may need to run kinit before running update-groups.</p>
-<p>For the handin and grading apps to work properly, there need to be 4 files in <code class="docutils literal notranslate"><span class="pre">/hta/groups</span></code>:</p>
-<ol class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">students.txt</span></code> - a newline separated list of student CS logins in the course</li>
-<li><code class="docutils literal notranslate"><span class="pre">students.json</span></code> - a JSON file with a list of lists each with 3 elements: [login, email, name] of each student in the class</li>
-<li><code class="docutils literal notranslate"><span class="pre">tas.txt</span></code> - a newline separated list of the CS logins of the TAs for the course</li>
-<li><code class="docutils literal notranslate"><span class="pre">htas.txt</span></code> - a newline separated list of the CS logins of the HTAs for the course</li>
-</ol>
-</li>
-<li></li>
-</ol>
-<div class="section" id="handin-setup">
-<span id="handin-setup"></span><h3>Handin setup<a class="headerlink" href="#handin-setup" title="Permalink to this headline">¶</a></h3>
-<p>The handin system uses Google Forms (by default).</p>
-<ol class="simple">
-<li>The grading app by default will collect grades as a hashtable of category -&gt; number of points in that category. For example, if an assignment has a rubric with Functionality and Code Style categories, a student’s raw grade may look like:</li>
-</ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;Functionality&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
-    <span class="s2">&quot;Code Style&quot;</span><span class="p">:</span> <span class="mf">5.3</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>How this is converted to the student’s final grade is up to the course. The function for converting from a raw grade to the final grade is in <code class="docutils literal notranslate"><span class="pre">/ta/course_customization.py</span></code> in the <code class="docutils literal notranslate"><span class="pre">determine_grade</span></code> function.</p>
-<ol class="simple">
-<li></li>
-</ol>
-</div>
-</div>
+  <div class="section" id="cs-course">
+<span id="cs-course"></span><h1>cs-course<a class="headerlink" href="#cs-course" title="Permalink to this headline">¶</a></h1>
+<p>Code for CS grading app</p>
+<p>Open documentation (in progress) in <code class="docutils literal notranslate"><span class="pre">/ta/documentation/_build/html/index.html</span></code></p>
 </div>
 
 

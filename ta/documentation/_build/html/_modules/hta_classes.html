@@ -193,7 +193,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="HTA_Assignment.__init__"><a class="viewcode-back" href="../hta_classes.html#hta_classes.HTA_Assignment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;[summary]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        creates HTA_Assignment</span>
 
@@ -1001,7 +1001,7 @@
 
         <span class="k">return</span> <span class="n">grade</span>
 
-<div class="viewcode-block" id="HTA_Assignment.reset_grading"><a class="viewcode-back" href="../hta_classes.html#hta_classes.HTA_Assignment.reset_grading">[docs]</a>    <span class="k">def</span> <span class="nf">reset_grading</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">confirm</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="HTA_Assignment.reset_grading"><a class="viewcode-back" href="../hta_classes.html#hta_classes.HTA_Assignment.reset_grading">[docs]</a>    <span class="k">def</span> <span class="nf">reset_grading</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">confirm</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">quiet</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        remove the assignment log; there is no recovering the data.</span>
@@ -1013,27 +1013,32 @@
 <span class="sd">        :type confirm: bool</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">printer</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">quiet</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">confirm</span><span class="p">:</span>
-            <span class="n">e</span> <span class="o">=</span> <span class="s2">&quot;Must call reset_grading with boolean confirm argument&quot;</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">printer</span><span class="p">(</span><span class="s2">&quot;Must call reset_grading with boolean confirm argument&quot;</span><span class="p">)</span>
+            <span class="n">printer</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{self}</span><span class="s2"> not reset.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_path</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Removed log path...&#39;</span><span class="p">)</span>
+            <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;Removed log path...&#39;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Removed grade path...&#39;</span><span class="p">)</span>
+            <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;Removed grade path...&#39;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files_path</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Removed student files path...&#39;</span><span class="p">)</span>
+            <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;Removed student files path...&#39;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocklist_path</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Removed blocklists...&#39;</span><span class="p">)</span>
+            <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;Removed blocklists...&#39;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">try</span><span class="p">:</span>
@@ -1043,16 +1048,17 @@
             <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
                 <span class="k">pass</span>
 
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Removed anonymization mapping...&#39;</span><span class="p">)</span>
+            <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;Removed anonymization mapping...&#39;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span>
 
         <span class="c1"># now set grading_started in the assignments.json to False</span>
         <span class="k">with</span> <span class="n">json_edit</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">data</span><span class="p">:</span>
             <span class="n">data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">][</span><span class="s1">&#39;grading_started&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">][</span><span class="s1">&#39;grading_started&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">started</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Assignment records removed.&#39;</span><span class="p">)</span></div>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;Assignment records removed.&#39;</span><span class="p">)</span></div>
 
     <span class="nd">@require_resource</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">_record_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1157,7 +1163,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-        <span class="n">asgn</span> <span class="o">=</span> <span class="n">HTA_Assignment</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">asgn</span> <span class="o">=</span> <span class="n">HTA_Assignment</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">load_if_started</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">assignments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asgn</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">assignments</span></div>

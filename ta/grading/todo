@@ -1,23 +1,24 @@
 High Priority:
-    - 
 
 High-ish Priority:
-    Send email to individual student (easy-medium)
-    Implement change-point-val into asgn-hub (medium)
 
 Medium Priority:
     View flag reason if handin is flagged (easy) [working for HTA]
-    Go to student's next/last problem (medium-hard) [working for non-anonymous assignments]
-    Add "test" option which spits out results to a modal (medium)
-        Run shell script like /course/cs0111/tabin/test pyret filepath
-    New rubric item option (hard) [unnecessary]
-    New rubric item (hard) [unnecessary]
+    Go to student's next/last problem (medium)
+    Make cs111-add-asgn better (easy/tedious) (use prompts.py)
 
 Low priority:
     Better sidebar colors (easy)
-    Panes for sidebar (annoying)
+    Panes for sidebar (annoying, unnecessary?)
 
 Done:
+    Better comments [done; draggable, editable, etc]
+    Add "test" option which spits out results to a modal (medium)
+        Run shell script like /course/cs0111/tabin/test pyret filepath
+    New rubric item option (hard) [unnecessary] [done with magic_update]
+    New rubric item (hard) [unnecessary] [done with magic_update]
+    Implement change-point-val into asgn-hub (medium) [done with magic_update]
+    Send email to individual student (easy-medium)
     View flagged handins in asgn-hub (medium)
     Report generation: make it work if not all items complete (annoying)
     Deal with late handins (?)
