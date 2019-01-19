@@ -14,7 +14,7 @@ args = parser.parse_args()
 
 
 asgn = HTA_Assignment(args.asgn)
-asgn.load()
+assert asgn.started, 'cannot get grade data for unstarted assignment'
 
 empty_grade: RawGrade = get_empty_raw_grade(asgn)
 data = asgn.get_report_data()

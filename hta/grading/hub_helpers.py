@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import shutil
 from os.path import join as pjoin
 from collections import defaultdict
 
@@ -356,3 +357,24 @@ def send_summaries(resummarize: Optional[bool] = None,
         yag.send(to=send_to,
                  subject='Aggregated grade report',
                  contents=[contents])
+
+
+def delete_subdirs(path: str) -> None:
+    assert os.path.exists(path)
+    for folder in os.listdir(path):
+        if folder.startswith('.'):
+            continue
+
+        f_p = pjoin(path, folder)
+        shutil.rmtree(f_p, ignore_errors=True)
+
+
+def delete_subfiles(path: str) -> None:
+    assert os.path.exists(path)
+    for f in os.listdir(path):
+        if f.startswith('.'):
+            continue
+
+        full_path = pjoin(path, f)
+        if os.path.isfile(full_path):
+            os.remove(full_path)
