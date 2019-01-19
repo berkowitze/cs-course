@@ -852,7 +852,7 @@ class HTA_Assignment(Assignment):
 
         return grade
 
-    def reset_grading(self, confirm: bool) -> None:
+    def reset_grading(self, confirm: bool, quiet: bool = False) -> None:
         """
 
         remove the assignment log; there is no recovering the data.
@@ -864,27 +864,32 @@ class HTA_Assignment(Assignment):
         :type confirm: bool
 
         """
+        def printer(s):
+            if not quiet:
+                print(s)
+
         if not confirm:
-            e = "Must call reset_grading with boolean confirm argument"
-            raise ValueError(e)
+            printer("Must call reset_grading with boolean confirm argument")
+            printer(f"{self} not reset.")
+            return
         try:
             shutil.rmtree(self.log_path)
-            print('Removed log path...')
+            printer('Removed log path...')
         except Exception:
             pass
         try:
             shutil.rmtree(self.grade_path)
-            print('Removed grade path...')
+            printer('Removed grade path...')
         except Exception:
             pass
         try:
             shutil.rmtree(self.files_path)
-            print('Removed student files path...')
+            printer('Removed student files path...')
         except Exception:
             pass
         try:
             os.remove(self.blocklist_path)
-            print('Removed blocklists...')
+            printer('Removed blocklists...')
         except Exception:
             pass
         try:
@@ -894,16 +899,17 @@ class HTA_Assignment(Assignment):
             except OSError:
                 pass
 
-            print('Removed anonymization mapping...')
+            printer('Removed anonymization mapping...')
         except Exception:
             pass
 
         # now set grading_started in the assignments.json to False
         with json_edit(asgn_data_path) as data:
             data['assignments'][self.full_name]['grading_started'] = False
+            data['assignments'][self.full_name]['grading_started'] = False
 
         self.started = False
-        print('Assignment records removed.')
+        printer('Assignment records removed.')
 
     @require_resource()
     def _record_start(self) -> None:
