@@ -15,7 +15,7 @@ import datetime as dt
 from datetime import datetime
 from helpers import *
 
-os.umask(0o007) # set file permissions
+os.umask(0o007)  # set file permissions
 
 BASE_PATH = '/course/cs0111'
 data_file = os.path.join(BASE_PATH, 'ta/assignments.json')
@@ -23,20 +23,21 @@ with locked_file(data_file) as f:
     data = json.load(f)
 
 log_path = data['handin_log_path']
-add_sub_path = os.path.join(BASE_PATH, 'hta', 'grading', 'add-student-submission')
+add_sub_path = os.path.join(BASE_PATH, 'hta/grading/add-student-submission')
 proj_base = os.path.join(BASE_PATH, 'ta/grading/data/projects')
 
 # minutes after deadline students can submit without penalty
 # applies to both extended handins and normal handins
-SOFT_CUTOFF = 5 
+SOFT_CUTOFF = 5
 
 # students can submit up to one day after deadline
 # and still be graded
 # does not apply to extended handins
 HARD_CUTOFF = (19 * 60) + SOFT_CUTOFF
 
-sc = dt.timedelta(0, SOFT_CUTOFF * 60) # soft cutoff
-hc = dt.timedelta(0, HARD_CUTOFF * 60) # hard cutoff
+sc = dt.timedelta(0, SOFT_CUTOFF * 60)  # soft cutoff
+hc = dt.timedelta(0, HARD_CUTOFF * 60)  # hard cutoff
+
 
 class Question:
     def __init__(self, question, row):
@@ -45,13 +46,13 @@ class Question:
         col = self.q_data['col']
         ind = col_str_to_num(col) - 1
         self.link = row[ind] if ind < len(row) and row[ind] != '' else None
-        self.completed = self.link != None
+        self.completed = (self.link is not None)
         self.fname = self.q_data['filename']
 
     def get_gfile(self):
         # extensions which a snippet can be extracted from
         valid_exts = ['.txt', '.py', '.arr', '.tex']
-        ident = url_to_gid(self.link) # google file id
+        ident = url_to_gid(self.link)  # google file id
         self.gf = None if ident is None else GoogleFile(ident)
         if self.completed:
             # make a snippet during confirmation if the student
@@ -74,7 +75,7 @@ class Question:
                 if expect_ext == '.zip':
                     # this is a hack to make things not break
                     # but it will make other things break. FIX IT.
-                    fpath += actual_ext 
+                    fpath += actual_ext
                     self.fname += actual_ext
 
                 e = 'Student %s uploaded a %s file, expected %s'
@@ -91,7 +92,7 @@ class Question:
         self.downloaded = True
 
     def get_snippet(self):
-        lines_per_file = 5 # how many lines to print per snippet
+        lines_per_file = 5  # how many lines to print per snippet
         if not self.downloaded:
             e = 'File %s must be downloaded before generating snippet'
             raise Exception(e % self.fname)
@@ -99,9 +100,8 @@ class Question:
         if not self.completed:
             return '<span style="color: red">Not submitted.</span>', ''
         elif not self.make_snippet:
-            first_cell =  '<span style="color: green">Submitted.%s</span>'
-            return first_cell % self.warning, \
-                   'Snippet Unavailable'
+            first_cell = '<span style="color: green">Submitted.%s</span>'
+            return (first_cell % self.warning), 'Snippet Unavailable'
         else:
             with open(self.file_path, 'r') as dl_f:
                 try:
@@ -119,15 +119,16 @@ class Question:
                     snippet = lines
                 else:
                     snippet = lines[0:len(lines)]
-            
+
             snippet = '<br>'.join([line.strip() for line in snippet])
             first_cell = '<span style="color: green">Submitted.%s</span>'
             return first_cell % self.warning, snippet
 
+
 class Response:
     def __init__(self, row, ident):
         # submission time
-        self.sub_time  = datetime.strptime(row[0], '%m/%d/%Y %H:%M:%S')
+        self.sub_time = datetime.strptime(row[0], '%m/%d/%Y %H:%M:%S')
         self.sub_timestr = self.sub_time.strftime('%m/%d/%y %I:%M:%S%p')
         # submission email (must be Brown account)
         self.email = row[col_str_to_num(data['email_col']) - 1]
@@ -135,11 +136,11 @@ class Response:
         self.login = email_to_login(self.email)
 
         self.asgn_name = row[col_str_to_num(data['submit_col']) - 1]
-        self.dir_name  = self.asgn_name.replace(' ', '').lower()
-        self.ident     = ident
-        self.row       = row
+        self.dir_name = self.asgn_name.replace(' ', '').lower()
+        self.ident = ident
+        self.row = row
         self.confirmed = self.ident in confirmed_responses(log_path)
-        self.asgn      = data['assignments'][self.asgn_name]
+        self.asgn = data['assignments'][self.asgn_name]
         if not self.confirmed and self.asgn['partner_data'] is not None:
             self.set_partner_data(row)
 
@@ -156,7 +157,7 @@ class Response:
         partner_data = row[rndx - 1].split(', ')
         if self.login not in partner_data:
             partner_data.append(self.login)
-        
+
         proj_path = os.path.join(proj_base, self.asgn['group_dir'] + '.json')
         if not os.path.exists(proj_path):
             with locked_file(proj_path, 'w') as f:
@@ -224,13 +225,14 @@ class Response:
             # not late
             actual_late = False
 
-        self.email_late  = email_late
-        self.gradeable   = gradeable
+        self.email_late = email_late
+        self.gradeable = gradeable
         self.actual_late = actual_late
         self.ext_applied = ext_applied
-    
-    def load_ext(self): # TODO : remove
+
+    def load_ext(self):  # TODO : remove
         exts = load_extensions()
+
         def relevant_ext(e):
             return e.student == self.login and e.asgn == self.dir_name
 
@@ -243,7 +245,7 @@ class Response:
 
     def download(self):
         if self.confirmed:
-            raise ValueError('Response has already been downloaded & confirmed.')
+            raise ValueError('Response already downloaded & confirmed.')
 
         self.qs = []
         for i in range(len(self.asgn['questions'])):
@@ -281,7 +283,7 @@ class Response:
                            tab_conts=table)
 
         yag = yagmail.SMTP(data['email_from'])
-        subject  = 'Confirmation of %s submission' % self.asgn_name
+        subject = 'Confirmation of %s submission' % self.asgn_name
         if self.email_late:
             subject += ' (late)'
 
@@ -317,10 +319,10 @@ class Response:
             f.write('%s\n' % self.ident)
 
     def create_directory(self):
-        base = data['base_path'] #change to /course/cs0111/hta/...
+        # todo: use get_latest_sub_path from grading helpers
+        base = data['base_path']  # change to /course/cs0111/hta/...
         login_path = os.path.join(base, self.login)
         if not os.path.exists(login_path):
-            #print(('Directory for %s did not exist, creating...' % self.login))
             os.mkdir(login_path)
 
         full_base_path = os.path.join(base, self.login, self.dir_name)
@@ -343,7 +345,7 @@ class Response:
                     continue
 
             fold_name = '%s-submission' % str(last_sub + 1)
-        
+
         self.full_path = os.path.join(full_base_path, fold_name)
         if self.actual_late:
             self.full_path += '-late'
@@ -356,16 +358,17 @@ class Response:
             q.download(self.full_path, self.login)
 
     def get_zip(self):
-        zipf = zipfile.ZipFile('submission.zip', 'w') # /course/cs0111/hta/tmpzips
+        zipf = zipfile.ZipFile('submission.zip', 'w')  # /course/cs0111/hta/tmpzips
         for q in self.qs:
             if q.completed:
                 zipf.write(q.file_path, arcname=q.fname)
 
         zipf.close()
         return zipf.filename
-    
+
     def __repr__(self):
         return 'Response(asgn=%s, email=%s)' % (self.asgn_name, self.email)
+
 
 def fetch_submissions():
     yag = yagmail.SMTP(data['email_from'])
@@ -377,7 +380,7 @@ def fetch_submissions():
 
     spreadsheets = service.spreadsheets().values()
     result = spreadsheets.get(spreadsheetId=ss_id, range=rng).execute()
-    
+
     try:
         vals = result['values']
         # print(list(map(len, vals)))
@@ -422,6 +425,7 @@ def fetch_submissions():
 
     return responses
 
+
 def try_fetch():
     try:
         fetch_submissions()
@@ -443,6 +447,7 @@ def try_fetch():
                  subject='SUBMISSION ERROR',
                  contents='<pre>%s%s%s</pre>' % (tb, estr, cstr))
         sys.exit(1)
+
 
 if __name__ == '__main__':
     try_fetch()
