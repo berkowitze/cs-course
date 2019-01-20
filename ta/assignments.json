@@ -47,6 +47,27 @@
       ],
       "sent_emails": false
     },
+    "CS18 Bridgework - Running Times": {
+      "anonymous": false,
+      "available": "02/10/2019 10:23PM",
+      "due": "02/10/2019 10:23PM",
+      "grading_completed": false,
+      "grading_started": false,
+      "group_asgn": false,
+      "questions": [
+        {
+          "col": "AK",
+          "filename": "runningtimes.pdf",
+          "test-ext": null
+        },
+        {
+          "col": "AN",
+          "filename": "runningtimes.rtf",
+          "test-ext": null
+        }
+      ],
+      "sent_emails": false
+    },
     "CS18 Bridgework - Sorting": {
       "anonymous": false,
       "available": "02/01/2019 05:00PM",
@@ -80,28 +101,12 @@
       ],
       "sent_emails": true
     },
-    "Example": {
-      "anonymous": true,
-      "available": "01/01/2050 09:00PM",
-      "due": "01/01/2050 09:00PM",
-      "grading_completed": false,
-      "grading_started": false,
-      "group_asgn": false,
-      "questions": [
-        {
-          "col": "ZZZ",
-          "filename": "fun.py",
-          "test-ext": "py"
-        }
-      ],
-      "sent_emails": false
-    },
     "Homework 1": {
       "anonymous": false,
       "available": "06/01/2018 03:00PM",
       "due": "09/11/2018 09:00PM",
       "grading_completed": true,
-      "grading_started": false,
+      "grading_started": true,
       "group_asgn": false,
       "partner_data": null,
       "questions": [
@@ -118,7 +123,7 @@
       "available": "06/01/2018 03:00PM",
       "due": "09/19/2018 06:00PM",
       "grading_completed": true,
-      "grading_started": false,
+      "grading_started": true,
       "group_asgn": false,
       "partner_data": null,
       "questions": [
@@ -173,11 +178,11 @@
       "sent_emails": true
     },
     "Homework 4": {
-      "anonymous": true,
+      "anonymous": false,
       "available": "10/02/2018 09:00PM",
       "due": "10/02/2018 09:00PM",
       "grading_completed": true,
-      "grading_started": false,
+      "grading_started": true,
       "group_asgn": false,
       "partner_data": null,
       "questions": [
