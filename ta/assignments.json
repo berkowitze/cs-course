@@ -12,6 +12,7 @@
       "grading_completed": false,
       "grading_started": false,
       "group_asgn": false,
+      "partner_data": null,
       "questions": [
         {
           "col": "AJ",
@@ -28,6 +29,7 @@
       "grading_completed": false,
       "grading_started": false,
       "group_asgn": false,
+      "partner_data": null,
       "questions": [
         {
           "col": "AQ",
@@ -54,6 +56,7 @@
       "grading_completed": false,
       "grading_started": false,
       "group_asgn": false,
+      "partner_data": null,
       "questions": [
         {
           "col": "AK",
@@ -75,6 +78,7 @@
       "grading_completed": false,
       "grading_started": false,
       "group_asgn": false,
+      "partner_data": null,
       "questions": [
         {
           "col": "AI",
@@ -388,7 +392,7 @@
       "partner_data": null,
       "questions": [
         {
-          "col": "XX",
+          "col": "AT",
           "filename": "LOL.arr",
           "test-ext": "arr"
         }
@@ -400,7 +404,7 @@
   "email_col": "B",
   "email_errors_to": "elias_berkowitz@brown.edu",
   "email_from": "csci0111@brown.edu",
-  "end_col": "AH",
+  "end_col": "AT",
   "handin_log_path": "/course/cs0111/hta/handin/submission_log.txt",
   "sheet_id": "1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8",
   "sheet_name": "handins",
