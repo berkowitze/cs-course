@@ -149,15 +149,21 @@
   <h1>Source code for course_customization</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">from</span> <span class="nn">textwrap</span> <span class="k">import</span> <span class="n">fill</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
 
 <span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="n">locked_file</span>
+<span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="n">locked_file</span><span class="p">,</span> <span class="n">BASE_PATH</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">classes</span> <span class="k">import</span> <span class="n">Question</span><span class="p">,</span> <span class="n">Assignment</span>
+
+
+<span class="n">emoji_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/asciianimals&#39;</span><span class="p">)</span>
+<span class="n">emojis</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">emoji_path</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="increasing"><a class="viewcode-back" href="../course_customization.html#course_customization.increasing">[docs]</a><span class="k">def</span> <span class="nf">increasing</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -335,6 +341,14 @@
 
     <span class="n">gen_comments</span> <span class="o">=</span> <span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;comments&#39;</span><span class="p">][</span><span class="s1">&#39;given&#39;</span><span class="p">]</span>
     <span class="n">report_str</span> <span class="o">+=</span> <span class="n">comment_section</span><span class="p">(</span><span class="s1">&#39;General Comments&#39;</span><span class="p">,</span> <span class="n">gen_comments</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rubric</span><span class="p">[</span><span class="s1">&#39;emoji&#39;</span><span class="p">]:</span>
+        <span class="n">emoji</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">emojis</span><span class="p">)</span>
+        <span class="n">em_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">emoji_path</span><span class="p">,</span> <span class="n">emoji</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">em_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">emoji_text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="n">report_str</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="si">{emoji_text}</span><span class="se">\n\n</span><span class="s1">&#39;</span>
 
     <span class="n">report_str</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;Grader: </span><span class="si">{grader_login}</span><span class="s1"> (</span><span class="si">{grader_login}</span><span class="s1">@cs.brown.edu)&#39;</span>
     <span class="n">report_str</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">{&quot;-&quot; * 74}</span><span class="se">\n</span><span class="s1">&#39;</span>

@@ -148,9 +148,10 @@
             
   <h1>Source code for prompts</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">tabulate</span>
+<span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="n">red</span>
 
 
 <div class="viewcode-block" id="ez_prompt"><a class="viewcode-back" href="../prompts.html#prompts.ez_prompt">[docs]</a><span class="k">def</span> <span class="nf">ez_prompt</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -159,6 +160,12 @@
               <span class="n">raise_on_ctrl_c</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">resp</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">raise_on_ctrl_c</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># executed if resp = input(prompt) succeeds</span>
         <span class="k">if</span> <span class="n">checker</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">resp</span>
         <span class="k">else</span><span class="p">:</span>
@@ -166,12 +173,7 @@
                 <span class="k">return</span> <span class="n">resp</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid input (</span><span class="si">{fail_check_msg}</span><span class="s2">)...&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">ez_prompt</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">checker</span><span class="p">,</span> <span class="n">fail_check_msg</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">raise_on_ctrl_c</span><span class="p">:</span>
-            <span class="k">raise</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
+                <span class="k">return</span> <span class="n">ez_prompt</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">checker</span><span class="p">,</span> <span class="n">fail_check_msg</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="int_prompt"><a class="viewcode-back" href="../prompts.html#prompts.int_prompt">[docs]</a><span class="k">def</span> <span class="nf">int_prompt</span><span class="p">(</span><span class="n">maximum</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&gt; &#39;</span><span class="p">,</span>
@@ -236,6 +238,50 @@
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">retry</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="toggle_prompt"><a class="viewcode-back" href="../prompts.html#prompts.toggle_prompt">[docs]</a><span class="k">def</span> <span class="nf">toggle_prompt</span><span class="p">(</span><span class="n">options</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                  <span class="n">toggled</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="n">UP</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[F&quot;</span>
+    <span class="k">if</span> <span class="n">toggled</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">toggled</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">toggled</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">toggled</span><span class="p">)</span>
+
+    <span class="n">doit</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>  <span class="c1"># eli having fun oops</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="p">[</span><span class="n">red</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">toggled</span> <span class="k">else</span> <span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">options</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">toggled</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{i + 1}. {red(f)}&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{i + 1}. </span><span class="si">{f}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">row_resp</span> <span class="o">=</span> <span class="n">ez_prompt</span><span class="p">(</span><span class="s1">&#39;&gt; </span><span class="se">\033</span><span class="s1">[K&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">row_resp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">doit</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">row_resp</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">file_row</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row_resp</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="n">file_row</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;  Invalid input (must be # between 1 &#39;</span>
+                  <span class="n">f</span><span class="s1">&#39;and {len(options)})&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalid</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">toggled</span><span class="p">:</span>
+                <span class="n">toggled</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">toggled</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[F&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">options</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">doit</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">toggled</span></div>
 </pre></div>
 
            </div>

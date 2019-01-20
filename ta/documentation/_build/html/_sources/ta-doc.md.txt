@@ -65,6 +65,18 @@ on the student's emailed report as the one you will see if you click
 the `View report` button.
 
 ## How to write rubrics
+
+### JSON
+
+To be able to write rubrics, you should have an idea of what JSON is. At a
+high level, JSON is a format for data and is an easy way to store data in a
+file. To learn more about JSON, read this link:
+https://realpython.com/python-json/
+You definitely don't need to read the whole article; just get the idea of
+what JSON is and if you want, how to interface with it using Python. No need
+to read the "A Real World Example (sort of)" example.
+
+### Rubrics
 Each Assignment is comprised of a list of Questions. Each Question has a single
 file associated with it that students will upload. For example, Homework 2
 might have a `safety.arr` and `reflections.txt` questions. That means two
@@ -84,12 +96,12 @@ Each rubric is a dictionary. At the top level, the dictionary has three keys:
 - `emoji`: value is a boolean, whether or not the student gets an ascii art
 emoji for their handin. For rubrics you put in `/ta/grading/data/rubrics`
 (question-level rubrics), this value should be `false`.
-- `comments`: a dictionary of given and un_given comments. For
+- `comments`: a dictionary of given and `un_given` comments. For
 question-level rubrics, the given key should have an empty list value, and
-the un_given key should have a list of any global comments as the value.
+the `un_given` key should have a list of any global comments as the value.
 - `rubric`: a dictionary with one key per grade category (with the key
 describing the grade category) and the value being a dictionary with
-a comments key, a rubric_items key, and a fudge_points key.
+a comments key, a `rubric_items` key, and a `fudge_points` key.
 - The fudge points key should have a list with two floats in it as its
 value. For question-level rubrics, the first value should be 0.0 as it is
 the number of fudge points given. The second value should be the (positive)
@@ -101,7 +113,7 @@ Once you have written a rubric, check that is valid by running
 For example:
 `cs111-check-rubric /course/cs0111/ta/grading/data/rubrics/homework2/q1.json`
 
-### Example
+### Rubric Example
 
 ```json
 {
