@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/course/cs0111/ta/venv/bin/python
 
 import json
 
@@ -81,6 +81,7 @@ new_data = {
             "grading_started": False,
             "sent_emails": False,
             "group_asgn": g_asgn,
+            "partner_data": None,
             "questions": qs
            }
 if g_asgn:
