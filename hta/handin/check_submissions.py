@@ -15,12 +15,25 @@ import datetime as dt
 from datetime import datetime
 from helpers import *
 
+def check_assignments(data: dict):
+    ecol = col_str_to_num(data['end_col'])
+    for asgn in data['assignments']:
+        for q in data['assignments'][asgn]['questions']:
+            qcol = col_str_to_num(q['col'])
+            if qcol > ecol:
+                e = 'assignments.json has question with column over max columns\n'
+                e += f'({asgn} question {q["filename"]} in column {q["col"]})\n'
+                e += 'Increase end_col in assignments.json'
+                raise ValueError(e)
+
 os.umask(0o007)  # set file permissions
 
 BASE_PATH = '/course/cs0111'
 data_file = os.path.join(BASE_PATH, 'ta/assignments.json')
 with locked_file(data_file) as f:
     data = json.load(f)
+
+check_assignments(data)
 
 log_path = data['handin_log_path']
 add_sub_path = os.path.join(BASE_PATH, 'hta/grading/add-student-submission')
