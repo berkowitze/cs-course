@@ -27,7 +27,9 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="UTA Relevant Documentation" href="ta-doc.html" />
+    <link rel="prev" title="Plain English READMEs" href="readmes.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -77,7 +79,28 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="readmes.html">Plain English READMEs</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">HTA Relevant Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#handin">Handin</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#requirements-for-the-form">Requirements for the form</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#assignment-selection-dropdown">Assignment selection dropdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#normal-assignments">Normal assignments</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#group-assignments">Group assignments</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#columns-for-assignments-json">Columns for <code class="docutils literal notranslate"><span class="pre">assignments.json</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#form-slowing-down-too-much-or-handin-script-taking-too-long">Form slowing down too much or handin script taking too long</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#assignments-json"><code class="docutils literal notranslate"><span class="pre">assignments.json</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cs111-asgn-hub"><code class="docutils literal notranslate"><span class="pre">cs111-asgn-hub</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#asgnipython"><code class="docutils literal notranslate"><span class="pre">asgnipython</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ta-doc.html">UTA Relevant Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
@@ -128,6 +151,8 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
+          <li><a href="readmes.html">Plain English READMEs</a> &raquo;</li>
+        
       <li>HTA Relevant Documentation</li>
     
     
@@ -149,6 +174,134 @@
             
   <div class="section" id="hta-relevant-documentation">
 <span id="hta-relevant-documentation"></span><h1>HTA Relevant Documentation<a class="headerlink" href="#hta-relevant-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="handin">
+<span id="handin"></span><h2>Handin<a class="headerlink" href="#handin" title="Permalink to this headline">¶</a></h2>
+<p>Handin is managed with a single Google Form. The Google Form should dump
+responses into a Google Sheet.</p>
+<div class="section" id="requirements-for-the-form">
+<span id="requirements-for-the-form"></span><h3>Requirements for the form<a class="headerlink" href="#requirements-for-the-form" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>The form should collect student’s Brown email addresses, should require
+them to sign in, and should not allow editing after submission.
+<img alt="" src="_images/collection.png" /></li>
+</ul>
+</div>
+<div class="section" id="assignment-selection-dropdown">
+<span id="assignment-selection-dropdown"></span><h3>Assignment selection dropdown<a class="headerlink" href="#assignment-selection-dropdown" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>The form should <em>not</em> have an explicit question asking for the student’s email</li>
+<li>The form should have one dropdown question asking what the student wants to hand in.
+Each option should have a “Go to section x” associated with it so that when the student
+selects it, the student will be directed to that section.</li>
+<li>These dropdown options <em>must match those in <code class="docutils literal notranslate"><span class="pre">/ta/assignments.json</span></code></em>. If they don’t,
+errors will occur. This is case and space sensitive.</li>
+<li>Add and remove dropdown options depending on what students can hand in at any
+given time.</li>
+<li>The names of the sections that the dropdown redirect to don’t matter; nor do
+the names of any questions (only the column they are in matters).
+<img alt="" src="_images/dropdown.png" /></li>
+</ul>
+</div>
+<div class="section" id="normal-assignments">
+<span id="normal-assignments"></span><h3>Normal assignments<a class="headerlink" href="#normal-assignments" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Each assignment should have its own Google Form section. There should be one
+File Upload question for each question in <code class="docutils literal notranslate"><span class="pre">/ta/assignments.json</span></code>.</li>
+<li>You may add any other questions you want, but the handin scraper will ignore
+those responses (unless you modify <code class="docutils literal notranslate"><span class="pre">/hta/handin/check_submissions.py</span></code>).</li>
+<li>Make sure that “After section x”, Submit Form is selected (this will change
+every time you add a new section).</li>
+</ul>
+<p><img alt="" src="_images/section_example.png" /></p>
+</div>
+<div class="section" id="group-assignments">
+<span id="group-assignments"></span><h3>Group assignments<a class="headerlink" href="#group-assignments" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Group assignments are managed both through the Google Form and <code class="docutils literal notranslate"><span class="pre">assignments.json</span></code>.
+For the first assignment in a project, you should collect partner information on the
+Google Form by asking an additional “Checkboxes” question. You can print out a list
+of the logins of students in the class using <code class="docutils literal notranslate"><span class="pre">better-members</span> <span class="pre">cs-0111student</span></code> and
+copying that into the Google Form (don’t type everything out!).
+<img alt="" src="_images/partner_sel.png" /></li>
+</ul>
+</div>
+<div class="section" id="columns-for-assignments-json">
+<span id="columns-for-assignments-json"></span><h3>Columns for <code class="docutils literal notranslate"><span class="pre">assignments.json</span></code><a class="headerlink" href="#columns-for-assignments-json" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>For handin to work properly, the correct Google Sheet columns need to be entered into
+<code class="docutils literal notranslate"><span class="pre">assignments.json</span></code>. Whenever you add an assignment, go to the Google Sheet that
+the form is dumping submissions into and find the column corresponding to the question.
+That column letter should be entered into <code class="docutils literal notranslate"><span class="pre">assignments.json</span></code>.</li>
+<li>For collecting partner data, you should enter the column letter for the checkboxes
+question. The handin scripts will parse it properly as long as you have configured
+<code class="docutils literal notranslate"><span class="pre">assignments.json</span></code> correctly (which it will be if you use <code class="docutils literal notranslate"><span class="pre">cs111-add-asgn</span></code>).</li>
+</ul>
+</div>
+<div class="section" id="form-slowing-down-too-much-or-handin-script-taking-too-long">
+<span id="form-slowing-down-too-much-or-handin-script-taking-too-long"></span><h3>Form slowing down too much or handin script taking too long<a class="headerlink" href="#form-slowing-down-too-much-or-handin-script-taking-too-long" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>If things are getting too cumbersome, you can clear all responses from the Google Form.
+If you do this, you must:</li>
+</ul>
+<ol class="simple">
+<li>Turn off handin checking if you have a crontab setup</li>
+<li>Clear the responses</li>
+<li>Link the Form to a new Google Sheet</li>
+<li>Update <code class="docutils literal notranslate"><span class="pre">/ta/assignments.json</span></code> to have the new sheet name, ID, and column ranges</li>
+<li>Make sure the old responses are not in the new Google Sheet (otherwise everyone
+will get duplicate confirmation emails)</li>
+<li>Clear the submission log in <code class="docutils literal notranslate"><span class="pre">/hta/handin/submission_log.txt</span></code>. This <em>needs to be last</em>.</li>
+<li>Check things are working using cs111-check-handins</li>
+<li>Re-enable handin checking and you should be all set!</li>
+</ol>
+</div>
+</div>
+<div class="section" id="assignments-json">
+<span id="assignments-json"></span><h2><code class="docutils literal notranslate"><span class="pre">assignments.json</span></code><a class="headerlink" href="#assignments-json" title="Permalink to this headline">¶</a></h2>
+<p>For general configuration, use <code class="docutils literal notranslate"><span class="pre">ta/assignments.json</span></code>. This file contains pretty much all
+the configuration for the course.</p>
+<ul class="simple">
+<li>What Google Sheet to look for handins in</li>
+<li>Who to send error emails to</li>
+<li>Data for each assignment<ul>
+<li>Which questions go on each assignment</li>
+<li>When assignments are due</li>
+<li>Group/project data for each assignment, if relevant</li>
+<li>Whether grading is anonymous</li>
+<li>Grading status</li>
+<li>Information for testsuites for each question</li>
+</ul>
+</li>
+<li>To add new assignments, run the <code class="docutils literal notranslate"><span class="pre">cs111-add-asgn</span></code> script. You will need to update the
+Google Form before doing this so you have all the relevant column numbers available.</li>
+</ul>
+<p>For grading, almost everything HTA specific can be done with two commands which are in <code class="docutils literal notranslate"><span class="pre">htabin</span></code>:</p>
+</div>
+<div class="section" id="cs111-asgn-hub">
+<span id="cs111-asgn-hub"></span><h2><code class="docutils literal notranslate"><span class="pre">cs111-asgn-hub</span></code><a class="headerlink" href="#cs111-asgn-hub" title="Permalink to this headline">¶</a></h2>
+<p>This script his gives a command line interface with the course and
+individual assignments. Use this to:</p>
+<ul class="simple">
+<li>Start, finish, and reset grading</li>
+<li>View flagged handins</li>
+<li>Generate and send grade reports</li>
+<li>Manage regrading and de-anonymization</li>
+<li>Generate gradebook</li>
+<li>Generate and send grade summaries</li>
+<li>Manage course data backups</li>
+<li>Reset course data for the next semester</li>
+</ul>
+</div>
+<div class="section" id="asgnipython">
+<span id="asgnipython"></span><h2><code class="docutils literal notranslate"><span class="pre">asgnipython</span></code><a class="headerlink" href="#asgnipython" title="Permalink to this headline">¶</a></h2>
+<p>This gives a python interface with the correct permissions
+and everything from <code class="docutils literal notranslate"><span class="pre">hta_classes.py</span></code> loaded. the most useful time to use
+<code class="docutils literal notranslate"><span class="pre">asgnipython</span></code> is for updating rubrics during grading; see the
+<a class="reference external" href="hta_classes.html">hta_classes.py documentation</a> for the classes, variables,
+and methods available. the <code class="docutils literal notranslate"><span class="pre">magic_update</span></code> function is how you update rubrics.
+you may also want to use <code class="docutils literal notranslate"><span class="pre">asgnipython</span></code> to force the reset of assignment grading
+by doing <code class="docutils literal notranslate"><span class="pre">HTA_Assignment(&quot;Assignment</span> <span class="pre">Name&quot;).reset_grading(True)</span></code>.</p>
+</div>
 </div>
 
 
@@ -156,6 +309,15 @@
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ta-doc.html" class="btn btn-neutral float-right" title="UTA Relevant Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="readmes.html" class="btn btn-neutral" title="Plain English READMEs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

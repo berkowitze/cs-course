@@ -161,8 +161,10 @@
 <span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="p">(</span><span class="n">Rubric</span><span class="p">,</span> <span class="n">RubricCategory</span><span class="p">,</span> <span class="n">RubricItem</span><span class="p">,</span> <span class="n">RubricOption</span><span class="p">,</span>
                           <span class="n">Bracket</span><span class="p">,</span> <span class="n">BracketItem</span><span class="p">,</span> <span class="n">Comments</span><span class="p">)</span>
 
+<span class="n">pjoin</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span>
+
 <span class="n">BASE_PATH</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;/course/cs0111&#39;</span>
-<span class="n">res_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;resource-lock.lock&#39;</span><span class="p">)</span>
+<span class="n">res_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;resource-lock.lock&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="locked_file"><a class="viewcode-back" href="../helpers.html#helpers.locked_file">[docs]</a><span class="nd">@contextmanager</span>
@@ -214,6 +216,7 @@
 
 <span class="sd">    :param filename: filepath of the JSON file to modify</span>
 <span class="sd">    :type filename: str</span>
+<span class="sd">    :raises TypeError: invalid modification to the JSON file</span>
 
 <span class="sd">    **Example**:</span>
 
@@ -241,8 +244,10 @@
         <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
     <span class="k">yield</span> <span class="n">data</span>
+    <span class="c1"># failure here means the json was modified to be invalid json</span>
+    <span class="n">to_write</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">to_write</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="require_resource"><a class="viewcode-back" href="../helpers.html#helpers.require_resource">[docs]</a><span class="k">def</span> <span class="nf">require_resource</span><span class="p">(</span><span class="n">resource</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">res_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">],</span> <span class="n">Any</span><span class="p">]:</span>
@@ -490,6 +495,26 @@
             <span class="n">unique_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">unique_list</span></div>
+
+
+<div class="viewcode-block" id="red"><a class="viewcode-back" href="../helpers.html#helpers.red">[docs]</a><span class="k">def</span> <span class="nf">red</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    given a string s, return s wrapped in the escape characters required</span>
+<span class="sd">    to print the string in a red color to the terminal (ANSI codes)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[31m</span><span class="si">{s}</span><span class="se">\033</span><span class="s1">[0m&#39;</span></div>
+
+
+<div class="viewcode-block" id="green"><a class="viewcode-back" href="../helpers.html#helpers.green">[docs]</a><span class="k">def</span> <span class="nf">green</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    given a string s, return s wrapped in the escape characters required</span>
+<span class="sd">    to print the string in a green color to the terminal (ANSI codes)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[32m</span><span class="si">{s}</span><span class="se">\033</span><span class="s1">[0m&#39;</span></div>
 </pre></div>
 
            </div>

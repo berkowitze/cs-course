@@ -88,7 +88,9 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-write-rubrics">How to write rubrics</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#json">JSON</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rubrics">Rubrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rubric-example">Rubric Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-write-testsuites">How to write testsuites</a></li>
@@ -245,6 +247,18 @@ the <code class="docutils literal notranslate"><span class="pre">View</span> <sp
 </div>
 <div class="section" id="how-to-write-rubrics">
 <span id="how-to-write-rubrics"></span><h2>How to write rubrics<a class="headerlink" href="#how-to-write-rubrics" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="json">
+<span id="json"></span><h3>JSON<a class="headerlink" href="#json" title="Permalink to this headline">¶</a></h3>
+<p>To be able to write rubrics, you should have an idea of what JSON is. At a
+high level, JSON is a format for data and is an easy way to store data in a
+file. To learn more about JSON, read this link:
+https://realpython.com/python-json/
+You definitely don’t need to read the whole article; just get the idea of
+what JSON is and if you want, how to interface with it using Python. No need
+to read the “A Real World Example (sort of)” example.</p>
+</div>
+<div class="section" id="rubrics">
+<span id="id1"></span><h3>Rubrics<a class="headerlink" href="#rubrics" title="Permalink to this headline">¶</a></h3>
 <p>Each Assignment is comprised of a list of Questions. Each Question has a single
 file associated with it that students will upload. For example, Homework 2
 might have a <code class="docutils literal notranslate"><span class="pre">safety.arr</span></code> and <code class="docutils literal notranslate"><span class="pre">reflections.txt</span></code> questions. That means two
@@ -262,12 +276,12 @@ rubrics need to be written for homework 2.</p>
 <li><code class="docutils literal notranslate"><span class="pre">emoji</span></code>: value is a boolean, whether or not the student gets an ascii art
 emoji for their handin. For rubrics you put in <code class="docutils literal notranslate"><span class="pre">/ta/grading/data/rubrics</span></code>
 (question-level rubrics), this value should be <code class="docutils literal notranslate"><span class="pre">false</span></code>.</li>
-<li><code class="docutils literal notranslate"><span class="pre">comments</span></code>: a dictionary of given and un_given comments. For
+<li><code class="docutils literal notranslate"><span class="pre">comments</span></code>: a dictionary of given and <code class="docutils literal notranslate"><span class="pre">un_given</span></code> comments. For
 question-level rubrics, the given key should have an empty list value, and
-the un_given key should have a list of any global comments as the value.</li>
+the <code class="docutils literal notranslate"><span class="pre">un_given</span></code> key should have a list of any global comments as the value.</li>
 <li><code class="docutils literal notranslate"><span class="pre">rubric</span></code>: a dictionary with one key per grade category (with the key
 describing the grade category) and the value being a dictionary with
-a comments key, a rubric_items key, and a fudge_points key.</li>
+a comments key, a <code class="docutils literal notranslate"><span class="pre">rubric_items</span></code> key, and a <code class="docutils literal notranslate"><span class="pre">fudge_points</span></code> key.</li>
 <li>The fudge points key should have a list with two floats in it as its
 value. For question-level rubrics, the first value should be 0.0 as it is
 the number of fudge points given. The second value should be the (positive)
@@ -277,8 +291,9 @@ maximum number of fudge points to allow giving.</li>
 <code class="docutils literal notranslate"><span class="pre">cs111-check-rubric</span> <span class="pre">path-to-rubric.json</span></code></p>
 <p>For example:
 <code class="docutils literal notranslate"><span class="pre">cs111-check-rubric</span> <span class="pre">/course/cs0111/ta/grading/data/rubrics/homework2/q1.json</span></code></p>
-<div class="section" id="example">
-<span id="example"></span><h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="rubric-example">
+<span id="rubric-example"></span><h3>Rubric Example<a class="headerlink" href="#rubric-example" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="nt">&quot;emoji&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
     <span class="nt">&quot;comments&quot;</span><span class="p">:</span> <span class="p">{</span>

@@ -44,7 +44,7 @@ class HTA_Assignment(Assignment):
     """
 
     def __init__(self, *args, **kwargs):
-        """[summary]
+        """
 
         creates HTA_Assignment
 

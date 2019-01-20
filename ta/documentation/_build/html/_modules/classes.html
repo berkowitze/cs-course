@@ -353,16 +353,16 @@
 <span class="sd">    :vartype _id_to_login_map: Dict[int, str]</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Assignment.__init__"><a class="viewcode-back" href="../classes.html#classes.Assignment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">full_load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Assignment.__init__"><a class="viewcode-back" href="../classes.html#classes.Assignment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">load_if_started</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        Create a new assignment based on the key from /ta/assignments.json</span>
 
 <span class="sd">        :param key: Key of assignment to load (i.e. &#39;Homework 4&#39;)</span>
 <span class="sd">        :type key: str</span>
-<span class="sd">        :param full_load: whether or not to fully load the</span>
+<span class="sd">        :param load_if_started: whether or not to fully load the</span>
 <span class="sd">                          assignment and all its Questions, defaults to False</span>
-<span class="sd">        :type full_load: bool, optional</span>
+<span class="sd">        :type load_if_started: bool, optional</span>
 <span class="sd">        :raises: ValueError if attempting to load unstarted assignment</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -370,7 +370,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mini_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">full_asgn_name_to_dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">]</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">due_date</span><span class="p">:</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;due&#39;</span><span class="p">],</span> <span class="s1">&#39;%m/</span><span class="si">%d</span><span class="s1">/%Y %I:%M%p&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">due</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">due_date</span> <span class="o">&lt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;grading_started&#39;</span><span class="p">]</span>
@@ -397,12 +396,10 @@
                                        <span class="bp">self</span><span class="o">.</span><span class="n">mini_name</span><span class="p">,</span>
                                        <span class="s1">&#39;bracket.json&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grading_completed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;grading_completed&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loaded</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span> <span class="ow">and</span> <span class="n">full_load</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span> <span class="ow">and</span> <span class="n">full_load</span><span class="p">:</span>
-            <span class="n">e</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;Attempting to fully load unstarted assignment </span><span class="si">{self}</span><span class="s1">&#39;</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span> <span class="ow">and</span> <span class="n">load_if_started</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Assignment.load"><a class="viewcode-back" href="../classes.html#classes.Assignment.load">[docs]</a>    <span class="nd">@is_started</span>
     <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -433,7 +430,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_login_to_id_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_login_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">data</span><span class="p">}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_load_questions</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_questions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loaded</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
     <span class="nd">@is_started</span>
     <span class="k">def</span> <span class="nf">_load_questions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1411,7 +1410,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-        <span class="n">asgn</span> <span class="o">=</span> <span class="n">Assignment</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">asgn</span> <span class="o">=</span> <span class="n">Assignment</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">load_if_started</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">asgn</span><span class="o">.</span><span class="n">started</span><span class="p">:</span>
             <span class="n">assignments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asgn</span><span class="p">)</span>
 
@@ -1429,7 +1428,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-        <span class="n">asgn</span> <span class="o">=</span> <span class="n">Assignment</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">asgn</span> <span class="o">=</span> <span class="n">Assignment</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">load_if_started</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">assignments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asgn</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">assignments</span></div>

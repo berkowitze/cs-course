@@ -80,6 +80,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readmes.html">Plain English READMEs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="filesystem.html">Filesystem</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customization.html">Customizing the grading/handin scripts</a></li>
@@ -182,6 +183,13 @@ file, raising an error if it is not</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="helpers.green">
+<code class="descclassname">helpers.</code><code class="descname">green</code><span class="sig-paren">(</span><em>s: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/helpers.html#green"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.green" title="Permalink to this definition">¶</a></dt>
+<dd><p>given a string s, return s wrapped in the escape characters required
+to print the string in a green color to the terminal (ANSI codes)</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="helpers.json_edit">
 <code class="descclassname">helpers.</code><code class="descname">json_edit</code><span class="sig-paren">(</span><em>filename: str</em><span class="sig-paren">)</span> &#x2192; Generator[T_co, T_contra, V_co]<a class="reference internal" href="_modules/helpers.html#json_edit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.json_edit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enables quickly editing JSON files using with block.
@@ -193,6 +201,8 @@ write function to use.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> (<em>str</em>) – filepath of the JSON file to modify</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>TypeError</strong> – invalid modification to the JSON file</td>
 </tr>
 </tbody>
 </table>
@@ -318,6 +328,13 @@ opens in read mode by default (“r”)</li>
     <span class="n">text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="function">
+<dt id="helpers.red">
+<code class="descclassname">helpers.</code><code class="descname">red</code><span class="sig-paren">(</span><em>s: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/helpers.html#red"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.red" title="Permalink to this definition">¶</a></dt>
+<dd><p>given a string s, return s wrapped in the escape characters required
+to print the string in a red color to the terminal (ANSI codes)</p>
 </dd></dl>
 
 <dl class="function">

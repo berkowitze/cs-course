@@ -171,7 +171,7 @@
 <h2>Assignments<a class="headerlink" href="#assignments" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="classes.Assignment">
-<em class="property">class </em><code class="descclassname">classes.</code><code class="descname">Assignment</code><span class="sig-paren">(</span><em>key: str</em>, <em>full_load: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes.html#Assignment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Assignment" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">classes.</code><code class="descname">Assignment</code><span class="sig-paren">(</span><em>key: str</em>, <em>load_if_started: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes.html#Assignment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Assignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provides interface with logs, grades, and rubrics, files, etc.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -209,7 +209,7 @@ this assignment</li>
 </table>
 <dl class="method">
 <dt id="classes.Assignment.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>key: str</em>, <em>full_load: bool = False</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Assignment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Assignment.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>key: str</em>, <em>load_if_started: bool = True</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Assignment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Assignment.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new assignment based on the key from /ta/assignments.json</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -217,7 +217,7 @@ this assignment</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>key</strong> (<em>str</em>) – Key of assignment to load (i.e. ‘Homework 4’)</li>
-<li><strong>full_load</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not to fully load the
+<li><strong>load_if_started</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not to fully load the
 assignment and all its Questions, defaults to False</li>
 </ul>
 </td>
