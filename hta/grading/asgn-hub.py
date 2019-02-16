@@ -12,9 +12,9 @@ from datetime import datetime
 from textwrap import dedent
 
 from prompts import ez_prompt, opt_prompt, table_prompt, toggle_prompt
-from hta_classes import (BASE_PATH, User, asgn_data_path, get_hta_asgn_list,
+from hta_classes import (BASE_PATH, User, get_hta_asgn_list,
                          login_to_email, student_list, HTA_Assignment,
-                         json_edit)
+                         json_edit, CONFIG)
 from hub_helpers import *
 from helpers import red, moss_langs
 
@@ -43,8 +43,8 @@ class State(Enum):
 
 
 def send_grade_reports(asgn: HTA_Assignment, logins: List[str]) -> None:
-    yag = yagmail.SMTP('csci0111@brown.edu')
-    asgn.send_emails(yag, logins, override_send_to='eliberkowitz@gmail.com')
+    yag = yagmail.SMTP(CONFIG.emails_from)
+    asgn.send_emails(yag, logins)
 
 
 print('At any time, press ctrl-c to quit')

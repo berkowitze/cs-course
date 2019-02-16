@@ -16,7 +16,7 @@ from course_customization import full_asgn_name_to_dirname, \
 from custom_types import HTMLData, Log, LogItem, Rubric
 from helpers import (loaded_rubric_check, locked_file, json_edit,
                      require_resource, update_comments, rubric_check,
-                     remove_duplicates, moss_langs)
+                     remove_duplicates, moss_langs, CONFIG)
 
 # READ BEFORE EDITING THIS FILE #
 # do not use the builtin `open` function; instead use the
@@ -26,13 +26,14 @@ from helpers import (loaded_rubric_check, locked_file, json_edit,
 # with locked_file(filename, mode) as f:
 #     ...
 
-BASE_PATH = '/course/cs0111'
-DATA_PATH = pjoin(BASE_PATH, 'ta', 'grading', 'data')
+BASE_PATH = CONFIG.base_path
+DATA_PATH = pjoin(BASE_PATH, 'ta/grading/data')
 proj_base_path = pjoin(DATA_PATH, 'projects')
-asgn_data_path = pjoin(BASE_PATH, 'ta', 'assignments.json')
-ta_path = pjoin(BASE_PATH, 'ta/groups', 'tas.txt')
-hta_path = pjoin(BASE_PATH, 'ta/groups', 'htas.txt')
-student_path = pjoin(BASE_PATH, 'ta/groups', 'students.txt')
+asgn_data_path = pjoin(BASE_PATH, 'ta/assignments.json')
+config_path = pjoin(BASE_PATH, 'ta/config.yaml')
+ta_path = pjoin(BASE_PATH, 'ta/groups/tas.txt')
+hta_path = pjoin(BASE_PATH, 'ta/groups/htas.txt')
+student_path = pjoin(BASE_PATH, 'ta/groups/students.txt')
 log_base_path = pjoin(DATA_PATH, 'logs')
 test_base_path = pjoin(DATA_PATH, 'tests')
 rubric_base_path = pjoin(DATA_PATH, 'rubrics')
@@ -40,7 +41,8 @@ grade_base_path = pjoin(DATA_PATH, 'grades')
 s_files_base_path = pjoin(DATA_PATH, 'sfiles')
 anon_base_path = pjoin(DATA_PATH, 'anonymization')
 blocklist_path = pjoin(DATA_PATH, 'blocklists')
-assert pexists(asgn_data_path), 'No data file "{asgn_data_path}"'
+assert pexists(asgn_data_path), f'No data file "{asgn_data_path}"'
+assert pexists(asgn_data_path), f'No config file "{config_path}"'
 
 with locked_file(asgn_data_path) as f:
     asgn_data = json.load(f)
@@ -512,7 +514,7 @@ class Question:
 
         self.load_handins()
 
-    @require_resource('/course/cs0111/handin-loading-lock.lock')
+    @require_resource(pjoin(BASE_PATH, 'handin-loading-lock.lock'))
     def load_handins(self) -> None:
         """
 
@@ -959,7 +961,7 @@ class Handin:
         with locked_file(self.question.log_filepath, 'w') as f:
             json.dump(data, f, indent=2, sort_keys=True)
 
-    @require_resource('/course/cs0111/ta/question_extract_resource')
+    @require_resource(pjoin(BASE_PATH, 'ta/question_extract_resource'))
     def start_grading(self, ta: str) -> None:
         """
 

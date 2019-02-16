@@ -101,3 +101,20 @@ and everything from `hta_classes.py` loaded. the most useful time to use
 and methods available. the `magic_update` function is how you update rubrics.
 you may also want to use `asgnipython` to force the reset of assignment grading
 by doing `HTA_Assignment("Assignment Name").reset_grading(True)`.
+
+## Backups
+The backup system is not particularly sophisiticated but it is better than nothing.
+I mostly recommend using it at the end of the semester to save data in case it is
+needed in future years. It will only back up data relevant to the grading app, as
+well as anything inside the `/ta/grading/data` directory.
+
+Restoring backups simply makes a new backup, then overwrites all files
+with the contents of the backup.
+
+There is currently no way of backing up individual assignments or componenets
+of the grading app; if you want this, you need to either implement it into
+the grading app or do it by hand in bash.
+
+There is also the `.snapshots` system, which backs up the entire CS department
+directory system every ~3 hours. Don't rely on this for long term storage though,
+it should generally only be used for recovering files after mistakes were made.

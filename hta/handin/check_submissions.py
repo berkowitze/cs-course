@@ -1,41 +1,32 @@
+import datetime as dt
+import io
 import json
+import os
 import subprocess
 import sys
-import zipfile
 import traceback
-import io
-import os
 import yagmail
-from google.oauth2.credentials import Credentials
+import zipfile
 from apiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload, HttpError
-from googlefile import GoogleFile
-from googleapi import sheets_api
-import datetime as dt
 from datetime import datetime
-from helpers import *
+from google.oauth2.credentials import Credentials
+from googleapi import sheets_api
+from googleapiclient.http import HttpError, MediaIoBaseDownload
+from googlefile import GoogleFile
+from handin_helpers import make_span
+from helpers import BASE_PATH, check_assignments, locked_file, CONFIG
 
-def check_assignments(data: dict):
-    ecol = col_str_to_num(data['end_col'])
-    for asgn in data['assignments']:
-        for q in data['assignments'][asgn]['questions']:
-            qcol = col_str_to_num(q['col'])
-            if qcol > ecol:
-                e = 'assignments.json has question with column over max columns\n'
-                e += f'({asgn} question {q["filename"]} in column {q["col"]})\n'
-                e += 'Increase end_col in assignments.json'
-                raise ValueError(e)
+HCONFIG = CONFIG.handin
 
 os.umask(0o007)  # set file permissions
 
-BASE_PATH = '/course/cs0111'
 data_file = os.path.join(BASE_PATH, 'ta/assignments.json')
 with locked_file(data_file) as f:
     data = json.load(f)
 
 check_assignments(data)
 
-log_path = data['handin_log_path']
+log_path = HCONFIG.log_path
 add_sub_path = os.path.join(BASE_PATH, 'hta/grading/add-student-submission')
 proj_base = os.path.join(BASE_PATH, 'ta/grading/data/projects')
 
@@ -54,17 +45,18 @@ hc = dt.timedelta(0, HARD_CUTOFF * 60)  # hard cutoff
 
 class Question:
     def __init__(self, question, row):
-        self.downloaded = False
-        self.q_data = question
+        self.downloaded: bool = False
+        self.q_data: dict = question
         col = self.q_data['col']
         ind = col_str_to_num(col) - 1
+        self.link: Optional[str]
         self.link = row[ind] if ind < len(row) and row[ind] != '' else None
-        self.completed = (self.link is not None)
-        self.fname = self.q_data['filename']
+        self.completed: bool = (self.link is not None)
+        self.fname: str = self.q_data['filename']
 
     def get_gfile(self):
         # extensions which a snippet can be extracted from
-        valid_exts = ['.txt', '.py', '.arr', '.tex']
+        valid_exts = ['.txt', '.py', '.arr', '.tex', '.java']
         ident = url_to_gid(self.link)  # google file id
         self.gf = None if ident is None else GoogleFile(ident)
         if self.completed:
@@ -93,7 +85,7 @@ class Question:
 
                 e = 'Student %s uploaded a %s file, expected %s'
                 print((e % (login, actual_ext, self.fname)))
-                with open('filename_error_template.html', 'r') as f:
+                with locked_file('filename_error_template.html', 'r') as f:
                     self.warning = f.read().format(exp_ext=expect_ext,
                                                    sub_ext=actual_ext)
             else:
@@ -107,23 +99,27 @@ class Question:
     def get_snippet(self):
         lines_per_file = 5  # how many lines to print per snippet
         if not self.downloaded:
-            e = 'File %s must be downloaded before generating snippet'
-            raise Exception(e % self.fname)
+            e = (
+                 f'File {self.fname} must be downloaded before '
+                 f'generating snippet'
+                 )
+            raise ValueError(e)
 
         if not self.completed:
-            return '<span style="color: red">Not submitted.</span>', ''
+            return make_span("Not submitted.", "red"), ''
         elif not self.make_snippet:
-            first_cell = '<span style="color: green">Submitted.%s</span>'
-            return (first_cell % self.warning), 'Snippet Unavailable'
+            first_cell = make_span(f'Submitted.{self.warning}', 'green')
+            return first_cell, 'Snippet Unavailable'
         else:
-            with open(self.file_path, 'r') as dl_f:
+            with locked_file(self.file_path) as dl_f:
                 try:
                     lines = dl_f.read().strip().split('\n')
                 except UnicodeDecodeError:
                     return 'Submitted', 'Snippet Unavailable'
                 if lines == [] or lines == ['']:
-                    first_cell = '<span style="color: orange">Empty file.%s</span>'
-                    return first_cell % self.warning, ''
+                    first_cell = make_span(f'Empty file.{self.warning}',
+                                           'orange')
+                    return first_cell, ''
 
                 if len(lines) > lines_per_file:
                     snippet = lines[0:lines_per_file]
@@ -133,9 +129,9 @@ class Question:
                 else:
                     snippet = lines[0:len(lines)]
 
-            snippet = '<br>'.join([line.strip() for line in snippet])
-            first_cell = '<span style="color: green">Submitted.%s</span>'
-            return first_cell % self.warning, snippet
+            snippet = '<br>'.join(line.strip() for line in snippet)
+            first_cell = make_span(f'Submitted.{self.warning}', 'green')
+            return first_cell
 
 
 class Response:
@@ -144,11 +140,11 @@ class Response:
         self.sub_time = datetime.strptime(row[0], '%m/%d/%Y %H:%M:%S')
         self.sub_timestr = self.sub_time.strftime('%m/%d/%y %I:%M:%S%p')
         # submission email (must be Brown account)
-        self.email = row[col_str_to_num(data['email_col']) - 1]
+        self.email = row[col_str_to_num(HCONFIG.student_email_col) - 1]
         # submission login
         self.login = email_to_login(self.email)
 
-        self.asgn_name = row[col_str_to_num(data['submit_col']) - 1]
+        self.asgn_name = row[col_str_to_num(HCONFIG.assignment_name_col) - 1]
         self.dir_name = self.asgn_name.replace(' ', '').lower()
         self.ident = ident
         self.row = row
@@ -156,9 +152,6 @@ class Response:
         self.asgn = data['assignments'][self.asgn_name]
         if not self.confirmed and self.asgn['partner_data'] is not None:
             self.set_partner_data(row)
-
-        if not self.confirmed:
-            print(row)
 
         self.due = datetime.strptime(self.asgn['due'], '%m/%d/%Y %I:%M%p')
 
@@ -192,7 +185,7 @@ class Response:
             for student in partner_data:
                 if student in group:
                     e = f'Student {student} signed up for multiple groups.'
-                    e += ' Needs fixing (go to ta/grading/data/projects to fix)'
+                    e += ' Needs fixing (in /ta/grading/data/projects)'
                     print(e)
 
         if len(partner_data) != 2:
@@ -277,8 +270,12 @@ class Response:
             self.downloaded = True
 
     def confirm(self):
-        html = open('confirmation_template.html').read().strip()
-        row_template = '<tr><td>{cell_1}</td><td>{cell_2}</td><td><pre>{cell_3}</pre></td></tr>'
+        with locked_file('confirmation_template.html') as f:
+            html = f.read().strip()
+
+        row_template = ('<tr><td>{cell_1}</td>'
+                        '<td>{cell_2}</td>'
+                        '<td><pre>{cell_3}</pre></td></tr>')
         table = ''
         for q in self.qs:
             row = row_template
@@ -286,10 +283,11 @@ class Response:
             table += row.format(cell_1=q.fname, cell_2=a, cell_3=b)
 
         if self.email_late and not self.ext_applied:
-            msg = '<p><span style="color: red">Note: Submission was late.</span>'
-            msg += ' If you have an extension and are seeing this, email the HTAs.</p>'
+            msg = (f'<p>{make_span("Note: Submission was late.", "red")} '
+                   f'If you have an extension and are seeing this, '
+                   f'email the HTAs.</p>')
         elif self.email_late and self.ext_applied:
-            msg = '<span style="color: green">Note: Extension Applied</span>'
+            msg = make_span('Note: Extension Applied', 'green')
         else:
             msg = ''
         html = html.format(name=self.login,
@@ -298,8 +296,8 @@ class Response:
                            asgn_name=self.asgn_name,
                            tab_conts=table)
 
-        yag = yagmail.SMTP(data['email_from'])
-        subject = 'Confirmation of %s submission' % self.asgn_name
+        yag = yagmail.SMTP(CONFIG.email_from)
+        subject = f'Confirmation of {self.asgn_name} submission'
         if self.email_late:
             subject += ' (late)'
 
@@ -308,35 +306,37 @@ class Response:
             subprocess.check_output([add_sub_path, self.asgn_name, self.login])
             c = 'Student %s submitted %s after grading had started.\nTo grade,'
             c += ' run cs111-grade and extract the handin. Let an HTA know when'
-            c += ' you are done so the report can be sent. (testing sorry tas)'
+            c += ' you are done so the report can be sent.'
             c = c % (self.login, self.asgn_name)
-            yag.send(to='elias_berkowitz@brown.edu',
+            yag.send(to=CONFIG.hta_email,
                      subject='Submission after grading started',
-                     contents='<pre>%s</pre>' % c)
+                     contents=f'<pre>{c}</pre>')
 
-        yag.send(to=self.email,
+        to = CONFIG.test_mode_emails_to if CONFIG.test_mode else self.email
+        yag.send(to=to,
                  subject=subject,
                  contents=[html, zip_path])
         os.remove(zip_path)
 
     def reject(self):
-        with open('reject_template.html') as f:
+        with locked_file('reject_template.html') as f:
             html = f.read().strip()
 
         html = html.format(name=self.login,
                            sub_time=self.sub_timestr,
                            asgn_name=self.asgn_name)
-        yag = yagmail.SMTP(data['email_from'])
-        subject = 'Rejection of %s submission' % self.asgn_name
-        yag.send(to=self.email, subject=subject, contents=[html])
+        yag = yagmail.SMTP(CONFIG.email_from)
+        subject = f'Rejection of {self.asgn_name} submission'
+        to = CONFIG.test_mode_emails_to if CONFIG.test_mode else self.email
+        yag.send(to=to, subject=subject, contents=[html])
 
     def add_to_log(self):
-        with open(log_path, 'a') as f:
-            f.write('%s\n' % self.ident)
+        with locked_file(log_path, 'a') as f:
+            f.write(f'{self.ident}\n')
 
     def create_directory(self):
         # todo: use get_latest_sub_path from grading helpers
-        base = data['base_path']  # change to /course/cs0111/hta/...
+        base = HCONFIG.handin_path
         login_path = os.path.join(base, self.login)
         if not os.path.exists(login_path):
             os.mkdir(login_path)
@@ -355,9 +355,11 @@ class Response:
                     sub_numb = int(submission.split('-')[0])
                     if sub_numb > last_sub:
                         last_sub = sub_numb
-                except:
-                    e = 'Student %s directory contains invalid directory %s'
-                    print((e % (self.login, submission)))
+                except ValueError:
+                    print(
+                          f'Student {self.login} directory contains '
+                          f'invalid directory {submission}'
+                         )
                     continue
 
             fold_name = '%s-submission' % str(last_sub + 1)
@@ -374,7 +376,8 @@ class Response:
             q.download(self.full_path, self.login)
 
     def get_zip(self):
-        zipf = zipfile.ZipFile('submission.zip', 'w')  # /course/cs0111/hta/tmpzips
+        # /course/cs0111/hta/tmpzips TODO
+        zipf = zipfile.ZipFile('submission.zip', 'w')
         for q in self.qs:
             if q.completed:
                 zipf.write(q.file_path, arcname=q.fname)
@@ -383,26 +386,22 @@ class Response:
         return zipf.filename
 
     def __repr__(self):
-        return 'Response(asgn=%s, email=%s)' % (self.asgn_name, self.email)
+        return f'Response(asgn={self.asgn_name}, email={self.email})'
 
 
 def fetch_submissions():
-    yag = yagmail.SMTP(data['email_from'])
-    ss_id = data['sheet_id']
-    rng = '%s!%s%s:%s' % (data['sheet_name'], data['start_col'],
-                          data['start_row'], data['end_col'])
-    # print(rng)
-    service = sheets_api()
+    yag = yagmail.SMTP(CONFIG.email_from)
+    ss_id = HCONFIG.spreadsheet_id
+    rng = HCONFIG.get_range()
 
+    service = sheets_api()
     spreadsheets = service.spreadsheets().values()
     result = spreadsheets.get(spreadsheetId=ss_id, range=rng).execute()
 
     try:
         vals = result['values']
-        # print(list(map(len, vals)))
-    except KeyError:
-        print('Empty spreadsheet')
-        sys.exit(1)
+    except KeyError as e:
+        raise ValueError('Handin spreadsheet is empty') from e
     responses = []
     for i in range(len(vals)):
         try:
@@ -415,29 +414,15 @@ def fetch_submissions():
 
     for response in responses:
         if response is not None and not response.confirmed:
-            try:
-                response.download()
-            except:
-                tb = traceback.format_exc()
-                content = 'Error in response downloading, student %s row %s\n%s'
-                content = content % (response.login, response.ident+2, tb)
-                yag.send(to=data['email_errors_to'],
-                         subject='SUBMISSION ERROR',
-                         contents=content)
-                raise
-            try:
-                if response.gradeable:
-                    response.confirm()
-                else:
-                    response.reject()
-            except:
-                tb = traceback.format_exc()
-                raise
-            try:
-                response.add_to_log()
-                response.done = True
-            except:
-                raise
+            response.download()
+
+            if response.gradeable:
+                response.confirm()
+            else:
+                response.reject()
+
+            response.add_to_log()
+            response.done = True
 
     return responses
 
@@ -458,10 +443,10 @@ def try_fetch():
         success = False
 
     if not success:
-        yag = yagmail.SMTP(data['email_from'])
-        yag.send(to=data['email_errors_to'],
+        yag = yagmail.SMTP(CONFIG.email_from)
+        yag.send(to=CONFIG.email_errors_to,
                  subject='SUBMISSION ERROR',
-                 contents='<pre>%s%s%s</pre>' % (tb, estr, cstr))
+                 contents='<pre>%s\n%s\n%s</pre>' % (tb, estr, cstr))
         sys.exit(1)
 
 
