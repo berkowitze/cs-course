@@ -1,11 +1,12 @@
 #!/course/cs0111/ta/grading/venv/bin/python
-raise NotImplementedError('This needs updating')
 import sys
+
 from os.path import join as pjoin
 
-from hta_classes import HTA_Assignment, asgn_data, BASE_PATH
+from hta_classes import BASE_PATH, HTA_Assignment, asgn_data
 
-asgn_path = pjoin(BASE_PATH, 'ta/assignments.json')
+raise NotImplementedError('This needs updating')
+
 group_dir = pjoin(BASE_PATH, 'ta/grading/data/projects')
 
 group_projs = []

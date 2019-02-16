@@ -415,15 +415,16 @@ while True:
         print(dedent(red("""
         This should only be used for starting a new semester.
         The following steps will occur:
-        0. **Test files, rubrics, and assignments.json **will be kept**
-           (other than some booleans in assignment.json switching)**
-        1. All assignment grading will be reset
-        2. All grade files will be removed (including summaries)
-        3. All student handin files will be removed
-        4. All group data will be cleared
-        5. All lab data will be removed
-        6. All blocklist data will be removed
-        8. All extension data will be removed
+        0. **Test files, rubrics, assignments.json, and config.py
+           **will be kept** (other than some booleans in assignment.json
+           switching).
+        1. All assignment grading will be reset.
+        2. All grade files will be removed (including summaries).
+        3. All student handin files will be removed.
+        4. All group data will be cleared.
+        5. All lab data will be removed.
+        6. All blocklist data will be removed.
+        8. All extension data will be removed.
 
         You should be able to restore all this data using the restore
         option in cs111-asgn-hub.

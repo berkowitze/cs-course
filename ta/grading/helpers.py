@@ -435,7 +435,7 @@ def col_num_to_str(n: int) -> str:
 
 
 def check_assignments(data: dict):
-    ecol = col_str_to_num(data['end_col'])
+    ecol = col_str_to_num(CONFIG.handin.end_col)
     for asgn in data['assignments']:
         for q in data['assignments'][asgn]['questions']:
             qcol = col_str_to_num(q['col'])
