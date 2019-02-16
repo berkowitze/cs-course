@@ -8,7 +8,7 @@ from collections import defaultdict
 import yagmail
 
 from typing import Optional, List, Dict, Tuple, Set
-from helpers import locked_file
+from helpers import locked_file, CONFIG
 from custom_types import Grade
 from hta_helpers import load_students
 
@@ -19,7 +19,7 @@ from hta_helpers import load_students
 # canvas data in hta folder called canvas-grades-11-17.csv
 # drill 14 was done through grading app
 
-BASE_PATH = '/course/cs0111'
+BASE_PATH = CONFIG.base_path
 grade_dir = pjoin(BASE_PATH, 'hta', 'grades')
 sum_path = pjoin(BASE_PATH, 'hta', 'summaries')
 lab_base = pjoin(BASE_PATH, 'ta', 'grading', 'data', 'labs')
@@ -302,8 +302,7 @@ def generate_gradebook(path: Optional[str] = None) -> None:
         f.write(S)
 
 
-def send_summaries(resummarize: Optional[bool] = None,
-                   override_email: Optional[str] = None) -> None:
+def send_summaries(resummarize: Optional[bool] = None) -> None:
     """
 
     send course grade summaries
@@ -311,9 +310,6 @@ def send_summaries(resummarize: Optional[bool] = None,
     :param resummarize: whether or not to regenerate grade summaries, or None
                         to have program prompt whether or not to regenerate
     :type resummarize: Optional[bool], optional
-    :param override_email: email to send summaries to (for testing) or None
-                           to send to the student. defaults to None
-    :type override_email: Optional[str], optional
 
     """
     if resummarize is None:
@@ -329,7 +325,7 @@ def send_summaries(resummarize: Optional[bool] = None,
     if resummarize:
         generate_grade_summaries(write=True)
 
-    yag = yagmail.SMTP('csci0111@brown.edu')
+    yag = yagmail.SMTP(CONFIG.email_from)
     full_students = load_students()
     login_to_email = {line[0]: line[1] for line in full_students}
     students = list(map(lambda line: line[0], full_students))
@@ -344,17 +340,14 @@ def send_summaries(resummarize: Optional[bool] = None,
             print(f'skipping login {login}')
             continue
 
-        with open(path) as f:
+        with locked_file(path) as f:
             contents = f'<pre>{f.read()}</pre>'
 
         em = login_to_email[login]
-        if override_email is None:
-            send_to = em
-        else:
-            send_to = override_email
+        to = CONFIG.test_mode_emails_to if CONFIG.test_mode else em
 
-        print(f'Sending {login} summary to {send_to}')
-        yag.send(to=send_to,
+        print(f'Sending {login} summary to {to}')
+        yag.send(to=to,
                  subject='Aggregated grade report',
                  contents=[contents])
 

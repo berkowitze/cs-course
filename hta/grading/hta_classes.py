@@ -1,6 +1,6 @@
 import csv
 import zipfile
-from typing import Set
+from typing import Set, Iterable
 
 import yagmail
 
@@ -13,7 +13,7 @@ handin_base_path: str = pjoin(BASE_PATH, 'hta/handin/students')
 
 grade_base_path: str = pjoin(BASE_PATH, 'hta/grades')
 
-final_grade_path: str = pjoin(BASE_PATH, 'ta', 'grading', 'grades')
+final_grade_path: str = pjoin(BASE_PATH, 'ta/grading/grades')
 GradeData = Tuple[str, Optional[RawGrade], Grade, str]
 
 
@@ -43,7 +43,7 @@ class HTA_Assignment(Assignment):
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         """
 
         creates HTA_Assignment
@@ -60,7 +60,8 @@ class HTA_Assignment(Assignment):
         else:
             assert self.anon_path != '', 'error with anon path tell eli'
 
-        if self.started:  # load list of logins that handed in this assignment
+        # load list of logins that handed in this assignment
+        if self.started and self.loaded:
             with locked_file(self.anon_path) as f:
                 d = json.load(f)
 
@@ -471,6 +472,22 @@ class HTA_Assignment(Assignment):
 
         raise ValueError(f'Student {student} does not have partner')
 
+    def all_handin_logins(self) -> Set[str]:
+        logins: Set[str] = set()
+        for q in self.questions:
+            logins = logins.union(self.id_to_login(h.id) for h in q.handins)
+
+        return logins
+
+    def _group_check(self):
+        assert self.group_asgn
+        students = self.all_handin_logins()
+        for student in students:
+            partners = self.proj_partners(student)
+            for p in partners:
+                if p in students:
+                    pass
+
     def get_handin_dict(self,
                         students: Optional[List[str]] = None
                         ) -> Dict[str, List[Optional[Handin]]]:
@@ -488,14 +505,13 @@ class HTA_Assignment(Assignment):
         """
         d: Dict[str, List[Optional[Handin]]] = defaultdict(list)
         if students is None:
-            handins = self.questions[0].handins
-            handin_logins = [self.id_to_login(h.id) for h in handins]
+            handin_logins = self.all_handin_logins()
         else:
-            handin_logins = students
+            handin_logins = set(students)
 
         for student in handin_logins:
             if self.group_asgn:
-                ohs = handin_logins[:]
+                ohs = handin_logins.copy()
                 ohs.remove(student)
                 partners = self.proj_partners(student)
                 for p in partners:
@@ -627,6 +643,25 @@ class HTA_Assignment(Assignment):
                                      soft=soft,
                                      overrides=overrides)
 
+    def _get_path_to_code(self, login: str) -> str:
+        """
+        """
+        try:
+            handin_id = self.login_to_id(login)
+        except ValueError as e:
+            if self.group_asgn:
+                partners = self.proj_partners(login)
+                for partner in partners:
+                    if partner in self._login_to_id_map:
+                        handin_id = self.login_to_id(partner)
+                        break
+                else:
+                    raise ValueError(f'No login/partner for {login}') from e
+            else:
+                raise
+
+        return pjoin(self.files_path, f'student-{handin_id}')
+
     def _generate_report(self,
                          handins: List[Optional[Handin]],
                          login: str,
@@ -665,31 +700,11 @@ class HTA_Assignment(Assignment):
         # TODO: clean up getting anonymous id for both group and non group asgn
         # TODO: put generation of rubric summary in different method
         # TODO: put override/backup/general report location files in method
-        if self.group_asgn:
-            try:
-                anon_ident = self.login_to_id(login)
-            except ValueError:
-                anon_ident = -1  # make this better to handin person's id
-        else:
-            try:
-                anon_ident = self.login_to_id(login)
-            except ValueError:
-                # re-raise error if the student handed something in but doesn't
-                # have an anonymous ID associated with them
-                for handin in handins:
-                    if handin is not None:
-                        raise
 
-            anon_ident = -1
-
-        assert self.started  # at the very least grading should be started
         final_path = latest_submission_path(self.handin_path,
                                             login,
                                             self.mini_name)
-        if final_path is not None and '-late' in final_path:
-            late = True
-        else:
-            late = False
+        late = (final_path is not None and '-late' in final_path)
 
         grade_dir = pjoin(grade_base_path, login, self.mini_name)
         report_path = pjoin(grade_dir, 'report.txt')
@@ -796,23 +811,18 @@ class HTA_Assignment(Assignment):
 
     def send_emails(self,
                     yag: yagmail.sender.SMTP,
-                    logins: Optional[List[str]] = None,
-                    override_send_to: Optional[str] = None
+                    logins: Optional[List[str]] = None
                     ) -> None:
         """
 
         sends email reports to a list of students
 
-        :param yag: a yagmail SMTP instance (should be cs0111@brown.edu)
+        :param yag: a yagmail SMTP instance (should have email send_from from
+                    assignments.json)
         :type yag: yagmail.sender.SMTP
         :param logins: if None, sends to all students who handed assignment
                        in. otherwise, sends to all students in this list
         :type logins: Optional[List[str]]
-        :param override_send_to: to be used if you would like to test report
-                                 sending; all emails will be sent to this
-                                 address if supplied, otherwise to the relevant
-                                 student's Brown email address (by default)
-        :type override_send_to: Optional[str]
 
         """
         if logins is None:
@@ -830,10 +840,10 @@ class HTA_Assignment(Assignment):
 
         subject = f'{self.full_name} Grade Report'
         for login, email, report in data:
-            if override_send_to is None:
-                send_to = email
+            if CONFIG.test_mode:
+                send_to = CONFIG.test_mode_emails_to
             else:
-                send_to = override_send_to
+                send_to = email
 
             print(f'Sending {login} report to {send_to}')
             yag.send(to=send_to,
@@ -1018,4 +1028,3 @@ def get_hta_asgn_list() -> List[HTA_Assignment]:
         assignments.append(asgn)
 
     return assignments
-

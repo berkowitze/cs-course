@@ -3,9 +3,9 @@ import os
 from collections import defaultdict
 from typing import Dict, List, Optional
 
-from helpers import locked_file, line_read
+from helpers import locked_file, line_read, CONFIG
 
-BASE_PATH = '/course/cs0111'
+BASE_PATH = CONFIG.base_path
 
 
 def load_students() -> List[List[str]]:
@@ -30,7 +30,7 @@ def student_list() -> List[str]:
     :rtype: List[str]
 
     """
-    path = os.path.join(BASE_PATH, "hta", "groups", "students.txt")
+    path = os.path.join(BASE_PATH, 'hta/groups/students.txt')
     return line_read(path)
 
 

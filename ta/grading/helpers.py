@@ -3,20 +3,20 @@
 
 import json
 import os
+import string
+from os.path import join as pjoin
+from os.path import exists as pexists
 from contextlib import contextmanager
 from functools import wraps
 from typing import Generator, Callable, Any, List, Optional, Dict, Mapping
-import string
 
 from filelock import FileLock
 
 from custom_types import (Rubric, RubricCategory, RubricItem, RubricOption,
                           Bracket, BracketItem, Comments)
+from config import CONFIG
 
-pjoin = os.path.join
-pexists = os.path.exists
-
-BASE_PATH: str = '/course/cs0111'
+BASE_PATH: str = CONFIG.base_path
 res_path: str = pjoin(BASE_PATH, 'resource-lock.lock')
 
 moss_langs = ("c", "cc", "java", "ml", "pascal", "ada", "lisp", "scheme",
@@ -43,6 +43,9 @@ def locked_file(filename: str, mode: str = 'r') -> Generator:
             text = f.read()
 
     """
+    if CONFIG.test_mode:
+        print(f'locked_file({filename!r}, {mode!r})')
+
     if not (mode == 'r' or mode == 'a' or mode == 'w'):
         base = 'Can only open locked file in r, w, or a mode (just in case)'
         raise ValueError(base)
