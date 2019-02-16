@@ -16,7 +16,7 @@ from course_customization import full_asgn_name_to_dirname, \
 from custom_types import HTMLData, Log, LogItem, Rubric
 from helpers import (loaded_rubric_check, locked_file, json_edit,
                      require_resource, update_comments, rubric_check,
-                     remove_duplicates)
+                     remove_duplicates, moss_langs)
 
 # READ BEFORE EDITING THIS FILE #
 # do not use the builtin `open` function; instead use the
@@ -383,6 +383,35 @@ class Assignment:
 
         #  then fail
         raise ValueError(f'id {ident} does not exist in map for {self}')
+
+    def moss(self,
+             moss_lang: Optional[str] = None,
+             extension: Optional[str] = None
+             ) -> None:
+        moss_path = pjoin(BASE_PATH, 'tabin/mossScript')
+
+        if extension is None:
+            find_cmd = ['find', self.files_path, '-name', '*.*']
+        else:
+            find_cmd = ['find', self.files_path, '-name',
+                        f'*.{extension.lstrip(".")}']
+
+        if moss_lang is None:
+            moss_cmd = ['xargs', moss_path]
+        else:
+            if moss_lang not in moss_langs:
+                print(f'WARNING: Language {moss_lang} not supported by MOSS')
+                print('Running without any language constraint.')
+                print('Press enter to continue.')
+                input()
+                moss_cmd = ['xargs', moss_path]
+            else:
+                moss_cmd = ['xargs', moss_path, '-l', moss_lang]
+
+        print(f'Finding files: {" ".join(find_cmd)}')
+        print(f'Mossing: {" ".join(moss_cmd)}')
+        find = subprocess.Popen(find_cmd, stdout=subprocess.PIPE)
+        subprocess.call(moss_cmd, stdin=find.stdout)
 
     def __repr__(self) -> str:
         """ representation of instance (i.e. for printing) """
