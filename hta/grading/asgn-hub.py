@@ -6,6 +6,7 @@ import sys
 import tabulate
 import yagmail
 from typing import List
+from enum import Enum, unique, auto
 
 from datetime import datetime
 from textwrap import dedent
@@ -15,9 +16,30 @@ from hta_classes import (BASE_PATH, User, asgn_data_path, get_hta_asgn_list,
                          login_to_email, student_list, HTA_Assignment,
                          json_edit)
 from hub_helpers import *
-from helpers import red
+from helpers import red, moss_langs
+
 
 asgns: List[HTA_Assignment] = get_hta_asgn_list()
+
+
+@unique
+class State(Enum):
+    home = auto()
+    gradebook = auto()
+    summaries = auto()
+    asgn_home = auto()
+    start_grading = auto()
+    modify_asgn = auto()
+    reset_asgn = auto()
+    run_MOSS = auto()
+    generate_reports = auto()
+    email_reports = auto()
+    view_flagged_handins = auto()
+    add_handin = auto()
+    deanonymize = auto()
+    course_home = auto()
+    remove_backups = auto()
+    clear_data = auto()
 
 
 def send_grade_reports(asgn: HTA_Assignment, logins: List[str]) -> None:
@@ -26,9 +48,9 @@ def send_grade_reports(asgn: HTA_Assignment, logins: List[str]) -> None:
 
 
 print('At any time, press ctrl-c to quit')
-STATE = 0
+STATE: State = State.home
 while True:
-    if STATE == 0:
+    if STATE == State.home:
         resp1 = opt_prompt(['Generate gradebook',
                             'Generate and send grade summaries',
                             'Work with assignment',
@@ -37,15 +59,15 @@ while True:
         if resp1 is None:
             break
         elif resp1 == 1:
-            STATE = 1
+            STATE = State.gradebook
         elif resp1 == 2:
-            STATE = 2
+            STATE = State.summaries
         elif resp1 == 3:
-            STATE = 3
+            STATE = State.asgn_home
         elif resp1 == 4:
-            STATE = 12
+            STATE = State.course_home
 
-    elif STATE == 1:
+    elif STATE == State.gradebook:
         path = pjoin(BASE_PATH, 'hta/gradebook.tsv')
         print(f'gradebook will be saved as "{path}".')
         print('Press enter to continue, or enter custom path (absolute and')
@@ -65,10 +87,9 @@ while True:
 
         generate_gradebook(gradebook_path)
         print(f'Gradebook generated in "{gradebook_path}"')
-        STATE = 0
+        STATE = State.home
 
-    elif STATE == 2:
-        # generate grade summaries
+    elif STATE == State.summaries:
         resp3 = opt_prompt(['Generate grade summaries',
                             'Send grade summaries',
                             'Go back'])
@@ -82,10 +103,9 @@ while True:
         elif resp3 == 2:
             send_summaries(resummarize=False)
         elif resp3 == 3:
-            STATE = 0
+            STATE = State.home
 
-    elif STATE == 3:
-        # assignment chooser
+    elif STATE == State.asgn_home:
         print('Which assignment would you like to work on?')
         rows: List[List[str]] = []
         header = ["Asgn", "Due", "Grading Started",
@@ -103,19 +123,18 @@ while True:
         asgn = asgns[resp5 - 1]
         if asgn.started:
             asgn.load()
-            STATE = 5
+            STATE = State.modify_asgn
         else:
-            STATE = 4
+            STATE = State.start_grading
 
-    elif STATE == 4:
-        # starting assignment grading
+    elif STATE == State.start_grading:
         print(f'{asgn.full_name} grading unstarted. Start it?')
 
         resp6 = opt_prompt(['Yes', 'No', 'Go back'])
         if resp6 is None:
             break
         elif resp6 == 3 or resp6 == 2:
-            STATE = 3
+            STATE = State.asgn_home
             continue
 
         if not asgn.due:
@@ -125,7 +144,7 @@ while True:
             if resp7 is None:
                 break
             elif resp7 == 3 or resp7 == 2:
-                STATE = 3
+                STATE = State.asgn_home
                 continue
 
         try:
@@ -137,14 +156,13 @@ while True:
             raise
         else:
             asgn.load()
-            STATE = 5
+            STATE = State.modify_asgn
 
-    elif STATE == 5:
-        # assignment modifier
+    elif STATE == State.modify_asgn:
         print('')
         if not asgn.started:
             print('Got assignment modifier state with unstarted assignment...')
-            STATE = 3
+            STATE = State.asgn_home
             continue
 
         print(asgn)
@@ -160,46 +178,47 @@ while True:
                              'View flagged handins',
                              'Add handin',
                              'Deanonymize (for regrading)',
+                             'Run MOSS',
                              'Go back'])
         if option is None:
             break
-        elif option == 1:  # reset assignment grading
-            STATE = 6
-        elif option == 2:  # generate grade reports
-            STATE = 7
-        elif option == 3:  # email grade reports
-            STATE = 8
-        elif option == 4:  # view flagged handins
-            STATE = 9
-        elif option == 5:  # add handin
-            STATE = 10
-        elif option == 6:  # deanonymize assignment
-            STATE = 11
+        elif option == 1:
+            STATE = State.reset_asgn
+        elif option == 2:
+            STATE = State.generate_reports
+        elif option == 3:
+            STATE = State.email_reports
+        elif option == 4:
+            STATE = State.view_flagged_handins
+        elif option == 5:
+            STATE = State.add_handin
+        elif option == 6:
+            STATE = State.deanonymize
         elif option == 7:
-            STATE = 3
+            STATE = State.run_MOSS
+        elif option == 8:
+            STATE = State.asgn_home
 
-    elif STATE == 6:
-        # resetting assignment grading
+    elif STATE == State.reset_asgn:
         print('Resetting the assignment will delete any grades given.')
         resp8 = opt_prompt(['Confirm removal', 'Go Back'])
         if resp8 is None:
             break
         elif resp8 == 2:
-            STATE = 3
+            STATE = State.asgn_home
             continue
         else:
             asgn.reset_grading(True)
-            STATE = 3
+            STATE = State.asgn_home
 
-    elif STATE == 7:
-        # generating grade reports
+    elif STATE == State.generate_reports:
         if asgn.emails_sent:
             print('Emails have already been sent. Regenerate reports?')
             resp9 = opt_prompt(['Yes', 'No/Go back'])
             if resp9 is None:
                 break
             elif resp9 == 2:
-                STATE = 5
+                STATE = State.modify_asgn
                 continue
             else:
                 overrides = True
@@ -214,10 +233,9 @@ while True:
                                   soft=False, overrides=overrides)
 
         print('Grade reports generated.')
-        STATE = 5
+        STATE = State.modify_asgn
 
-    elif STATE == 8:
-        # emailing grade reports
+    elif STATE == State.email_reports:
         resp11 = opt_prompt(['Send to individual student',
                              'Send to all students'])
         if resp11 is None:
@@ -254,10 +272,9 @@ while True:
             print('After sending reports, deanonymize assignment if needed.')
 
         send_grade_reports(asgn, to_send)
-        STATE = 5
+        STATE = State.modify_asgn
 
-    elif STATE == 9:
-        # view flagged handins
+    elif STATE == State.view_flagged_handins:
         flag_header = ['Anon ID', 'Login', 'Grader',
                        'Flag Reason', 'Code Path']
         for q in asgn.questions:
@@ -281,28 +298,48 @@ while True:
         if resp13 is None:
             break
 
-        STATE = 5
+        STATE = State.modify_asgn
 
-    elif STATE == 10:
-        # add new handin
+    elif STATE == State.add_handin:
         login = input('Enter student login: ')
         if login is None:
             break
 
         asgn.add_new_handin(login)
         print(f'Handin for {login} added')
-        STATE = 5
+        STATE = State.modify_asgn
         input('Press enter to continue or ctrl-c to quit')
 
-    elif STATE == 11:
-        # deanonymize assignment
+    elif STATE == State.deanonymize:
         asgn.deanonymize()
         print('Assignment deanonymized')
-        STATE = 5
+        STATE = State.modify_asgn
         input('Press enter to continue or ctrl-c to quit')
 
-    elif STATE == 12:
-        # course options
+    elif STATE == State.run_MOSS:
+        print('Enter the language to be used by MOSS')
+        valid_langs = list(moss_langs)
+        valid_langs.append('NO LANGUAGE')
+        resp15 = opt_prompt(valid_langs)
+        if resp15 is None:
+            break
+
+        lang_choice = valid_langs[resp15 - 1]
+        lang = lang_choice if lang_choice != "NO LANGUAGE" else None
+        print('Enter file extension to filter by (i.e. py) or ')
+        print('leave blank to upload all files')
+        ext_choice = ez_prompt('> ')
+        if ext_choice is None:
+            break
+
+        ext = ext_choice if ext_choice else None
+
+        asgn.moss(moss_lang=lang, extension=ext)
+
+        input('Press enter to continue')
+        STATE = State.modify_asgn
+
+    elif STATE == State.course_home:
         resp14 = opt_prompt([
             'Backup grading and handin data',
             'Restore grading and handin data (backup made beforehand)',
@@ -331,15 +368,15 @@ while True:
             subprocess.call(restore_backup)
 
         elif resp14 == 3:
-            STATE = 14
+            STATE = State.clear_data
 
         elif resp14 == 4:
-            STATE = 13
+            STATE = State.remove_backups
 
         elif resp14 == 5:
-            STATE = 0
+            STATE = State.home
 
-    elif STATE == 13:
+    elif STATE == State.remove_backups:
         # removing old backups
         backup_path = pjoin(BASE_PATH, 'hta/data_backups')
         files = [f for f in os.listdir(backup_path) if f.endswith('.zip')]
@@ -371,9 +408,9 @@ while True:
 
         print('All done.')
         print('')
-        STATE = 12
+        STATE = State.course_home
 
-    elif STATE == 14:
+    elif STATE == State.clear_data:
         # clearing data
         print(dedent(red("""
         This should only be used for starting a new semester.
@@ -400,7 +437,7 @@ while True:
         if resp16 is None:
             break
         elif resp16 != 'CONFIRM':
-            STATE = 12
+            STATE = State.course_home
             continue
 
         print('Creating backup...')
@@ -462,7 +499,7 @@ while True:
         print('Extensions not cleared (need to update extension format)')
         print('Clearing complete.')
         print('')
-        STATE = 12
+        STATE = State.course_home
 
 
 print('\nExiting...')
