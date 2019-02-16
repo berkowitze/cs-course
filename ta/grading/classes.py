@@ -30,7 +30,6 @@ BASE_PATH = CONFIG.base_path
 DATA_PATH = pjoin(BASE_PATH, 'ta/grading/data')
 proj_base_path = pjoin(DATA_PATH, 'projects')
 asgn_data_path = pjoin(BASE_PATH, 'ta/assignments.json')
-config_path = pjoin(BASE_PATH, 'ta/config.yaml')
 ta_path = pjoin(BASE_PATH, 'ta/groups/tas.txt')
 hta_path = pjoin(BASE_PATH, 'ta/groups/htas.txt')
 student_path = pjoin(BASE_PATH, 'ta/groups/students.txt')
@@ -42,7 +41,6 @@ s_files_base_path = pjoin(DATA_PATH, 'sfiles')
 anon_base_path = pjoin(DATA_PATH, 'anonymization')
 blocklist_path = pjoin(DATA_PATH, 'blocklists')
 assert pexists(asgn_data_path), f'No data file "{asgn_data_path}"'
-assert pexists(asgn_data_path), f'No config file "{config_path}"'
 
 with locked_file(asgn_data_path) as f:
     asgn_data = json.load(f)

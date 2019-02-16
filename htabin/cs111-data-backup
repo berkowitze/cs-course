@@ -18,7 +18,7 @@ if [[ -e $dest ]]; then
     [ $cont == "y" ] || exit;
 fi;
 
-dirs=`echo ta/assignments.json ta/t-s-blocklist.json hta/s-t-blocklist.json hta/grading/anonymization ta/grading/grades ta/grading/data hta/summaries hta/handin/students hta/grades hta/groups`
+dirs=`echo ta/config.py ta/assignments.json ta/t-s-blocklist.json hta/s-t-blocklist.json hta/grading/anonymization ta/grading/grades ta/grading/data hta/summaries hta/handin/students hta/grades hta/groups`
 zip -qr $dest $dirs -x *.gitignore* -x *__pycache__* 2&>stderr.log;
 [ $(wc -l <stderr.log) -gt 100 ] && echo over 100 permission denied errors while running zip command;
 [ -e stderr.log ] && rm stderr.log;
