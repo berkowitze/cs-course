@@ -43,7 +43,7 @@ def locked_file(filename: str, mode: str = 'r') -> Generator:
             text = f.read()
 
     """
-    if CONFIG.test_mode:
+    if CONFIG.test_mode and False:
         print(f'locked_file({filename!r}, {mode!r})')
 
     if not (mode == 'r' or mode == 'a' or mode == 'w'):
