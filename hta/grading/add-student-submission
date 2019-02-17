@@ -11,4 +11,7 @@ if len(sys.argv) != 3:
     sys.exit(1)
 
 hw = HTA_Assignment(sys.argv[1])
+print(hw.started)
+print(hw)
+print(sys.argv[2])
 hw.add_new_handin(sys.argv[2])

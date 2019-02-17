@@ -237,14 +237,22 @@ class HTA_Assignment(Assignment):
         :raises: ValueError: Student has no anonymous ID for this assignment
 
         """
+
+        if login in self._login_to_id_map:
+            return self._login_to_id_map[login]
+
         with locked_file(self.anon_path) as f:
             data = json.load(f)
         try:
-            return int(data[login])
+            ident = data[login]
         except KeyError:
             raise ValueError(f'login {login} does not exist in map for {self}')
+        else:
+            self._login_to_id_map[login] = ident
+            self._id_to_login_map[ident] = login
+            return ident
 
-    def id_to_login(self, id: int) -> str:
+    def id_to_login(self, ident: int) -> str: # override Assignment version
         """
 
         Get anonymous ID of student by login
@@ -256,14 +264,19 @@ class HTA_Assignment(Assignment):
         :raises: ValueError: No student with anon ID for this assignment
 
         """
+        if ident in self._id_to_login_map:
+            return self._id_to_login_map[ident]
+
         with locked_file(self.anon_path) as f:
             data = json.load(f)
 
-        for k in data:
-            if data[k] == id:
-                return str(k)
+        for login in data:
+            if data[login] == ident:
+                self._id_to_login_map[ident] = login
+                self._login_to_id_map[login] = ident
+                return login
 
-        raise ValueError(f'id {id} does not exist in map for {self}')
+        raise ValueError(f'id {ident} does not exist in map for {self}')
 
     def _transfer_handins(self) -> None:
         """
@@ -319,6 +332,7 @@ class HTA_Assignment(Assignment):
                     h = q.get_handin_by_id(ident)
                     if h.complete:
                         has_graded_handin = True
+                        break
 
                 except ValueError:
                     # no handin for this question
@@ -426,11 +440,19 @@ class HTA_Assignment(Assignment):
                 continue
             if pexists(h.grade_path):
                 os.remove(h.grade_path)
+            
+            # remove from log
+            with locked_file(q.log_filepath) as f:
+                data = json.load(f)
 
-            with json_edit(q.log_filepath) as data:
-                data = [d for d in data if d['id'] != ident]
+            new_data = [d for d in data if d['id'] != ident]
+
+            with locked_file(q.log_filepath, 'w') as f:
+                json.dump(new_data, f, indent=2, sort_keys=True)
 
         self.login_handin_list.remove(login)
+        self._id_to_login_map.pop(ident, None)
+        self._login_to_id_map.pop(login, None)
 
     def load_groups(self):
         """

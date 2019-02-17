@@ -1,7 +1,18 @@
-<p>Hi {name},</p>
-
-<p>We have received your {sub_time} submission of {asgn_name}. {msg}</p>
-
+<p>Hi {{ name }},</p>
+<p>We have received your {{ sub_time }} submission of {{ asgn_name }}. {{ msg }}</p>
+{% if notes %}
+    <strong>Notes:</strong>
+    {% for note in notes %}
+        {{ note }}
+    {% endfor %}
+{% endif %}
 <table border="1" style="border-collapse: collapse">
-        {tab_conts}
+    {% for q in qs %}
+        {% set a, b = q.get_snippet() %}
+        <tr>
+            <td>{{ q.fname }}</td>
+            <td>{{ a }}</td>
+            <td>{{ b }}</td>
+        </tr>
+    {% endfor %}
 </table>

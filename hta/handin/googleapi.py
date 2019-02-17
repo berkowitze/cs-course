@@ -15,7 +15,6 @@ ref_tok_path = pjoin(BASE_PATH, 'hta/handin/ref_tok.txt')
 with locked_file(ref_tok_path) as f:
     ref_tok: str = f.read().strip()
 
-
 def sheets_api() -> Resource:
     credentials = Credentials(
         None,
@@ -29,8 +28,7 @@ def sheets_api() -> Resource:
 
 
 def drive_api() -> Resource:
-    drive_refresh_token_path = 'ref_tok.txt'
-    with locked_file(drive_refresh_token_path) as f:
+    with locked_file(ref_tok_path) as f:
         ref_tok = f.read().strip()
 
     credentials = Credentials(

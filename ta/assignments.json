@@ -5,60 +5,6 @@
   "_README4": "the available key is useless with the way the website's set up, but may be used in classes.py; get rid of it with care at some point",
   "_README5": "projects/group assignments: if group_asgn is true, there must be another key-value which contains the directory in ta/grading/data/projects to put group information in (see Project 1/Project 1 Design Check)",
   "assignments": {
-    "1": {
-      "anonymous": true,
-      "due": "09/01/1000 09:00PM",
-      "grading_completed": false,
-      "grading_started": false,
-      "group_data": {
-        "multi_part_name": "project4",
-        "partner_col": "XX"
-      },
-      "late_due": "09/02/1000 09:00PM",
-      "questions": [
-        {
-          "col": "XX",
-          "filename": "hi.py",
-          "ts_lang": "Python"
-        }
-      ],
-      "sent_emails": false
-    },
-    "2": {
-      "anonymous": false,
-      "due": "09/01/1000 09:00PM",
-      "grading_completed": false,
-      "grading_started": false,
-      "group_data": {
-        "multi_part_name": "project4",
-        "partner_col": null
-      },
-      "late_due": "09/02/1000 09:00PM",
-      "questions": [
-        {
-          "col": "XY",
-          "filename": "ugh.py",
-          "ts_lang": "Pyret"
-        }
-      ],
-      "sent_emails": false
-    },
-    "3": {
-      "anonymous": false,
-      "due": "09/01/1000 09:00PM",
-      "grading_completed": false,
-      "grading_started": false,
-      "group_data": null,
-      "late_due": "09/02/1000 09:00PM",
-      "questions": [
-        {
-          "col": "G",
-          "filename": "hi.py",
-          "ts_lang": null
-        }
-      ],
-      "sent_emails": false
-    },
     "CS18 Bridgework - BSTs": {
       "anonymous": false,
       "due": "02/01/2019 05:00PM",
@@ -446,16 +392,5 @@
       ],
       "sent_emails": false
     }
-  },
-  "base_path": "/course/cs0111/hta/handin/students",
-  "email_col": "B",
-  "email_errors_to": "elias_berkowitz@brown.edu",
-  "email_from": "csci0111@brown.edu",
-  "end_col": "AT",
-  "handin_log_path": "/course/cs0111/hta/handin/submission_log.txt",
-  "sheet_id": "1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8",
-  "sheet_name": "handins",
-  "start_col": "A",
-  "start_row": 2,
-  "submit_col": "C"
+  }
 }

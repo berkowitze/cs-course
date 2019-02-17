@@ -11,7 +11,8 @@ from enum import Enum, unique, auto
 from datetime import datetime
 from textwrap import dedent
 
-from prompts import ez_prompt, opt_prompt, table_prompt, toggle_prompt
+from prompts import (ez_prompt, opt_prompt, table_prompt,
+                     toggle_prompt, yn_prompt)
 from hta_classes import (BASE_PATH, User, get_hta_asgn_list,
                          login_to_email, student_list, HTA_Assignment,
                          json_edit, CONFIG)
@@ -122,7 +123,18 @@ while True:
             break
         asgn = asgns[resp5 - 1]
         if asgn.started:
-            asgn.load()
+            try:
+                asgn.load()
+            except Exception as e:
+                print(f'Loading assignment {asgn.full_name} '
+                      f'failed with message {e.args[0]}')
+                print('Reset the grading for this assignment?')
+                if yn_prompt():
+                    asgn.reset_grading(True)
+                    continue
+                else:
+                    STATE = State.asgn_home
+
             STATE = State.modify_asgn
         else:
             STATE = State.start_grading
