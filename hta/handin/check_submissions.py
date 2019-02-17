@@ -25,6 +25,12 @@ from helpers import (BASE_PATH, CONFIG, check_assignments,
 from hta_helpers import latest_submission_path
 from jinja2 import Environment, FileSystemLoader
 
+os.umask(0o007)  # set file permissions
+
+HCONFIG = CONFIG.handin
+extensions = load_extensions()
+yag = yagmail.SMTP(CONFIG.email_from)
+
 template_path = os.path.join(BASE_PATH, 'hta/handin')
 jinja_env = Environment(loader=FileSystemLoader(template_path))
 jinja_env.trim_blocks = True
@@ -47,10 +53,6 @@ on_time_stats = [HState.on_time, HState.first_deadline_buffer,
 kinda_late_stats = [HState.kinda_late, HState.kinda_late_buffer,
                     HState.kinda_late_exp_ext]
 late_stats = [HState.late, HState.late_exp_ext]
-HCONFIG = CONFIG.handin
-extensions = load_extensions()
-
-os.umask(0o007)  # set file permissions
 
 data_file = os.path.join(BASE_PATH, 'ta/assignments.json')
 with locked_file(data_file) as f:
@@ -64,7 +66,7 @@ proj_base = os.path.join(BASE_PATH, 'ta/grading/data/projects')
 
 
 class Question:
-    def __init__(self, question, row):
+    def __init__(self, question: dict, row: List[str]) -> None:
         self.downloaded: bool = False
         self.q_data: dict = question
         col = self.q_data['col']
@@ -86,32 +88,33 @@ class Question:
         else:
             self.make_snippet = False
 
-    def download(self, base_path, login):
+    def download(self, base_path: str, login: str) -> None:
         fpath = os.path.join(base_path, self.fname)
         if self.gf is None:
             # no submission
+            self.file_path = None
             self.downloaded = True
             return
+
+        expect_ext = os.path.splitext(self.fname)[1]
+        actual_ext = os.path.splitext(self.gf.name)[1]
+        # student uploaded incorrect filetype (name irrelevant)
+        if expect_ext != actual_ext:
+            if expect_ext == '.zip':
+                # this is a hack to make things not break
+                # @fix
+                fpath += actual_ext
+                self.fname += actual_ext
+
+            with locked_file('filename_error_template.html', 'r') as f:
+                if not actual_ext:
+                    actual_ext = 'no extension'
+                self.warning = f.read().format(exp_ext=expect_ext,
+                                               sub_ext=actual_ext)
         else:
-            expect_ext = os.path.splitext(self.fname)[1]
-            actual_ext = os.path.splitext(self.gf.name)[1]
-            # student uploaded incorrect filetype (name irrelevant)
-            if expect_ext != actual_ext:
-                if expect_ext == '.zip':
-                    # this is a hack to make things not break
-                    # but it will make other things break. FIX IT.
-                    fpath += actual_ext
-                    self.fname += actual_ext
+            self.warning = None
 
-                e = 'Student %s uploaded a %s file, expected %s'
-                print((e % (login, actual_ext, self.fname)))
-                with locked_file('filename_error_template.html', 'r') as f:
-                    self.warning = f.read().format(exp_ext=expect_ext,
-                                                   sub_ext=actual_ext)
-            else:
-                self.warning = ''
-
-            self.gf.download(fpath)
+        self.gf.download(fpath)
 
         self.file_path = fpath
         self.downloaded = True
@@ -126,33 +129,33 @@ class Question:
             raise ValueError(e)
 
         if not self.completed:
-            return make_span("Not submitted.", "red"), ''
+            return (make_span('Not submitted.', 'red'), '')
         elif not self.make_snippet:
-            first_cell = make_span(f'Submitted.{self.warning}', 'green')
+            first_cell = make_span('Submitted.', 'green')
             return first_cell, 'Snippet Unavailable'
         else:
             with locked_file(self.file_path) as dl_f:
                 try:
                     lines = dl_f.read().strip().split('\n')
                 except UnicodeDecodeError:
-                    return 'Submitted', 'Snippet Unavailable'
+                    return (make_span('Submitted', 'green'),
+                            'File could not be read')
 
             if lines == [] or lines == ['']:
-                first_cell = make_span(f'Empty file.{self.warning}',
-                                       'orange')
-                return first_cell, ''
+                first_cell = make_span(f'Empty file.', 'orange')
+                return (first_cell, '')
 
             if len(lines) > lines_per_file:
-                snippet = lines[0:lines_per_file]
+                snippet = lines[:lines_per_file]
                 snippet.append('...')
             elif len(lines) == lines_per_file:
-                snippet = lines
+                snippet = lines[:]
             else:
-                snippet = lines[0:len(lines)]
+                snippet = lines[:len(lines)]
 
             snippet = '<br>'.join(line.strip() for line in snippet)
-            first_cell = make_span(f'Submitted.{self.warning}', 'green')
-            return first_cell, snippet
+            first_cell = make_span(f'Submitted.', 'green')
+            return (first_cell, snippet)
 
 
 class Response:
@@ -233,6 +236,7 @@ class Response:
             self.__set_partner_data()
 
         status = self.get_status()
+        print('STATUS: %s' % status)
 
         on_time = (status in on_time_stats)
         kinda_late = (status in kinda_late_stats)
@@ -327,7 +331,7 @@ class Response:
             late_warn = ('Submission is past late deadline, but '
                          'is close enough to still be graded.'
                          )
-            msgs.append(make_span(warn_msg, 'orange'))
+            msgs.append(make_span(late_warn, 'orange'))
 
         if ext_applied:
             ext = self.load_ext()
@@ -344,9 +348,8 @@ class Response:
         content = template.render(qs=self.qs,
                                   name=self.login,
                                   asgn_name=self.asgn_name,
-                                  msgs=msgs)
+                                  msgs=msgs).replace('\n', '')
 
-        yag = yagmail.SMTP(CONFIG.email_from)
         subject = f'Confirmation of {self.asgn_name} submission'
         if late:
             subject += ' (late)'
@@ -364,23 +367,19 @@ class Response:
                      contents=f'<pre>{c}</pre>')
 
         to = CONFIG.test_mode_emails_to if CONFIG.test_mode else self.email
-        print(f"CONFIRM: SENDING EMAIL TO {to}")
         with self.get_zip() as zip_path:
-            pass
-            # yag.send(to=to,
-            #          subject=subject,
-            #          contents=[html, zip_path])
+            yag.send(to=to,
+                     subject=subject,
+                     contents=[content, zip_path])
 
     def __reject_email(self, *, ext_expired: bool):
         template = jinja_env.get_template('reject_template.html')
         content = template.render(name=self.login,
                                   sub_time=self.sub_timestr,
-                                  asgn_name=self.asgn_name)
-        yag = yagmail.SMTP(CONFIG.email_from)
+                                  asgn_name=self.asgn_name).replace('\n', '')
         subject = f'Rejection of {self.asgn_name} submission'
         to = CONFIG.test_mode_emails_to if CONFIG.test_mode else self.email
-        print(f'REJECT: SENDING EMAIL TO {to}')
-        # yag.send(to=to, subject=subject, contents=[html])
+        yag.send(to=to, subject=subject, contents=[content])
 
     def load_ext(self) -> Optional[Extension]:  # TODO : remove [why?]
         def relevant(e):
@@ -443,7 +442,7 @@ class Response:
 
     @contextmanager
     def get_zip(self):
-        zip_path = os.path.join(BASE_PATH, 'hta/tmpzips/submission.zip')
+        zip_path = os.path.join(BASE_PATH, 'hta/handin/tmpzips/submission.zip')
         zipf = zipfile.ZipFile(zip_path, 'w')
         for q in self.qs:
             if q.completed:
@@ -460,8 +459,6 @@ class Response:
 
 
 def fetch_submissions() -> List[Response]:
-    yag = yagmail.SMTP(CONFIG.email_from)
-
     ss_id = HCONFIG.get_ssid(CONFIG.test_mode)
     rng = HCONFIG.get_range(CONFIG.test_mode)
 
@@ -500,7 +497,6 @@ def try_fetch():
         success = False
 
     if not success:
-        yag = yagmail.SMTP(CONFIG.email_from)
         yag.send(to=CONFIG.email_errors_to,
                  subject='SUBMISSION ERROR',
                  contents='<pre>%s\n%s\n%s</pre>' % (tb, estr, cstr))
