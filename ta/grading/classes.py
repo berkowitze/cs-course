@@ -161,7 +161,7 @@ class Assignment:
 
     Provides interface with logs, grades, and rubrics, files, etc.
 
-    :ivar proj_dir: If group_asgn is False, None. If group_asgn is True,
+    :ivar proj_dir: If not a group asgn, None. If is a group_asgn,
                     the name of the common directory to use
                     (for multi-assignment projects). For example, "project3"
     :vartype proj_dir: Optional[str]
@@ -225,10 +225,10 @@ class Assignment:
         self.due: bool = self.due_date < dt.now()
         self.started: bool = self._json['grading_started']
 
-        self.group_asgn: bool = self._json['group_asgn']
+        self.group_asgn: bool = self._json['group_data'] is not None
         self.proj_dir: Optional[str]
         if self.group_asgn:
-            group_dir = self._json['group_dir']
+            group_dir = self._json['group_data']['multi_part_name']
             self.proj_dir = pjoin(proj_base_path, group_dir + '.json')
         else:
             self.proj_dir = None
