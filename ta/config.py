@@ -15,6 +15,8 @@ class HandinConfig:
     late_days = 3
     spreadsheet_id = '1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8'
     sheet_name = 'handins'
+    test_sheet_ssid = '1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8'
+    test_sheet_name = 'test_handins'
     student_email_col = 'B'
     start_col = 'A'
     end_col = 'AT'
@@ -37,3 +39,4 @@ class CONFIG:
     hta_email = 'elias_berkowitz@brown.edu'
     test_mode_emails_to = 'elias_berkowitz@brown.edu'
     handin = HandinConfig
+    supported_test_suites = ['Python', 'Pyret', '']

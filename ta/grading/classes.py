@@ -504,10 +504,10 @@ class Question:
         self.code_filename: str = self._json['filename']
 
         self.test_path: Optional[str]
-        if self._json['test-ext'] is None:
+        if self._json['ts_lang'] is None:
             self.test_path = None
         else:
-            test_filename = f'q{qn}.{self._json["test-ext"]}'
+            test_filename = f'q{qn}.{self._json["ts_lang"]}'
             self.test_path = pjoin(parent_assignment.test_path, test_filename)
 
         self.load_handins()
@@ -1189,12 +1189,12 @@ class Handin:
         :rtype: str
 
         """
-        test_type = self.question._json['test-ext']
+        test_type = self.question._json['ts_lang']
         if test_type is None:
             return 'No defined testsuite'
-        elif test_type == 'arr':
+        elif test_type == 'Pyret':
             return self.pyret_test()
-        elif test_type == 'py':
+        elif test_type == 'Python':
             return self.python_test()
         else:
             return 'Invalid test extension (contact HTA)'
