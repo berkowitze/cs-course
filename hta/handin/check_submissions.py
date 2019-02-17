@@ -7,16 +7,48 @@ import sys
 import traceback
 import yagmail
 import zipfile
+from contextlib import contextmanager
+from typing import Optional, List
+from datetime import datetime, timedelta
+
 from apiclient.discovery import build
 from datetime import datetime
+from enum import Enum, auto
 from google.oauth2.credentials import Credentials
 from googleapi import sheets_api
 from googleapiclient.http import HttpError, MediaIoBaseDownload
 from googlefile import GoogleFile
-from handin_helpers import make_span
-from helpers import BASE_PATH, check_assignments, locked_file, CONFIG
+from handin_helpers import (Extension, load_extensions, confirmed_responses,
+                            make_span, email_to_login, url_to_gid)
+from helpers import (BASE_PATH, CONFIG, check_assignments,
+                     locked_file, col_str_to_num)
+from hta_helpers import latest_submission_path
+from jinja2 import Environment, FileSystemLoader
 
+template_path = os.path.join(BASE_PATH, 'hta/handin')
+jinja_env = Environment(loader=FileSystemLoader(template_path))
+jinja_env.trim_blocks = True
+jinja_env.lstrip_blocks = True
+
+
+class HState(Enum):
+    on_time = auto()  # on time
+    first_deadline_buffer = auto()  # after first deadline, but in buffer time
+    kinda_late = auto()  # between first and second deadline
+    kinda_late_buffer = auto()  # after second deadline, but in buffer time
+    kinda_late_exp_ext = auto()  # between extension & 2nd + buffer deadline
+    late = auto()  # late with no extension
+    late_with_ext = auto()  # in any non-on-time period, but with an extension
+    late_exp_ext = auto()  # has extension but submitted after it expired
+
+
+on_time_stats = [HState.on_time, HState.first_deadline_buffer,
+                 HState.late_with_ext]
+kinda_late_stats = [HState.kinda_late, HState.kinda_late_buffer,
+                    HState.kinda_late_exp_ext]
+late_stats = [HState.late, HState.late_exp_ext]
 HCONFIG = CONFIG.handin
+extensions = load_extensions()
 
 os.umask(0o007)  # set file permissions
 
@@ -26,21 +58,9 @@ with locked_file(data_file) as f:
 
 check_assignments(data)
 
-log_path = HCONFIG.log_path
+log_path = HCONFIG.get_sub_log(CONFIG.test_mode)
 add_sub_path = os.path.join(BASE_PATH, 'hta/grading/add-student-submission')
 proj_base = os.path.join(BASE_PATH, 'ta/grading/data/projects')
-
-# minutes after deadline students can submit without penalty
-# applies to both extended handins and normal handins
-SOFT_CUTOFF = 5
-
-# students can submit up to one day after deadline
-# and still be graded
-# does not apply to extended handins
-HARD_CUTOFF = (19 * 60) + SOFT_CUTOFF
-
-sc = dt.timedelta(0, SOFT_CUTOFF * 60)  # soft cutoff
-hc = dt.timedelta(0, HARD_CUTOFF * 60)  # hard cutoff
 
 
 class Question:
@@ -116,26 +136,31 @@ class Question:
                     lines = dl_f.read().strip().split('\n')
                 except UnicodeDecodeError:
                     return 'Submitted', 'Snippet Unavailable'
-                if lines == [] or lines == ['']:
-                    first_cell = make_span(f'Empty file.{self.warning}',
-                                           'orange')
-                    return first_cell, ''
 
-                if len(lines) > lines_per_file:
-                    snippet = lines[0:lines_per_file]
-                    snippet.append('...')
-                elif len(lines) == lines_per_file:
-                    snippet = lines
-                else:
-                    snippet = lines[0:len(lines)]
+            if lines == [] or lines == ['']:
+                first_cell = make_span(f'Empty file.{self.warning}',
+                                       'orange')
+                return first_cell, ''
+
+            if len(lines) > lines_per_file:
+                snippet = lines[0:lines_per_file]
+                snippet.append('...')
+            elif len(lines) == lines_per_file:
+                snippet = lines
+            else:
+                snippet = lines[0:len(lines)]
 
             snippet = '<br>'.join(line.strip() for line in snippet)
             first_cell = make_span(f'Submitted.{self.warning}', 'green')
-            return first_cell
+            return first_cell, snippet
 
 
 class Response:
-    def __init__(self, row, ident):
+    def __init__(self, row: List[str], ident: int) -> None:
+        self.confirmed = ident in confirmed_responses(log_path)
+        if self.confirmed:
+            return
+
         # submission time
         self.sub_time = datetime.strptime(row[0], '%m/%d/%Y %H:%M:%S')
         self.sub_timestr = self.sub_time.strftime('%m/%d/%y %I:%M:%S%p')
@@ -148,15 +173,228 @@ class Response:
         self.dir_name = self.asgn_name.replace(' ', '').lower()
         self.ident = ident
         self.row = row
-        self.confirmed = self.ident in confirmed_responses(log_path)
         self.asgn = data['assignments'][self.asgn_name]
-        if not self.confirmed and self.asgn['group_data'] is not None:
-            self.set_partner_data(row)
 
-        self.due = datetime.strptime(self.asgn['due'], '%m/%d/%Y %I:%M%p')
+        dt_fmt = '%m/%d/%Y %I:%M%p'
+        self.due = datetime.strptime(self.asgn['due'], dt_fmt)
+        self.late_due = datetime.strptime(self.asgn['late_due'], dt_fmt)
 
-    def set_partner_data(self, row):
-        ''' given a row, sets project partner data for this student
+    def get_status(self) -> HState:
+        sub_time = self.sub_time
+        due = self.due
+        late_due = self.late_due
+        late_buffer = timedelta(minutes=HCONFIG.handin_late_buffer)
+
+        student_ext = self.load_ext()
+        if student_ext is not None and student_ext.date < due:
+            #  extension given to pre-deadline time, might as well have no
+            #  extension.
+            print(f'Useless extension for {self.login}')
+            student_ext = None
+
+        if student_ext is None:
+            if sub_time <= due:
+                return HState.on_time
+            elif sub_time <= due + late_buffer:
+                if HCONFIG.warn_students_in_buffer:
+                    return HState.first_deadline_buffer
+                else:
+                    return HState.on_time
+            elif sub_time <= late_due:
+                return HState.kinda_late
+            elif sub_time <= late_due + late_buffer:
+                if HCONFIG.warn_students_in_buffer:
+                    return HState.kinda_late_buffer
+                else:
+                    return HState.kinda_late
+            else:
+                return HState.late
+        else:
+            ext_until = student_ext.date
+            if ext_until <= late_due + late_buffer:
+                #  didn't get extension until late deadline
+                if sub_time <= ext_until + late_buffer:
+                    return HState.on_time
+                elif sub_time <= late_due + late_buffer:
+                    return HState.kinda_late_exp_ext
+                else:
+                    return HState.late_exp_ext
+            else:
+                if sub_time <= ext_until + late_buffer:
+                    return HState.late_with_ext
+                else:
+                    return HState.late_exp_ext
+
+    def process(self):
+        if self.confirmed:
+            raise ValueError('Attempting to process confirmed Response')
+
+        if self.asgn['group_data'] is not None:
+            self.__set_partner_data()
+
+        status = self.get_status()
+
+        on_time = (status in on_time_stats)
+        kinda_late = (status in kinda_late_stats)
+        late = (status in late_stats)
+
+        if kinda_late:
+            self.__download(True)
+        elif on_time:
+            self.__download(False)
+        elif late:
+            pass  # do not download late submissions
+
+        if status == HState.on_time:
+            self.__confirm_email(late=False, warn=False)
+        elif status == HState.first_deadline_buffer:
+            self.__confirm_email(late=False, warn=True)
+        elif status == HState.kinda_late:
+            self.__confirm_email(late=True, warn=False)
+        elif status == HState.kinda_late_buffer:
+            self.__confirm_email(late=True, warn=True)
+        elif status == HState.kinda_late_exp_ext:
+            self.__confirm_email(late=True, warn=False, ext_expired=True)
+        elif status == HState.late_with_ext:
+            self.__confirm_email(late=False, warn=False, ext_applied=True)
+        elif status == HState.late:
+            self.__reject_email(ext_expired=False)
+        elif status == HState.late_exp_ext:
+            self.__reject_email(ext_expired=True)
+        else:
+            raise ValueError('Got non HState status')
+
+        self._add_to_log()
+        self.confirmed = True
+
+    def __download(self, late: bool) -> None:
+        if self.confirmed:
+            raise ValueError('Response already confirmed.')
+
+        self.qs: List[Question] = []
+        for i in range(len(self.asgn['questions'])):
+            question = Question(self.asgn['questions'][i], self.row)
+            question.get_gfile()
+            self.qs.append(question)
+
+        download_to = self.__create_directory(late)
+        self.gfiles = [q.gf for q in self.qs]
+        self._download_files(download_to)
+        self.downloaded = True
+
+    def __create_directory(self, late: bool) -> str:
+        base = HCONFIG.handin_path
+        last_sub = latest_submission_path(base, self.login, self.dir_name)
+        full_base = os.path.join(base, self.login, self.dir_name)
+        if last_sub is None:
+            os.makedirs(full_base, exist_ok=True)
+            fold_name = '1-submission'
+        else:
+            last_numb = int(os.path.split(last_sub)[1].split('-')[0])
+            sub_numb = last_numb + 1
+            fold_name = f'{sub_numb}-submission'
+
+        full_path = os.path.join(full_base, fold_name)
+        if late:
+            full_path += '-late'
+
+        os.mkdir(full_path)
+
+        return full_path
+
+    def _download_files(self, download_to: str) -> None:
+        for q in self.qs:
+            q.download(download_to, self.login)
+
+    def __confirm_email(self, *, late: bool, warn: bool,
+                        ext_applied: bool = False, ext_expired: bool = False
+                        ) -> None:
+        assert not (ext_applied and ext_expired), \
+            f'called __confirm_email with invalid extension {self.login}'
+
+        template = jinja_env.get_template('confirmation_template.html')
+
+        msgs = []
+        if late:
+            late_msg = 'Submission is late. Deduction will be applied.'
+            msgs.append(make_span(late_msg, 'red'))
+
+        if warn and not late:
+            warn_msg = 'Submission is late.'
+            msgs.append(make_span(warn_msg, 'orange'))
+
+        if warn and late:
+            late_warn = ('Submission is past late deadline, but '
+                         'is close enough to still be graded.'
+                         )
+            msgs.append(make_span(warn_msg, 'orange'))
+
+        if ext_applied:
+            ext = self.load_ext()
+            assert ext is not None, 'applying extension when extension is None'
+            ext_msg = (
+                       f'Extension applied. You have until '
+                       f'{ext.date} to resubmit.'
+                       )
+            msgs.append(make_span(ext_msg, 'green'))
+
+        if ext_expired:
+            msgs.append(make_span('Submission after extension', 'orange'))
+
+        content = template.render(qs=self.qs,
+                                  name=self.login,
+                                  asgn_name=self.asgn_name,
+                                  msgs=msgs)
+
+        yag = yagmail.SMTP(CONFIG.email_from)
+        subject = f'Confirmation of {self.asgn_name} submission'
+        if late:
+            subject += ' (late)'
+
+        if self.asgn['grading_started']:
+            subprocess.check_output([add_sub_path, self.asgn_name, self.login])
+            c = (
+                 f'Student {self.login} submitted {self.asgn_name!r} after '
+                 f'grading had started.\nTo grade,'
+                 f'run cs111-grade and extract the handin. Let an HTA know '
+                 f'when you are done so the report can be sent.'
+                 )
+            yag.send(to=CONFIG.hta_email,
+                     subject='Submission after grading started',
+                     contents=f'<pre>{c}</pre>')
+
+        to = CONFIG.test_mode_emails_to if CONFIG.test_mode else self.email
+        print(f"CONFIRM: SENDING EMAIL TO {to}")
+        with self.get_zip() as zip_path:
+            pass
+            # yag.send(to=to,
+            #          subject=subject,
+            #          contents=[html, zip_path])
+
+    def __reject_email(self, *, ext_expired: bool):
+        template = jinja_env.get_template('reject_template.html')
+        content = template.render(name=self.login,
+                                  sub_time=self.sub_timestr,
+                                  asgn_name=self.asgn_name)
+        yag = yagmail.SMTP(CONFIG.email_from)
+        subject = f'Rejection of {self.asgn_name} submission'
+        to = CONFIG.test_mode_emails_to if CONFIG.test_mode else self.email
+        print(f'REJECT: SENDING EMAIL TO {to}')
+        # yag.send(to=to, subject=subject, contents=[html])
+
+    def load_ext(self) -> Optional[Extension]:  # TODO : remove [why?]
+        def relevant(e):
+            return e.student == self.login and e.asgn == self.dir_name
+
+        s_a_exts = [ext for ext in extensions if relevant(ext)]
+        if s_a_exts:
+            # get furthest-reaching extension
+            return max(s_a_exts, key=lambda e: e.date)
+        else:
+            return None
+
+    def __set_partner_data(self):
+        ''' sets project partner data for this student
         (puts into project_name.json file) '''
         gdata = self.asgn['group_data']
         if gdata is None or gdata['partner_col'] is None:
@@ -164,7 +402,7 @@ class Response:
                              'with no partner column')
 
         rndx = col_str_to_num(gdata['partner_col'])
-        partner_data = set(row[rndx - 1].split(', '))
+        partner_data = set(self.row[rndx - 1].split(', '))
         partner_data.add(self.login)
 
         proj_path = os.path.join(proj_base, f'{gdata["multi_part_name"]}.json')
@@ -179,7 +417,10 @@ class Response:
         in_file = False
         for group in groups:
             if set(group) == partner_data:
+                # this group has already submitted something
                 in_file = True
+                # but keep checking to make sure no students in this group are
+                # in another group
                 continue
 
             for student in partner_data:
@@ -196,203 +437,33 @@ class Response:
             with locked_file(proj_path, 'w') as f:
                 json.dump(groups, f, indent=2, sort_keys=True)
 
-    def set_status(self):
-        ''' set status attributes of instance:
-               - self.email_late : should confirmation email
-                        say the submission was late
-               - self.gradeable  : should the handin be graded
-                        (will send rejection email, not be downloaded)
-               - self.actual_late : will the assignment be deducted
-                        for being submitted late
-               - self.ext_applied : was an extension applied to the
-                        handin
-        '''
-        # if submitted more than a minute late
-        # just say "late" in email, dont mark late
-        if self.sub_time > self.due + dt.timedelta(0, 60):
-            email_late = True
-        else:
-            email_late = False
-
-        gradeable = True
-        ext_applied = False
-        if self.sub_time > self.due + sc:
-            # ^ submitted after soft cutoff
-            ext = self.load_ext()
-            if ext and (self.sub_time < (ext.date + sc)):
-                # ^has extension and submitted before ext. deadline
-                ext_applied = True
-                actual_late = False
-            elif self.sub_time > self.due + hc:
-                # ^submitted after hard cutoff, no ext
-                gradeable = False
-                actual_late = True
-            else:
-                # ^submitted between hard and soft cutoffs, no ext
-                actual_late = True
-        else:
-            # not late
-            actual_late = False
-
-        self.email_late = email_late
-        self.gradeable = gradeable
-        self.actual_late = actual_late
-        self.ext_applied = ext_applied
-
-    def load_ext(self):  # TODO : remove
-        exts = load_extensions()
-
-        def relevant_ext(e):
-            return e.student == self.login and e.asgn == self.dir_name
-
-        s_a_exts = list(filter(relevant_ext, exts))
-        if s_a_exts:
-            # get furthest-reaching extension
-            return max(s_a_exts, key=lambda e: e.date)
-        else:
-            return None
-
-    def download(self):
-        if self.confirmed:
-            raise ValueError('Response already downloaded & confirmed.')
-
-        self.qs = []
-        for i in range(len(self.asgn['questions'])):
-            question = Question(self.asgn['questions'][i], self.row)
-            question.get_gfile()
-            self.qs.append(question)
-
-        self.set_status()
-        if self.gradeable:
-            self.create_directory()
-            self.gfiles = [q.gf for q in self.qs]
-            self.download_files()
-            self.downloaded = True
-
-    def confirm(self):
-        with locked_file('confirmation_template.html') as f:
-            html = f.read().strip()
-
-        row_template = ('<tr><td>{cell_1}</td>'
-                        '<td>{cell_2}</td>'
-                        '<td><pre>{cell_3}</pre></td></tr>')
-        table = ''
-        for q in self.qs:
-            row = row_template
-            a, b = q.get_snippet()
-            table += row.format(cell_1=q.fname, cell_2=a, cell_3=b)
-
-        if self.email_late and not self.ext_applied:
-            msg = (f'<p>{make_span("Note: Submission was late.", "red")} '
-                   f'If you have an extension and are seeing this, '
-                   f'email the HTAs.</p>')
-        elif self.email_late and self.ext_applied:
-            msg = make_span('Note: Extension Applied', 'green')
-        else:
-            msg = ''
-        html = html.format(name=self.login,
-                           sub_time=self.sub_timestr,
-                           msg=msg,
-                           asgn_name=self.asgn_name,
-                           tab_conts=table)
-
-        yag = yagmail.SMTP(CONFIG.email_from)
-        subject = f'Confirmation of {self.asgn_name} submission'
-        if self.email_late:
-            subject += ' (late)'
-
-        zip_path = self.get_zip()
-        if self.asgn['grading_started']:
-            subprocess.check_output([add_sub_path, self.asgn_name, self.login])
-            c = 'Student %s submitted %s after grading had started.\nTo grade,'
-            c += ' run cs111-grade and extract the handin. Let an HTA know when'
-            c += ' you are done so the report can be sent.'
-            c = c % (self.login, self.asgn_name)
-            yag.send(to=CONFIG.hta_email,
-                     subject='Submission after grading started',
-                     contents=f'<pre>{c}</pre>')
-
-        to = CONFIG.test_mode_emails_to if CONFIG.test_mode else self.email
-        yag.send(to=to,
-                 subject=subject,
-                 contents=[html, zip_path])
-        os.remove(zip_path)
-
-    def reject(self):
-        with locked_file('reject_template.html') as f:
-            html = f.read().strip()
-
-        html = html.format(name=self.login,
-                           sub_time=self.sub_timestr,
-                           asgn_name=self.asgn_name)
-        yag = yagmail.SMTP(CONFIG.email_from)
-        subject = f'Rejection of {self.asgn_name} submission'
-        to = CONFIG.test_mode_emails_to if CONFIG.test_mode else self.email
-        yag.send(to=to, subject=subject, contents=[html])
-
-    def add_to_log(self):
+    def _add_to_log(self) -> None:
         with locked_file(log_path, 'a') as f:
             f.write(f'{self.ident}\n')
 
-    def create_directory(self):
-        # todo: use get_latest_sub_path from grading helpers
-        base = HCONFIG.handin_path
-        login_path = os.path.join(base, self.login)
-        if not os.path.exists(login_path):
-            os.mkdir(login_path)
-
-        full_base_path = os.path.join(base, self.login, self.dir_name)
-        if not os.path.exists(full_base_path):
-            os.mkdir(full_base_path)
-
-        submissions = list(os.walk(full_base_path))[0][1]
-        if not submissions:
-            fold_name = '1-submission'
-        else:
-            last_sub = 0
-            for submission in submissions:
-                try:
-                    sub_numb = int(submission.split('-')[0])
-                    if sub_numb > last_sub:
-                        last_sub = sub_numb
-                except ValueError:
-                    print(
-                          f'Student {self.login} directory contains '
-                          f'invalid directory {submission}'
-                         )
-                    continue
-
-            fold_name = '%s-submission' % str(last_sub + 1)
-
-        self.full_path = os.path.join(full_base_path, fold_name)
-        if self.actual_late:
-            self.full_path += '-late'
-
-        if self.gradeable:
-            os.mkdir(self.full_path)
-
-    def download_files(self):
-        for q in self.qs:
-            q.download(self.full_path, self.login)
-
+    @contextmanager
     def get_zip(self):
-        # /course/cs0111/hta/tmpzips TODO
-        zipf = zipfile.ZipFile('submission.zip', 'w')
+        zip_path = os.path.join(BASE_PATH, 'hta/tmpzips/submission.zip')
+        zipf = zipfile.ZipFile(zip_path, 'w')
         for q in self.qs:
             if q.completed:
                 zipf.write(q.file_path, arcname=q.fname)
 
         zipf.close()
-        return zipf.filename
+        try:
+            yield zip_path
+        finally:
+            os.remove(zip_path)
 
     def __repr__(self):
         return f'Response(asgn={self.asgn_name}, email={self.email})'
 
 
-def fetch_submissions():
+def fetch_submissions() -> List[Response]:
     yag = yagmail.SMTP(CONFIG.email_from)
-    ss_id = HCONFIG.spreadsheet_id
-    rng = HCONFIG.get_range()
+
+    ss_id = HCONFIG.get_ssid(CONFIG.test_mode)
+    rng = HCONFIG.get_range(CONFIG.test_mode)
 
     service = sheets_api()
     spreadsheets = service.spreadsheets().values()
@@ -402,27 +473,13 @@ def fetch_submissions():
         vals = result['values']
     except KeyError as e:
         raise ValueError('Handin spreadsheet is empty') from e
+
     responses = []
-    for i in range(len(vals)):
-        try:
-            responses.append(Response(vals[i], i))
-        except ValueError as e:
-            if 'not found' in str(e):
-                responses.append(None)
-            else:
-                raise
-
-    for response in responses:
-        if response is not None and not response.confirmed:
-            response.download()
-
-            if response.gradeable:
-                response.confirm()
-            else:
-                response.reject()
-
-            response.add_to_log()
-            response.done = True
+    for i, row in enumerate(vals):
+        resp = Response(row, i)
+        if not resp.confirmed:
+            responses.append(resp)
+            resp.process()
 
     return responses
 
@@ -451,4 +508,4 @@ def try_fetch():
 
 
 if __name__ == '__main__':
-    try_fetch()
+    fetch_submissions()

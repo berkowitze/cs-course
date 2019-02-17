@@ -264,15 +264,15 @@ class Assignment:
         # checking that assignment has correct paths
         n = self.full_name
         assert pexists(self.log_path), \
-            f'started assignment f"{n}" with no log directory'
+            f'started assignment "{n}" with no log directory'
         assert pexists(self.rubric_path), \
-            f'started assignment f"{n}" with no rubric directory'
+            f'started assignment "{n}" with no rubric directory'
         assert pexists(self.grade_path), \
-            f'started assignment f"{n}" with no grade directory'
+            f'started assignment "{n}" with no grade directory'
         assert pexists(self.blocklist_path), \
-            f'started assignment f"{n}" with no blocklist file'
+            f'started assignment "{n}" with no blocklist file'
         assert pexists(self.files_path), \
-            f'started assignment f"{n}" with no student code directory'
+            f'started assignment "{n}" with no student code directory'
 
         if not self.anonymous:
             with locked_file(self.anon_path) as f:
@@ -509,7 +509,7 @@ class Question:
         else:
             test_filename = f'q{qn}.{self._json["ts_lang"]}'
             self.test_path = pjoin(parent_assignment.test_path, test_filename)
-
+        
         self.load_handins()
 
     @require_resource(pjoin(BASE_PATH, 'handin-loading-lock.lock'))
@@ -529,24 +529,9 @@ class Question:
         self.handins: List['Handin'] = handins
         self.handin_count: int = len(self.handins)
 
-        # now set some boolean attributes
-        def has_incomplete() -> bool:
-            for handin in self.handins:
-                if not handin.complete:
-                    return True
-
-            return False
-
-        def has_flagged() -> bool:
-            for handin in self.handins:
-                if handin.flagged:
-                    return True
-
-            return False
-
         self.grading_started = self.assignment.started
-        self.has_incomplete = has_incomplete()
-        self.has_flagged = has_flagged()
+        self.has_incomplete = any(map(lambda h: not h.complete, self.handins))
+        self.has_flagged = any(map(lambda h: h.flagged, self.handins))
 
         # how many handins for this question have been completed
         self.completed_count = len([x for x in self.handins if x.complete])

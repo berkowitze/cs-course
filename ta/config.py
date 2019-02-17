@@ -15,21 +15,39 @@ class HandinConfig:
     late_days = 3
     spreadsheet_id = '1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8'
     sheet_name = 'handins'
-    test_sheet_ssid = '1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8'
-    test_sheet_name = 'test_handins'
     student_email_col = 'B'
     start_col = 'A'
     end_col = 'AT'
     start_row = 2
     assignment_name_col = 'C'
+    test_sheet_ssid = '1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8'
+    test_sheet_name = 'testing'
     log_path = '/course/cs0111/hta/handin/submission_log.txt'
     handin_path = '/course/cs0111/hta/handin/students'
+    test_log_path = '/course/cs0111/hta/handin/test_submission_log.txt'
 
     @classmethod
-    def get_range(cls) -> str:
-        return f'%s!%s%s:%s' % (cls.sheet_name, cls.start_col,
-                                cls.start_row,  cls.end_col)
+    def get_range(cls, test_mode: bool = False) -> str:
+        if not test_mode:
+            return f'%s!%s%s:%s' % (cls.sheet_name, cls.start_col,
+                                    cls.start_row,  cls.end_col)
+        else:
+            return f'%s!%s%s:%s' % (cls.test_sheet_name, cls.start_col,
+                                    cls.start_row,       cls.end_col)
 
+    @classmethod
+    def get_ssid(cls, test_mode: bool = False) -> str:
+        if not test_mode:
+            return cls.spreadsheet_id
+        else:
+            return cls.test_sheet_ssid
+
+    @classmethod
+    def get_sub_log(cls, test_mode: bool = False) -> str:
+        if not test_mode:
+            return cls.log_path
+        else:
+            return cls.test_log_path
 
 class CONFIG:
     base_path = '/course/cs0111'
