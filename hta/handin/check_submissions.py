@@ -150,7 +150,7 @@ class Response:
         self.row = row
         self.confirmed = self.ident in confirmed_responses(log_path)
         self.asgn = data['assignments'][self.asgn_name]
-        if not self.confirmed and self.asgn['partner_data'] is not None:
+        if not self.confirmed and self.asgn['group_data'] is not None:
             self.set_partner_data(row)
 
         self.due = datetime.strptime(self.asgn['due'], '%m/%d/%Y %I:%M%p')
@@ -158,16 +158,16 @@ class Response:
     def set_partner_data(self, row):
         ''' given a row, sets project partner data for this student
         (puts into project_name.json file) '''
-        if self.asgn['partner_data'] is None:
-            e = 'Cannot call set_partner_data on non-partner-data assignment'
-            raise ValueError(e)
+        gdata = self.asgn['group_data']
+        if gdata is None or gdata['partner_col'] is None:
+            raise ValueError('Cannot call set_partner_data on assignment '
+                             'with no partner column')
 
-        rndx = col_str_to_num(self.asgn['partner_data'])
-        partner_data = row[rndx - 1].split(', ')
-        if self.login not in partner_data:
-            partner_data.append(self.login)
+        rndx = col_str_to_num(gdata['partner_col'])
+        partner_data = set(row[rndx - 1].split(', '))
+        partner_data.add(self.login)
 
-        proj_path = os.path.join(proj_base, self.asgn['group_dir'] + '.json')
+        proj_path = os.path.join(proj_base, f'{gdata["multi_part_name"]}.json')
         if not os.path.exists(proj_path):
             with locked_file(proj_path, 'w') as f:
                 json.dump([], f, indent=2, sort_keys=True)
@@ -178,7 +178,7 @@ class Response:
         # checking this is a valid group
         in_file = False
         for group in groups:
-            if set(group) == set(partner_data):
+            if set(group) == partner_data:
                 in_file = True
                 continue
 
@@ -192,7 +192,7 @@ class Response:
             print(f'Group {partner_data} with != 2 members')
 
         if not in_file:
-            groups.append(partner_data)
+            groups.append(list(partner_data))
             with locked_file(proj_path, 'w') as f:
                 json.dump(groups, f, indent=2, sort_keys=True)
 
