@@ -170,6 +170,10 @@ class LogItem(TypedDict):
     grader: Optional[str]
 
 
+class AsgnData(TypedDict):
+    pass
+
+
 #: Log type, which are used to track progress on question grading
 Log = List[LogItem]
 
