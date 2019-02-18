@@ -79,13 +79,14 @@ class Question:
     def get_gfile(self):
         # extensions which a snippet can be extracted from
         valid_exts = ['.txt', '.py', '.arr', '.tex', '.java']
-        ident = url_to_gid(self.link)  # google file id
-        self.gf = None if ident is None else GoogleFile(ident)
         if self.completed:
+            file_id = url_to_gid(self.link)  # google file id
+            self.gf = GoogleFile(file_id)
             # make a snippet during confirmation if the student
             # uploaded a valid file & its a "raw text" file
             self.make_snippet = os.path.splitext(self.gf.name)[1] in valid_exts
         else:
+            self.gf = None
             self.make_snippet = False
 
     def download(self, base_path: str, login: str) -> None:
@@ -236,7 +237,6 @@ class Response:
             self.__set_partner_data()
 
         status = self.get_status()
-        print('STATUS: %s' % status)
 
         on_time = (status in on_time_stats)
         kinda_late = (status in kinda_late_stats)
@@ -343,12 +343,15 @@ class Response:
             msgs.append(make_span(ext_msg, 'green'))
 
         if ext_expired:
-            msgs.append(make_span('Submission after extension', 'orange'))
+            msgs.append(make_span('Submission after extension.', 'orange'))
 
+        ident = self.ident if CONFIG.test_mode else None
         content = template.render(qs=self.qs,
                                   name=self.login,
+                                  sub_time=self.sub_time,
                                   asgn_name=self.asgn_name,
-                                  msgs=msgs).replace('\n', '')
+                                  msgs=msgs,
+                                  ident=ident).replace('\n', '')
 
         subject = f'Confirmation of {self.asgn_name} submission'
         if late:
@@ -372,11 +375,13 @@ class Response:
                      subject=subject,
                      contents=[content, zip_path])
 
-    def __reject_email(self, *, ext_expired: bool):
+    def __reject_email(self, *, ext_expired: bool) -> None:
         template = jinja_env.get_template('reject_template.html')
+        ident = self.ident if CONFIG.test_mode else None
         content = template.render(name=self.login,
                                   sub_time=self.sub_timestr,
-                                  asgn_name=self.asgn_name).replace('\n', '')
+                                  asgn_name=self.asgn_name,
+                                  ident=ident).replace('\n', '')
         subject = f'Rejection of {self.asgn_name} submission'
         to = CONFIG.test_mode_emails_to if CONFIG.test_mode else self.email
         yag.send(to=to, subject=subject, contents=[content])
@@ -476,14 +481,16 @@ def fetch_submissions() -> List[Response]:
         resp = Response(row, i)
         if not resp.confirmed:
             responses.append(resp)
-            resp.process()
 
     return responses
 
 
-def try_fetch():
+def process_unconfirmed():
     try:
-        fetch_submissions()
+        uncomfirmed_responses = fetch_submissions()
+        for resp in uncomfirmed_responses:
+            resp.process()
+
         success = True
     except HttpError as e:
         tb = str(traceback.format_exc())
@@ -504,4 +511,4 @@ def try_fetch():
 
 
 if __name__ == '__main__':
-    fetch_submissions()
+    process_unconfirmed()
