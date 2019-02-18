@@ -19,7 +19,8 @@ from googleapi import sheets_api
 from googleapiclient.http import HttpError, MediaIoBaseDownload
 from googlefile import GoogleFile
 from handin_helpers import (Extension, load_extensions, confirmed_responses,
-                            make_span, email_to_login, url_to_gid)
+                            make_span, email_to_login, url_to_gid,
+                            get_used_late_days, add_late_day)
 from helpers import (BASE_PATH, CONFIG, check_assignments,
                      locked_file, col_str_to_num)
 from hta_helpers import latest_submission_path
@@ -46,10 +47,11 @@ class HState(Enum):
     late = auto()  # late with no extension
     late_with_ext = auto()  # in any non-on-time period, but with an extension
     late_exp_ext = auto()  # has extension but submitted after it expired
+    using_late_day = auto()  # used a late day on this handin
 
 
 on_time_stats = [HState.on_time, HState.first_deadline_buffer,
-                 HState.late_with_ext]
+                 HState.late_with_ext, HState.using_late_day]
 kinda_late_stats = [HState.kinda_late, HState.kinda_late_buffer,
                     HState.kinda_late_exp_ext]
 late_stats = [HState.late, HState.late_exp_ext]
@@ -205,12 +207,18 @@ class Response:
                 else:
                     return HState.on_time
             elif sub_time <= late_due:
-                return HState.kinda_late
-            elif sub_time <= late_due + late_buffer:
-                if HCONFIG.warn_students_in_buffer:
-                    return HState.kinda_late_buffer
+                if add_late_day(self.login, self.dir_name):
+                    return HState.using_late_day
                 else:
                     return HState.kinda_late
+            elif sub_time <= late_due + late_buffer:
+                if add_late_day(self.login, self.dir_name):
+                    return HState.using_late_day
+                else:
+                    if HCONFIG.warn_students_in_buffer:
+                        return HState.kinda_late_buffer
+                    else:
+                        return HState.kinda_late
             else:
                 return HState.late
         else:
@@ -259,6 +267,8 @@ class Response:
             self.__confirm_email(late=True, warn=True)
         elif status == HState.kinda_late_exp_ext:
             self.__confirm_email(late=True, warn=False, ext_expired=True)
+        elif status == HState.using_late_day:
+            self.__confirm_email(late=False, warn=False, late_day=True)
         elif status == HState.late_with_ext:
             self.__confirm_email(late=False, warn=False, ext_applied=True)
         elif status == HState.late:
@@ -311,10 +321,14 @@ class Response:
             q.download(download_to, self.login)
 
     def __confirm_email(self, *, late: bool, warn: bool,
-                        ext_applied: bool = False, ext_expired: bool = False
+                        ext_applied: bool = False, ext_expired: bool = False,
+                        late_day: bool = False
                         ) -> None:
         assert not (ext_applied and ext_expired), \
             f'called __confirm_email with invalid extension {self.login}'
+
+        assert not (late_day and late), \
+            'should not be able to use late day and still be late'
 
         template = jinja_env.get_template('confirmation_template.html')
 
@@ -344,6 +358,12 @@ class Response:
 
         if ext_expired:
             msgs.append(make_span('Submission after extension.', 'orange'))
+
+        if late_day:
+            used = get_used_late_days(self.login)
+            rem_days = HCONFIG.late_days - len(used)
+            late_day_msg = f'Late day used ({rem_days} late days remaining)'
+            msgs.append(make_span(late_day_msg, 'green'))
 
         ident = self.ident if CONFIG.test_mode else None
         content = template.render(qs=self.qs,
