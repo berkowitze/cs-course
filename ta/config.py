@@ -12,7 +12,9 @@ class HandinConfig:
     # the handin_late_buffer is added to this
     default_late_deadline = 24
 
-    late_days = 3
+    late_days = 3  # late days on individual assignments
+    # allow use of late days on projects (not implemented yet)
+    late_days_on_projects = False
     spreadsheet_id = '1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8'
     sheet_name = 'handins'
     student_email_col = 'B'

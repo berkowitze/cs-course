@@ -170,8 +170,13 @@ class LogItem(TypedDict):
     grader: Optional[str]
 
 
-class AsgnData(TypedDict):
-    pass
+class QuestionData(TypedDict):  # currently unused
+    col_name: str  # column the question is in in the Google Doc
+    ts_ext: str  # testsuite extension
+
+
+class AssignmentData(TypedDict):  # currently unused
+    questions: List[QuestionData]
 
 
 #: Log type, which are used to track progress on question grading
