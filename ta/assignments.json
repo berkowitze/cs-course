@@ -1,9 +1,9 @@
 {
-  "_README1": "under assignments, all keys must be the same as the Google Form option, case insensitive.", 
-  "_README2": "dates are mm/dd/yyyy HH:MM_M format (i.e. 11/29/2018 05:00PM)", 
-  "_README3": "if you're getting an error, it may be because of the end_col key; check that first", 
-  "_README4": "the available key is useless with the way the website's set up, but may be used in classes.py; get rid of it with care at some point", 
-  "_README5": "projects/group assignments: if group_asgn is true, there must be another key-value which contains the directory in ta/grading/data/projects to put group information in (see Project 1/Project 1 Design Check)", 
+  "aa_README": [
+    "all keys must be the same as the Google Form dropdown option", 
+    "dates are mm/dd/yyyy HH:MM_M format (i.e. 11/29/2018 05:00PM)",
+    "format for each assignment in custom_types.py"
+  ],
   "assignments": {
     "CS18 Bridgework - BSTs": {
       "anonymous": false, 
@@ -392,16 +392,5 @@
       ], 
       "sent_emails": false
     }
-  }, 
-  "base_path": "/course/cs0111/hta/handin/students", 
-  "email_col": "B", 
-  "email_errors_to": "elias_berkowitz@brown.edu", 
-  "email_from": "csci0111@brown.edu", 
-  "end_col": "AT", 
-  "handin_log_path": "/course/cs0111/hta/handin/submission_log.txt", 
-  "sheet_id": "1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8", 
-  "sheet_name": "handins", 
-  "start_col": "A", 
-  "start_row": 2, 
-  "submit_col": "C"
+  }
 }

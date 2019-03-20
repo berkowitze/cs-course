@@ -813,8 +813,14 @@ class HTA_Assignment(Assignment):
             assert not pexists(grade_dir)
             os.makedirs(grade_dir)
 
-        code_src = pjoin(self.files_path, f'student-{anon_ident}')
-        code_dest = pjoin(grade_dir, 'code')
+        try:
+            anon_ident = self.login_to_id(login)
+            code_src = pjoin(self.files_path, f'student-{anon_ident}')
+            code_dest = pjoin(grade_dir, 'code')
+            os.symlink(code_src, code_dest)
+        except (ValueError, OSError):
+            pass
+
         with locked_file(report_path, 'w') as f:
             f.write(full_string)
 
@@ -823,11 +829,6 @@ class HTA_Assignment(Assignment):
 
         with locked_file(summary_path, 'w') as f:
             f.write(summary_str)
-
-        try:
-            os.symlink(code_src, code_dest)
-        except OSError:
-            pass  # already exists, no need to do anything
 
         return login, raw_grade, final_grade, full_string
 

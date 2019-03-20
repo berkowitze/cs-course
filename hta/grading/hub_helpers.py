@@ -9,7 +9,7 @@ import yagmail
 
 from typing import Optional, List, Dict, Tuple, Set
 from helpers import locked_file, CONFIG
-from custom_types import Grade
+from custom_types import Grade, AssignmentData
 from hta_helpers import load_students
 
 # WARNING:
@@ -28,12 +28,12 @@ drill_path = pjoin(BASE_PATH, 'hta/canvas-grades-11-17.csv')
 lab_excp_path = pjoin(BASE_PATH, 'ta/grading/data/labs/exceptions.txt')
 ta_group_path = pjoin(BASE_PATH, 'hta/groups/tas.txt')
 with locked_file(data_path) as f:
-    asgn_data = json.load(f)
+    asgn_data: Dict[str, AssignmentData] = json.load(f)['assignments']
 
-asgns = []
-for asgn in asgn_data['assignments']:
-    if asgn_data['assignments'][asgn]['grading_completed']:
-        asgns.append(asgn)
+completed_asgn_names: List[str] = []
+for asgn in asgn_data:
+    if asgn_data[asgn]['grading_completed']:
+        completed_asgn_names.append(asgn)
 
 
 def get_full_grade_dict(students: Optional[List[str]] = None
@@ -80,7 +80,7 @@ def get_student_grade_dict(login: str) -> Dict[str, Grade]:
     if not os.path.exists(sdir):
         raise ValueError(f'Trying to get nonexistent grade_dict for {login}')
 
-    for asgn in asgns:
+    for asgn in completed_asgn_names:
         d = asgn.replace(' ', '').lower()
         individual_path = pjoin(sdir, d)
         if not os.path.isdir(individual_path):

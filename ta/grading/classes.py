@@ -13,7 +13,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from course_customization import full_asgn_name_to_dirname, \
     get_handin_report_str, get_empty_raw_grade, determine_grade
-from custom_types import HTMLData, Log, LogItem, Rubric
+from custom_types import (HTMLData, Log, LogItem, Rubric,
+                          AssignmentJson, AssignmentData)
 from helpers import (loaded_rubric_check, locked_file, json_edit,
                      require_resource, update_comments, rubric_check,
                      remove_duplicates, moss_langs, CONFIG)
@@ -43,7 +44,7 @@ blocklist_path = pjoin(DATA_PATH, 'blocklists')
 assert pexists(asgn_data_path), f'No data file "{asgn_data_path}"'
 
 with locked_file(asgn_data_path) as f:
-    asgn_data = json.load(f)
+    asgn_data: AssignmentJson = json.load(f)
 
 
 # function that checks if an assignment has been started
@@ -220,17 +221,19 @@ class Assignment:
         self.full_name: str = key
         self.mini_name: str = full_asgn_name_to_dirname(self.full_name)
 
-        self._json: dict = asgn_data['assignments'][self.full_name]
+        self._json: AssignmentData = asgn_data['assignments'][self.full_name]
         self.due_date: dt = dt.strptime(self._json['due'], '%m/%d/%Y %I:%M%p')
         self.due: bool = self.due_date < dt.now()
         self.started: bool = self._json['grading_started']
 
-        self.group_asgn: bool = self._json['group_data'] is not None
+        self.group_asgn: bool
         self.proj_dir: Optional[str]
-        if self.group_asgn:
+        if self._json['group_data'] is not None:
+            self.group_asgn = True
             group_dir = self._json['group_data']['multi_part_name']
             self.proj_dir = pjoin(proj_base_path, group_dir + '.json')
         else:
+            self.group_asgn = False
             self.proj_dir = None
 
         self.anonymous: bool = self._json['anonymous']

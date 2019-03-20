@@ -13,7 +13,7 @@ from typing import Generator, Callable, Any, List, Optional, Dict, Mapping
 from filelock import FileLock
 
 from custom_types import (Rubric, RubricCategory, RubricItem, RubricOption,
-                          Bracket, BracketItem, Comments)
+                          Bracket, BracketItem, Comments, AssignmentJson)
 from config import CONFIG
 
 BASE_PATH: str = CONFIG.base_path
@@ -434,7 +434,7 @@ def col_num_to_str(n: int) -> str:
     return string
 
 
-def check_assignments(data: dict):
+def check_assignments(data: AssignmentJson):
     ecol = col_str_to_num(CONFIG.handin.end_col)
     for asgn in data['assignments']:
         for q in data['assignments'][asgn]['questions']:
