@@ -1,7 +1,23 @@
-<p>Hi {name},</p>
-
-<p>We have received your {sub_time} submission of {asgn_name}. {msg}</p>
-
+<p>Hi {{ name }},</p>
+<p>We have received your {{ sub_time }} submission of {{ asgn_name }}. {{ msg }}</p>
+{% if msgs %}
+    <strong>Notes:</strong>
+    <br/>
+    {% for msg in msgs %}
+        {{ msg }}
+        <br/>
+    {% endfor %}
+{% endif %}
 <table border="1" style="border-collapse: collapse">
-        {tab_conts}
+    {% for q in qs %}
+        {% set a, b = q.get_snippet() %}
+        <tr>
+            <td>{{ q.fname }}</td>
+            <td>{{ a }}{% if q.warning != None %}<span style='color: orange'>{{ q.warning }}{% endif %}</span></td>
+            <td>{{ b }}</td>
+        </tr>
+    {% endfor %}
 </table>
+{% if ident != None %}
+    <small>Test Mode: ID {{ ident }}</small>
+{% endif %}

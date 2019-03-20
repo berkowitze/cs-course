@@ -3,6 +3,9 @@
 
 import json
 import os
+import string
+from os.path import join as pjoin
+from os.path import exists as pexists
 from contextlib import contextmanager
 from functools import wraps
 from typing import Generator, Callable, Any, List, Optional, Dict, Mapping
@@ -11,11 +14,15 @@ from filelock import FileLock
 
 from custom_types import (Rubric, RubricCategory, RubricItem, RubricOption,
                           Bracket, BracketItem, Comments)
+from config import CONFIG
 
-pjoin = os.path.join
-
-BASE_PATH: str = '/course/cs0111'
+BASE_PATH: str = CONFIG.base_path
 res_path: str = pjoin(BASE_PATH, 'resource-lock.lock')
+
+moss_langs = ("c", "cc", "java", "ml", "pascal", "ada", "lisp", "scheme",
+              "haskell", "fortran", "ascii", "vhdl", "perl", "matlab",
+              "python", "mips", "prolog", "spice", "vb", "csharp",
+              "modula2", "a8086", "javascript", "plsql")
 
 
 @contextmanager
@@ -36,24 +43,31 @@ def locked_file(filename: str, mode: str = 'r') -> Generator:
             text = f.read()
 
     """
+    if CONFIG.test_mode and False:
+        print(f'locked_file({filename!r}, {mode!r})')
+
     if not (mode == 'r' or mode == 'a' or mode == 'w'):
         base = 'Can only open locked file in r, w, or a mode (just in case)'
         raise ValueError(base)
 
+    if mode == 'r' and not pexists(filename):
+        raise OSError(f'File {filename} not found.')
+
     lock_path = filename + '.lock'
     lock = FileLock(lock_path, timeout=10)  # throw error after 10 seconds
     with lock, open(filename, mode) as f:
-        yield f
-
-        # after file is closed, attempt to remove the .lock
-        # file; the file is only clutter, it won't have an impact
-        # on anything, so don't try too hard
         try:
-            os.unlink(lock_path)
-        except NameError:
-            raise
-        except FileNotFoundError:
-            pass
+            yield f
+        finally:
+            # after file is closed, attempt to remove the .lock
+            # file; the file is only clutter, it won't have an impact
+            # on anything, so don't try too hard
+            try:
+                os.unlink(lock_path)
+            except NameError:
+                raise
+            except FileNotFoundError:
+                pass
 
 
 @contextmanager
@@ -140,7 +154,7 @@ def json_file_with_check(path: str):
     :raises AssertionError: invalid JSON file (filename or data in file)
 
     """
-    assert os.path.exists(path), f'json path {path} does not exist'
+    assert pexists(path), f'json path {path} does not exist'
     assert os.path.splitext(path)[1] == '.json', \
         f'json path {path} has invalid extension'
 
@@ -366,3 +380,68 @@ def green(s: str) -> str:
 
     """
     return f'\033[32m{s}\033[0m'
+
+
+def col_str_to_num(col: str) -> int:
+    """
+
+    convert a spreadsheet column letter to the number, starting from 1,
+    corresponding to that column
+
+    example:
+
+    >>> col_str_to_num("C")
+    3
+
+    :param col: column to convert
+    :type col: str
+    :returns: the number of the column that col corresponds to
+    :rtype: int
+
+    """
+    num = 0
+    for c in col:
+        if c in string.ascii_letters:
+            num = num * 26 + (ord(c.upper()) - ord('A')) + 1
+
+    return num
+
+
+def col_num_to_str(n: int) -> str:
+    """
+
+    convert a spreadsheet column number to the corresponding column, starting
+    from n = 1 corresponding to A
+
+    example:
+
+    >>> col_num_to_str(4)
+    'D'
+    >>> col_num_to_str(27)
+    'AA'
+
+    :param n: column number to convert
+    :type col: int
+    :returns: the column label that n corresponds to
+    :rtype: str
+
+    """
+    string = ""
+    while n > 0:
+        n, remainder = divmod(n - 1, 26)
+        string = chr(65 + remainder) + string
+
+    return string
+
+
+def check_assignments(data: dict):
+    ecol = col_str_to_num(CONFIG.handin.end_col)
+    for asgn in data['assignments']:
+        for q in data['assignments'][asgn]['questions']:
+            qcol = col_str_to_num(q['col'])
+            if qcol > ecol:
+                e = (f'assignments.json assignment {asgn} has question '
+                     f'{q["filename"]} referencing column {qcol}, which\n'
+                     f'is over the end_col "{ecol} (set in assignments.json)'
+                     )
+                raise ValueError(e)

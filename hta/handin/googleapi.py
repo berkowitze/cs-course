@@ -1,19 +1,21 @@
-from google.oauth2.credentials import Credentials
-from apiclient.discovery import build
 import json
-from helpers import load_data
 
-data_file = '/course/cs0111/ta/assignments.json'
-data = load_data(data_file)
+from apiclient.discovery import Resource, build
+from google.oauth2.credentials import Credentials
+from helpers import BASE_PATH, locked_file, pjoin
 
-secret_path = 'client_secret.json'
-j_creds = json.load(open(secret_path))
+client_path = pjoin(BASE_PATH, 'hta/handin/client_secret.json')
+with locked_file(client_path) as f:
+    j_creds = json.load(f)
+
 client_id = j_creds['installed']['client_id']
 client_secret = j_creds['installed']['client_secret']
 
-def sheets_api():
-    sheets_refresh_tok_path = 'ref_tok.txt'
-    ref_tok = open(sheets_refresh_tok_path).read().strip()
+ref_tok_path = pjoin(BASE_PATH, 'hta/handin/ref_tok.txt')
+with locked_file(ref_tok_path) as f:
+    ref_tok: str = f.read().strip()
+
+def sheets_api() -> Resource:
     credentials = Credentials(
         None,
         refresh_token=ref_tok,
@@ -22,16 +24,13 @@ def sheets_api():
         client_secret=client_secret
     )
 
-    ss_id = data['sheet_id']
-    rng = '%s!%s%s:%s' % (data['sheet_name'], data['start_col'],
-                          data['start_row'], data['end_col'])
+    return build('sheets', 'v4', credentials=credentials)
 
-    service = build('sheets', 'v4', credentials=credentials)
-    return service
 
-def drive_api():
-    drive_refresh_token_path = 'ref_tok.txt'
-    ref_tok = open(drive_refresh_token_path).read().strip()
+def drive_api() -> Resource:
+    with locked_file(ref_tok_path) as f:
+        ref_tok = f.read().strip()
+
     credentials = Credentials(
         None,
         refresh_token=ref_tok,
@@ -42,4 +41,3 @@ def drive_api():
 
     drive = build('drive', 'v3', credentials=credentials)
     return drive
-
