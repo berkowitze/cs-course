@@ -122,7 +122,7 @@ RawGrade = Dict[str, Optional[Union[int, float]]]
 Grade = Union[int, float, str, Dict[str, str], Dict[str, int]]
 
 
-class HTMLData(TypedDict):
+class HTMLData(TypedDict):  # TODO: can this be better?
     """
 
     data that is transmitted to the grading app to populate the TA's
@@ -194,9 +194,27 @@ class QuestionData(TypedDict):  # currently unused
     filename: str  # change to list of strings
 
 
+class GroupData(TypedDict):
+    partner_col: Optional[str]  # none if partner data not being collected
+    multi_part_name: str  # i.e. project3 for design check & main handin
+
+
 class AssignmentData(TypedDict):  # currently unused
     anonymous: bool
+    due: str
+    grading_started: bool
+    grading_completed: bool
+    # TODO: make this emails_sent it'll make the key order nicer to look at
+    sent_emails: bool
+    # TODO: make this due_late again for key order niceness lul
+    late_due: str
+    group_data: Optional[GroupData]
     questions: List[QuestionData]
+
+
+class AssignmentJson(TypedDict):
+    aa_README: List[str]
+    assignments: Dict[str, AssignmentData]
 
 
 #: Log type, which are used to track progress on question grading

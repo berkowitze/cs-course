@@ -44,7 +44,7 @@ class State(Enum):
 
 
 def send_grade_reports(asgn: HTA_Assignment, logins: List[str]) -> None:
-    yag = yagmail.SMTP(CONFIG.emails_from)
+    yag = yagmail.SMTP(CONFIG.email_from)
     asgn.send_emails(yag, logins)
 
 

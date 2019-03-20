@@ -51,6 +51,7 @@ class HandinConfig:
         else:
             return cls.test_log_path
 
+
 class CONFIG:
     base_path = '/course/cs0111'
     test_mode = True
