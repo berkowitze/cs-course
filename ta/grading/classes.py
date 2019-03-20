@@ -509,7 +509,7 @@ class Question:
         else:
             test_filename = f'q{qn}.{self._json["ts_lang"]}'
             self.test_path = pjoin(parent_assignment.test_path, test_filename)
-        
+
         self.load_handins()
 
     @require_resource(pjoin(BASE_PATH, 'handin-loading-lock.lock'))
@@ -1002,7 +1002,8 @@ class Handin:
         """
 
         handin grading complete, checks if complete first
-
+        :returns: whether or not the handin was already complete
+        :rtype: bool
         """
         if self.check_complete():
             self.write_line(complete=True)
@@ -1028,7 +1029,7 @@ class Handin:
     def save_data(self,
                   data: dict,
                   new_comments: Dict[str, Any],
-                  emoji: bool):
+                  emoji: bool) -> None:
         """
 
         Saves new data from grading app to rubric file
@@ -1039,6 +1040,8 @@ class Handin:
         :param new_comments: a tuple of general new comments to give and a
                              dictionary of (category -> comments to give)
         :type new_comments: Tuple[List[str], Dict[str, List[str]]]
+        :param emoji: Whether or not this rubric has deserved an emoji!
+        :type emoji: bool
         :returns: whether or not the operation was succesfully completed
         :rtype: bool
 
@@ -1274,7 +1277,7 @@ def started_asgns() -> List[Assignment]:
 
     """
     assignments = []
-    for key in sorted(asgn_data['assignments'].keys()):
+    for key in sorted(asgn_data['assignments']):
         asgn = Assignment(key, load_if_started=False)
         if asgn.started:
             assignments.append(asgn)
@@ -1292,7 +1295,7 @@ def all_asgns() -> List[Assignment]:
 
     """
     assignments = []
-    for key in sorted(asgn_data['assignments'].keys()):
+    for key in sorted(asgn_data['assignments']):
         asgn = Assignment(key, load_if_started=False)
         assignments.append(asgn)
 
