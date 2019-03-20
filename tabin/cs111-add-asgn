@@ -1,92 +1,158 @@
 #!/course/cs0111/ta/venv/bin/python
 
 import json
+import os
+import sys
 
-from datetime import datetime
+from datetime import datetime, timedelta
+from helpers import CONFIG, locked_file, json_edit
+from prompts import opt_prompt, date_prompt, yn_prompt, ez_prompt
 from typing import Dict, List, Optional
 
-data = json.load(open('/course/cs0111/ta/assignments.json'))
+data_path = os.path.join(CONFIG.base_path, 'ta/assignments.json')
+with locked_file(data_path) as f:
+    data = json.load(f)
 
-print('What is the assignment name?')
-asgn = input('> ')
 
-print(f'Creating {asgn}')
+def nonempty(inp: str) -> bool:
+    return inp != ''
 
-print('Will this be graded anonymously? (usually no for projects)')
-print('1 for anonymous, 2 for non-anonymous')
-opt = input('> ')
-if opt == '1':
-    anonymous = True
-elif opt == '2':
-    anonymous = False
-else:
-    raise ValueError('must enter 1 or 2')
 
-print('When is it due? Use "mm/dd/yyyy hh:mm _M" format')
-due_inp = input('> ')
-due = datetime.strptime(due_inp, '%m/%d/%Y %I:%M %p')
+def get_partner_col() -> str:
+    """
+    print out information related to the partner column collected by the
+    Google Form for this group assignment and returns the column letter """
+    print('')
+    print('You should collect partner data in the Google Form')
+    print('according to the documentation (see INSERT LINK)')
+    print('What column will partner information be stored in?')
+    return ez_prompt('> ', exit_on_ctrl_c=True, checker=nonempty,
+                     fail_check_msg='Must be nonempty')
 
-print('Is this a group assignment? [y/n]')
-g_asgn_inp = input('> ').lower()
-if g_asgn_inp == 'y':
-    g_asgn = True
-elif g_asgn_inp == 'n':
-    g_asgn = False
-else:
-    raise ValueError('Must enter y or n')
 
-if g_asgn:
-    group_dir = input("Enter group directory (i.e. project3): ")
+def exit(status: int = 0) -> None:
+    """
+    print exit message and exit with input status
+    """
+    print('Exiting...\n')
+    sys.exit(status)
+
 
 url_base = 'https://docs.google.com/a/brown.edu/spreadsheets/d'
-ssid = '1WBNNlcFQAnIau1AKgUTR_HmOTgl_C1VtPHOKkwvbO0A'
+ssid = CONFIG.handin.spreadsheet_id
 url = f'{url_base}/{ssid}'
 print(f'Google sheet is at {url}')
+
+print('What is the assignment name?')
+asgn = ez_prompt('> ', exit_on_ctrl_c=True, checker=nonempty,
+                 fail_check_msg='Must be nonempty')
+if asgn in data['assignments']:
+    print(f'Assignment {asgn} already exists.')
+    exit(1)
+
+print(f'Gathering data for: {asgn!r}\n')
+
+print('Will this be graded anonymously? (usually no for projects)')
+opt = opt_prompt(['Anonymous', 'Non-anonymous'], exit_on_ctrl_c=True)
+anonymous = (opt == 1)
+print('')
+
+print('When is the assignment due?')
+due = date_prompt(exit_on_ctrl_c=True, after=datetime.now(),
+                  after_msg='Entered due date before present.')
+
+late_hours = CONFIG.handin.default_late_deadline
+default_late = due + timedelta(hours=late_hours)
+print(
+      f'When is the late deadline? Leave blank to '
+      f'use the default {default_late.strftime("%m/%d/%Y %I:%M %p")}'
+      )
+
+late_due = date_prompt(default=default_late,
+                       exit_on_ctrl_c=True,
+                       after=due,
+                       after_msg='Late deadline must be after due date',
+                       enforce_after=True)
+
+print('')
+
+print('Is this a group assignment?')
+group_asgn = yn_prompt(exit_on_ctrl_c=True)
+
+group_data: Optional[dict]
+partner_col: Optional[str]
+if group_asgn:
+    print('What is the common name of the project?')
+    print('(i.e. project3 or maze, regardless of if this assignment is')
+    print('the design check portion)')
+    project_simple_name = ez_prompt('> ',
+                                    exit_on_ctrl_c=True,
+                                    checker=nonempty,
+                                    fail_check_msg='Must be nonempty')
+
+    print('')
+    print('Is this a multi-part group assignment? (i.e. design check and')
+    print('final handin graded separately)')
+    if yn_prompt(exit_on_ctrl_c=True):
+        print('')
+        print('Is this assignment the first part of the project?')
+        print('(i.e. this is the design check)')
+        if yn_prompt(exit_on_ctrl_c=True):
+            partner_col = get_partner_col()
+        else:
+            partner_col = None
+    else:
+        partner_col = get_partner_col()
+
+    group_data = {
+        'partner_col': partner_col,
+        'multi_part_name': project_simple_name,
+    }
+else:
+    group_data = None
+
+print('')
+print('Gathering question data...')
 
 qs: List[dict] = []
 while True:
     if qs:
-        print('Add question? [y/n]')
-        if input('> ') != 'y':
+        print('Add another question?')
+        if not yn_prompt(exit_on_ctrl_c=True):
             break
 
-    print('What is the name of the file for this question?')
+    print('What is the name of the file for this question? (i.e. sunset.arr)')
     fname = input('> ')
 
-    print('What column is the file uploaded to in the handin google sheet?')
+    print('What column is the file uploaded to in the handin Google Sheet?')
     col = input('> ').upper()
 
-    print('Test suite: pyret or python?')
-    print('(enter arr or py for pyret or python)')
-    print('Leave blank if no testsuite')
-    while True:
-        ext: Optional[str]
-        ext = input('> ')
-        if ext != 'arr' and ext != 'py' and ext != '':
-            print('Invalid input (should be arr, py, or blank)')
-            continue
-        else:
-            if not ext:
-                ext = None
+    print('Enter test suite language')
+    print(f'Options: {CONFIG.supported_test_suites}')
+    print('(Select blank option for no testsuite)')
+    ts = opt_prompt(CONFIG.supported_test_suites, exit_on_ctrl_c=True)
 
-            break
+    selected = CONFIG.supported_test_suites[ts - 1]
+    ts_lang = selected if selected else None
 
-    qs.append({"col": col, "filename": fname, 'test-ext': ext})
+    qs.append({
+        'col': col,
+        'filename': fname,
+        'ts_lang': ts_lang
+        })
 
 new_data = {
-            "anonymous": anonymous,
-            "available": due.strftime('%m/%d/%Y %I:%M%p'),
-            "due": due.strftime('%m/%d/%Y %I:%M%p'),
-            "grading_completed": False,
-            "grading_started": False,
-            "sent_emails": False,
-            "group_asgn": g_asgn,
-            "partner_data": None,
-            "questions": qs
+            'anonymous': anonymous,
+            'due': due.strftime('%m/%d/%Y %I:%M%p'),
+            'late_due': late_due.strftime('%m/%d/%Y %I:%M%p'),
+            'grading_completed': False,
+            'grading_started': False,
+            'sent_emails': False,
+            'group_data': group_data,
+            'questions': qs
            }
-if g_asgn:
-    new_data["group_dir"] = group_dir
 
-data['assignments'][asgn] = new_data
-with open('/course/cs0111/ta/assignments.json', 'w') as f:
-    json.dump(data, f, indent=2, sort_keys=True)
+with json_edit(data_path) as data:
+    data['assignments'][asgn] = new_data
+
+print(f'Assignment {asgn} added.')
