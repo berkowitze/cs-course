@@ -61,7 +61,7 @@ class RubricCategory(TypedDict):
     :type comments: Comments
     :param rubric_items: the rubric items for this category
     :type rubric_items: List[RubricItem]
-    :param fudge_points: a list of [selected fudge points, maximum fudge points]
+    :param fudge_points: a list of [selected fudge points, max fudge points]
                          floats; for base rubrics, the first element
                          should usually be 0.0
     :type fudge_points: List[float]
@@ -169,13 +169,33 @@ class LogItem(TypedDict):
     flag_reason: Optional[str]
     grader: Optional[str]
 
+# "assignments": {
+#   "CS18 Bridgework - BSTs": {
+#     "anonymous": false,
+#     "due": "02/01/2019 05:00PM",
+#     "grading_completed": false,
+#     "grading_started": false,
+#     "group_data": null,
+#     "late_due": "02/02/2019 01:00PM",
+#     "questions": [
+#       {
+#         "col": "AJ",
+#         "filename": "bsts.arr",
+#         "ts_lang": "arr"
+#       }
+#     ],
+#     "sent_emails": false
+#   },
+
 
 class QuestionData(TypedDict):  # currently unused
-    col_name: str  # column the question is in in the Google Doc
-    ts_ext: str  # testsuite extension
+    col: str  # column the question is in in the Google Doc
+    ts_lang: str  # testsuite language
+    filename: str  # change to list of strings
 
 
 class AssignmentData(TypedDict):  # currently unused
+    anonymous: bool
     questions: List[QuestionData]
 
 
