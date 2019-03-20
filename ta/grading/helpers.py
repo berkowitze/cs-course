@@ -341,7 +341,7 @@ def remove_duplicates(lst: list) -> list:
     """
 
     removes all duplicates from the input list. order is maintained.
-    input list is not modified
+    input list is not modified. linear runtime.
 
     :param lst: any list
     :type lst: list
@@ -352,12 +352,14 @@ def remove_duplicates(lst: list) -> list:
 
     # Create an empty list to store unique elements
     unique_list: list = []
+    unique_set: set = set()
 
     # Iterate over the original list and for each element
     # add it to uniqueList, if its not already there.
     for elem in lst:
-        if elem not in unique_list:
+        if elem not in unique_set:
             unique_list.append(elem)
+            unique_set.add(elem)
 
     return unique_list
 
@@ -426,7 +428,7 @@ def col_num_to_str(n: int) -> str:
     :rtype: str
 
     """
-    string = ""
+    string = ''
     while n > 0:
         n, remainder = divmod(n - 1, 26)
         string = chr(65 + remainder) + string
