@@ -2,6 +2,7 @@
 
 # Author: Eli Berkowitz
 # Email: eliberkowitz@gmail.com
+# PYTHON VERSION: 3.6+
 
 # uses ldapsearch to get members of a group, rather than
 # the department's weird caching system that frequently breaks
