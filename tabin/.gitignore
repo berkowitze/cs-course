@@ -21,3 +21,4 @@
 !python-test
 !update-documentation
 !mossScript
+!config.py
