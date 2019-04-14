@@ -939,7 +939,8 @@ class HTA_Assignment(Assignment):
         # now set grading_started in the assignments.json to False
         with json_edit(asgn_data_path) as data:
             data['assignments'][self.full_name]['grading_started'] = False
-            data['assignments'][self.full_name]['grading_started'] = False
+            data['assignments'][self.full_name]['grading_completed'] = False
+            data['assignments'][self.full_name]['emails_sent'] = False
 
         self.started = False
         printer('Assignment records removed.')
