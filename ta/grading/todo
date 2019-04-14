@@ -1,8 +1,12 @@
 High Priority:
 
 High-ish Priority:
+    Move email generation to jinja templating, it's more flexible I think
+        (especially handin!)
 
 Medium Priority:
+    Avoid yagmail for email sending? it's kinda slow... smtplib might be
+        better
     View flag reason if handin is flagged (easy) [working for HTA]
     Go to student's next/last problem (medium)
 
