@@ -7,8 +7,26 @@ High-ish Priority:
 Medium Priority:
     Avoid yagmail for email sending? it's kinda slow... smtplib might be
         better
+    Refactor code so that TAs can modify rubrics in the web app
+        after emails are sent and regenerate the students grade.
+        [difficulty: annoyingly hard?]
     View flag reason if handin is flagged (easy) [working for HTA]
     Go to student's next/last problem (medium)
+      grade-override command which gives a prompt:
+
+        Which assignment are you giving a regrade on?
+            1. Homework 1
+            ...
+        Then
+        Which student are you viewing/overwriting a grade for?
+
+            1. login-1-graded-for-assignment
+            2. login-2-graded-for-assignment
+        
+        Then it makes override files and either opens in them in
+        an explorer or cd's into that folder or something.
+
+    
 
 Low priority:
     Better sidebar colors (easy)
