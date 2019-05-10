@@ -192,7 +192,8 @@ def loaded_rubric_check(rubric: Rubric) -> None:
     """
 
     def has_keys(d: Mapping, keys: List[str]) -> bool:
-        return all(map(lambda k: k in d, keys))
+        """ makes sure d has only the keys specified """
+        return all([k in d for k in keys]) and all([k in keys for k in d])
 
     def check_rubric_category(rc: RubricCategory) -> bool:
         assert has_keys(rc, ['fudge_points', 'comments', 'rubric_items'])
