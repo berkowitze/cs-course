@@ -225,9 +225,11 @@ def view_code():
     ident = request.args['id']
     assert workflow['handin'].id == int(ident), \
         'trying to view student code of inactive handin'
-    code = workflow['handin'].get_code()
+    code = workflow['handin'].get_code(with_tests=False)
+    t_code = workflow['handin'].get_code(with_tests=True)
     code_dir = workflow['handin'].handin_path
-    return render_template('view_code.html', code=code, code_dir=code_dir)
+    return render_template('view_code.html', code=code, code_with_tests=t_code,
+                           code_dir=code_dir)
 
 
 @app.route('/run_test')

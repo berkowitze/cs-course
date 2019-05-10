@@ -17,14 +17,18 @@
     <script src="/static/prism.js"></script>
     <h4>Code directory is: <input style="width: 40%;" type="text" value="{{ code_dir }}"/> <button data-link="{{ code_dir }}" onclick="copyCode(this)">(click here to copy)</button></h4>
     <button class='btn' data-clipboard-target='#code-content'>Copy code to clipboard</button>
+    <a target="_new" href="https://code.pyret.org/editor">Open Pyret Editor</a>
+    <button class='btn' data-clipboard-target='#code-with-tests'>Copy code with tests appended to clipboard</button>
     <pre class="line-numbers"><code id="code-content" class='language-python'>{{ code }}</code></pre>
+    <code style='display: none;' id="code-with-tests">{{ code_with_tests }}</code>
     <script>
       $('pre code').each(function(i, block) {
         Prism.highlightElement(block);
       });
       new ClipboardJS('.btn', {
         text: function(trigger) {
-          return $('#code-content').text();
+          a=trigger;
+          return $($(trigger).data('clipboardTarget')).text();
         }
       });
     </script>
