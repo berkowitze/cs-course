@@ -878,11 +878,14 @@ class Handin:
         rdata['sfile-link'] = self.handin_path
         return rdata
 
-    def get_code(self) -> str:
+    def get_code(self, with_tests: bool = False) -> str:
         """
 
         get student's code for this handin as a string, or an error string
         if the code is not JSON decodable (it needs to be for the grading app)
+
+        if with_tests is True, appends the testing file for this question
+        to the end.
 
         :returns: student code string or error string if code is not decodable
         :rtype: str
@@ -898,11 +901,18 @@ class Handin:
             msg = 'Submission is a zip file; open in file viewer'
             return msg
         else:
-            # only ever reading this file, no need for lock
+            # should probably convert this to locked read at some point JIC
             try:
                 with open(filepath, encoding='utf-8') as f:
                     code = f.read()
-                    json.dumps(code)
+                
+                if with_tests and pexists(self.question.test_path):
+                    code += f'# {"-" * 20} TA TESTS {"-" * 20}\n'
+                    with open(self.question.test_path, encoding='utf-8') as f:
+                        code += f.read()
+
+                json.dumps(code)
+
             except UnicodeDecodeError:
                 code = (
                         f'Student code not decodable. Look at original handin'
