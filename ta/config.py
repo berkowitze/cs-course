@@ -56,8 +56,8 @@ class CONFIG:
     base_path = '/course/cs0111'
     test_mode = False
     email_from = 'csci0111@brown.edu'
-    email_errors_to = 'elias_berkowitz@brown.edu'
-    hta_email = 'elias_berkowitz@brown.edu'
-    test_mode_emails_to = 'elias_berkowitz@brown.edu'
+    email_errors_to = 'eliberkowitz@gmail.com'
+    hta_email = 'eliberkowitz@gmail.com'
+    test_mode_emails_to = 'eliberkowitz@gmail.com'
     handin = HandinConfig
     supported_test_suites = ['Python', 'Pyret', '']
