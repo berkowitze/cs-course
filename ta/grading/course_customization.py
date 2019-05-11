@@ -133,7 +133,7 @@ def determine_grade(raw_grade: RawGrade,
     with locked_file(asgn.bracket_path) as f:
         brackets: Bracket = json.load(f)
 
-    assert brackets.keys() == raw_grade.keys(), 'invalid rubric'
+    assert brackets.keys() == raw_grade.keys(), 'invalid bracket'
 
     final_grade = {}
     for cat in brackets:
