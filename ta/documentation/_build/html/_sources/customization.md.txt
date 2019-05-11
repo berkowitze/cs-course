@@ -28,12 +28,12 @@ From there, it should be relatively self-explanatory; the `python_test`
 method should give you an idea of how to start.
 
 The other thing you need to do is make sure that when you add questions to
-`/ta/assignments.json`, the `"test-ext"` attribute of each question is set to
+`/ta/assignments.json`, the `"ts_lang"` attribute of each question is set to
 the correct file extension; it is in `run_test` that you use this extension.
-So if you are adding Java support, you might put `"test-ext": "java"` in
+So if you are adding Java support, you might put `"ts_lang": "Java"` in
 `assignments.json` for any questions using java testing, then add an if
 statement in `run_test` that calls the appropriate method
-`if test_type == 'java'`.
+`if test_type == 'Java'`.
 
 ## Customizing handin
 **Difficulty**: Easy to moderate depending on what you're doing

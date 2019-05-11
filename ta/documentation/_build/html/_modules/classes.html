@@ -162,10 +162,11 @@
 
 <span class="kn">from</span> <span class="nn">course_customization</span> <span class="k">import</span> <span class="n">full_asgn_name_to_dirname</span><span class="p">,</span> \
     <span class="n">get_handin_report_str</span><span class="p">,</span> <span class="n">get_empty_raw_grade</span><span class="p">,</span> <span class="n">determine_grade</span>
-<span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="n">HTMLData</span><span class="p">,</span> <span class="n">Log</span><span class="p">,</span> <span class="n">LogItem</span><span class="p">,</span> <span class="n">Rubric</span>
+<span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="p">(</span><span class="n">HTMLData</span><span class="p">,</span> <span class="n">Log</span><span class="p">,</span> <span class="n">LogItem</span><span class="p">,</span> <span class="n">Rubric</span><span class="p">,</span>
+                          <span class="n">AssignmentJson</span><span class="p">,</span> <span class="n">AssignmentData</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">loaded_rubric_check</span><span class="p">,</span> <span class="n">locked_file</span><span class="p">,</span> <span class="n">json_edit</span><span class="p">,</span>
                      <span class="n">require_resource</span><span class="p">,</span> <span class="n">update_comments</span><span class="p">,</span> <span class="n">rubric_check</span><span class="p">,</span>
-                     <span class="n">remove_duplicates</span><span class="p">)</span>
+                     <span class="n">remove_duplicates</span><span class="p">,</span> <span class="n">moss_langs</span><span class="p">,</span> <span class="n">CONFIG</span><span class="p">)</span>
 
 <span class="c1"># READ BEFORE EDITING THIS FILE #</span>
 <span class="c1"># do not use the builtin `open` function; instead use the</span>
@@ -175,13 +176,13 @@
 <span class="c1"># with locked_file(filename, mode) as f:</span>
 <span class="c1">#     ...</span>
 
-<span class="n">BASE_PATH</span> <span class="o">=</span> <span class="s1">&#39;/course/cs0111&#39;</span>
-<span class="n">DATA_PATH</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta&#39;</span><span class="p">,</span> <span class="s1">&#39;grading&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<span class="n">BASE_PATH</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">base_path</span>
+<span class="n">DATA_PATH</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/grading/data&#39;</span><span class="p">)</span>
 <span class="n">proj_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;projects&#39;</span><span class="p">)</span>
-<span class="n">asgn_data_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta&#39;</span><span class="p">,</span> <span class="s1">&#39;assignments.json&#39;</span><span class="p">)</span>
-<span class="n">ta_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/groups&#39;</span><span class="p">,</span> <span class="s1">&#39;tas.txt&#39;</span><span class="p">)</span>
-<span class="n">hta_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/groups&#39;</span><span class="p">,</span> <span class="s1">&#39;htas.txt&#39;</span><span class="p">)</span>
-<span class="n">student_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/groups&#39;</span><span class="p">,</span> <span class="s1">&#39;students.txt&#39;</span><span class="p">)</span>
+<span class="n">asgn_data_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/assignments.json&#39;</span><span class="p">)</span>
+<span class="n">ta_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/groups/tas.txt&#39;</span><span class="p">)</span>
+<span class="n">hta_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/groups/htas.txt&#39;</span><span class="p">)</span>
+<span class="n">student_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/groups/students.txt&#39;</span><span class="p">)</span>
 <span class="n">log_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;logs&#39;</span><span class="p">)</span>
 <span class="n">test_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;tests&#39;</span><span class="p">)</span>
 <span class="n">rubric_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;rubrics&#39;</span><span class="p">)</span>
@@ -189,10 +190,10 @@
 <span class="n">s_files_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;sfiles&#39;</span><span class="p">)</span>
 <span class="n">anon_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;anonymization&#39;</span><span class="p">)</span>
 <span class="n">blocklist_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;blocklists&#39;</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">),</span> <span class="s1">&#39;No data file &quot;</span><span class="si">{asgn_data_path}</span><span class="s1">&quot;&#39;</span>
+<span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">),</span> <span class="n">f</span><span class="s1">&#39;No data file &quot;</span><span class="si">{asgn_data_path}</span><span class="s1">&quot;&#39;</span>
 
 <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">asgn_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">asgn_data</span><span class="p">:</span> <span class="n">AssignmentJson</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
 
 <span class="c1"># function that checks if an assignment has been started</span>
@@ -310,7 +311,7 @@
 
 <span class="sd">    Provides interface with logs, grades, and rubrics, files, etc.</span>
 
-<span class="sd">    :ivar proj_dir: If group_asgn is False, None. If group_asgn is True,</span>
+<span class="sd">    :ivar proj_dir: If not a group asgn, None. If is a group_asgn,</span>
 <span class="sd">                    the name of the common directory to use</span>
 <span class="sd">                    (for multi-assignment projects). For example, &quot;project3&quot;</span>
 <span class="sd">    :vartype proj_dir: Optional[str]</span>
@@ -369,17 +370,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">key</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mini_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">full_asgn_name_to_dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">:</span> <span class="n">AssignmentData</span> <span class="o">=</span> <span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">due_date</span><span class="p">:</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;due&#39;</span><span class="p">],</span> <span class="s1">&#39;%m/</span><span class="si">%d</span><span class="s1">/%Y %I:%M%p&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">due</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">due_date</span> <span class="o">&lt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;grading_started&#39;</span><span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">group_asgn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;group_asgn&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group_asgn</span><span class="p">:</span> <span class="nb">bool</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">proj_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_asgn</span><span class="p">:</span>
-            <span class="n">group_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;group_dir&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;group_data&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">group_asgn</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">group_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;group_data&#39;</span><span class="p">][</span><span class="s1">&#39;multi_part_name&#39;</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proj_dir</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">proj_base_path</span><span class="p">,</span> <span class="n">group_dir</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">group_asgn</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proj_dir</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;anonymous&#39;</span><span class="p">]</span>
@@ -413,15 +416,15 @@
         <span class="c1"># checking that assignment has correct paths</span>
         <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span>
         <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_path</span><span class="p">),</span> \
-            <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no log directory&#39;</span>
+            <span class="n">f</span><span class="s1">&#39;started assignment &quot;</span><span class="si">{n}</span><span class="s1">&quot; with no log directory&#39;</span>
         <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rubric_path</span><span class="p">),</span> \
-            <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no rubric directory&#39;</span>
+            <span class="n">f</span><span class="s1">&#39;started assignment &quot;</span><span class="si">{n}</span><span class="s1">&quot; with no rubric directory&#39;</span>
         <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grade_path</span><span class="p">),</span> \
-            <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no grade directory&#39;</span>
+            <span class="n">f</span><span class="s1">&#39;started assignment &quot;</span><span class="si">{n}</span><span class="s1">&quot; with no grade directory&#39;</span>
         <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocklist_path</span><span class="p">),</span> \
-            <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no blocklist file&#39;</span>
+            <span class="n">f</span><span class="s1">&#39;started assignment &quot;</span><span class="si">{n}</span><span class="s1">&quot; with no blocklist file&#39;</span>
         <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files_path</span><span class="p">),</span> \
-            <span class="n">f</span><span class="s1">&#39;started assignment f&quot;</span><span class="si">{n}</span><span class="s1">&quot; with no student code directory&#39;</span>
+            <span class="n">f</span><span class="s1">&#39;started assignment &quot;</span><span class="si">{n}</span><span class="s1">&quot; with no student code directory&#39;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">anonymous</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">anon_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -533,6 +536,35 @@
         <span class="c1">#  then fail</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;id </span><span class="si">{ident}</span><span class="s1"> does not exist in map for </span><span class="si">{self}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
+    <span class="k">def</span> <span class="nf">moss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">moss_lang</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">extension</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+             <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">moss_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;tabin/mossScript&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">extension</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">find_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;find&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">files_path</span><span class="p">,</span> <span class="s1">&#39;-name&#39;</span><span class="p">,</span> <span class="s1">&#39;*.*&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">find_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;find&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">files_path</span><span class="p">,</span> <span class="s1">&#39;-name&#39;</span><span class="p">,</span>
+                        <span class="n">f</span><span class="s1">&#39;*.{extension.lstrip(&quot;.&quot;)}&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">moss_lang</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">moss_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;xargs&#39;</span><span class="p">,</span> <span class="n">moss_path</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">moss_lang</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">moss_langs</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;WARNING: Language </span><span class="si">{moss_lang}</span><span class="s1"> not supported by MOSS&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Running without any language constraint.&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Press enter to continue.&#39;</span><span class="p">)</span>
+                <span class="nb">input</span><span class="p">()</span>
+                <span class="n">moss_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;xargs&#39;</span><span class="p">,</span> <span class="n">moss_path</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">moss_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;xargs&#39;</span><span class="p">,</span> <span class="n">moss_path</span><span class="p">,</span> <span class="s1">&#39;-l&#39;</span><span class="p">,</span> <span class="n">moss_lang</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Finding files: {&quot; &quot;.join(find_cmd)}&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Mossing: {&quot; &quot;.join(moss_cmd)}&#39;</span><span class="p">)</span>
+        <span class="n">find</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">find_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">moss_cmd</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">find</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; representation of instance (i.e. for printing) &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;Assignment(name=&quot;</span><span class="si">{self.full_name}</span><span class="s1">&quot;)&#39;</span></div>
@@ -624,15 +656,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">code_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">test_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;test-ext&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;ts_lang&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">test_path</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">test_filename</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;q</span><span class="si">{qn}</span><span class="s1">.</span><span class="si">{self._json[&quot;test-ext&quot;]}</span><span class="s1">&#39;</span>
+            <span class="n">test_filename</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;q</span><span class="si">{qn}</span><span class="s1">.</span><span class="si">{self._json[&quot;ts_lang&quot;]}</span><span class="s1">&#39;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">test_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">parent_assignment</span><span class="o">.</span><span class="n">test_path</span><span class="p">,</span> <span class="n">test_filename</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">load_handins</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Question.load_handins"><a class="viewcode-back" href="../classes.html#classes.Question.load_handins">[docs]</a>    <span class="nd">@require_resource</span><span class="p">(</span><span class="s1">&#39;/course/cs0111/handin-loading-lock.lock&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="Question.load_handins"><a class="viewcode-back" href="../classes.html#classes.Question.load_handins">[docs]</a>    <span class="nd">@require_resource</span><span class="p">(</span><span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;handin-loading-lock.lock&#39;</span><span class="p">))</span>
     <span class="k">def</span> <span class="nf">load_handins</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
@@ -649,24 +681,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;Handin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">handins</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">handin_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">)</span>
 
-        <span class="c1"># now set some boolean attributes</span>
-        <span class="k">def</span> <span class="nf">has_incomplete</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">handin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">handin</span><span class="o">.</span><span class="n">complete</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="kc">True</span>
-
-            <span class="k">return</span> <span class="kc">False</span>
-
-        <span class="k">def</span> <span class="nf">has_flagged</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">handin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">handin</span><span class="o">.</span><span class="n">flagged</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="kc">True</span>
-
-            <span class="k">return</span> <span class="kc">False</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">grading_started</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assignment</span><span class="o">.</span><span class="n">started</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">has_incomplete</span> <span class="o">=</span> <span class="n">has_incomplete</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">has_flagged</span> <span class="o">=</span> <span class="n">has_flagged</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_incomplete</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">h</span><span class="p">:</span> <span class="ow">not</span> <span class="n">h</span><span class="o">.</span><span class="n">complete</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_flagged</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">h</span><span class="p">:</span> <span class="n">h</span><span class="o">.</span><span class="n">flagged</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span><span class="p">))</span>
 
         <span class="c1"># how many handins for this question have been completed</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">completed_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handins</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">complete</span><span class="p">])</span>
@@ -1079,7 +1096,7 @@
         <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">log_filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Handin.start_grading"><a class="viewcode-back" href="../classes.html#classes.Handin.start_grading">[docs]</a>    <span class="nd">@require_resource</span><span class="p">(</span><span class="s1">&#39;/course/cs0111/ta/question_extract_resource&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="Handin.start_grading"><a class="viewcode-back" href="../classes.html#classes.Handin.start_grading">[docs]</a>    <span class="nd">@require_resource</span><span class="p">(</span><span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/question_extract_resource&#39;</span><span class="p">))</span>
     <span class="k">def</span> <span class="nf">start_grading</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ta</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
@@ -1137,7 +1154,8 @@
         <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        handin grading complete, checks if complete first</span>
-
+<span class="sd">        :returns: whether or not the handin was already complete</span>
+<span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_complete</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_line</span><span class="p">(</span><span class="n">complete</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1163,7 +1181,7 @@
     <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                   <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
                   <span class="n">new_comments</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-                  <span class="n">emoji</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+                  <span class="n">emoji</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        Saves new data from grading app to rubric file</span>
@@ -1174,6 +1192,8 @@
 <span class="sd">        :param new_comments: a tuple of general new comments to give and a</span>
 <span class="sd">                             dictionary of (category -&gt; comments to give)</span>
 <span class="sd">        :type new_comments: Tuple[List[str], Dict[str, List[str]]]</span>
+<span class="sd">        :param emoji: Whether or not this rubric has deserved an emoji!</span>
+<span class="sd">        :type emoji: bool</span>
 <span class="sd">        :returns: whether or not the operation was succesfully completed</span>
 <span class="sd">        :rtype: bool</span>
 
@@ -1309,12 +1329,12 @@
 <span class="sd">        :rtype: str</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">test_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;test-ext&#39;</span><span class="p">]</span>
+        <span class="n">test_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">_json</span><span class="p">[</span><span class="s1">&#39;ts_lang&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">test_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="s1">&#39;No defined testsuite&#39;</span>
-        <span class="k">elif</span> <span class="n">test_type</span> <span class="o">==</span> <span class="s1">&#39;arr&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">test_type</span> <span class="o">==</span> <span class="s1">&#39;Pyret&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pyret_test</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">test_type</span> <span class="o">==</span> <span class="s1">&#39;py&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">test_type</span> <span class="o">==</span> <span class="s1">&#39;Python&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">python_test</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s1">&#39;Invalid test extension (contact HTA)&#39;</span></div>
@@ -1409,7 +1429,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]):</span>
         <span class="n">asgn</span> <span class="o">=</span> <span class="n">Assignment</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">load_if_started</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">asgn</span><span class="o">.</span><span class="n">started</span><span class="p">:</span>
             <span class="n">assignments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asgn</span><span class="p">)</span>
@@ -1427,7 +1447,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]):</span>
         <span class="n">asgn</span> <span class="o">=</span> <span class="n">Assignment</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">load_if_started</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">assignments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asgn</span><span class="p">)</span>
 

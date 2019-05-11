@@ -84,6 +84,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hta-doc.html">HTA Relevant Documentation</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">UTA Relevant Documentation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-grade">How to grade</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#grading-remotely">Grading remotely</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#updated-grading-app">Updated grading app</a></li>
 </ul>
 </li>
@@ -188,6 +189,19 @@ your PATH, or</li>
 <li>Start grading! There are buttons that will help at the bottom of the page,
 and at the top of the page there is a button to view the student code.</li>
 </ol>
+<div class="section" id="grading-remotely">
+<span id="grading-remotely"></span><h3>Grading remotely<a class="headerlink" href="#grading-remotely" title="Permalink to this headline">¶</a></h3>
+<p>If you want to grade remotely, you should</p>
+<ol class="simple">
+<li>ssh in to a department machine</li>
+<li>run <code class="docutils literal notranslate"><span class="pre">hostname</span></code> to figure out which computer you are on</li>
+<li>run <code class="docutils literal notranslate"><span class="pre">cs111-grade</span></code></li>
+<li>On your machine, open a terminal and run this command:
+<code class="docutils literal notranslate"><span class="pre">ssh</span> <span class="pre">CSLOGIN&#64;ssh.cs.brown.edu</span> <span class="pre">-N</span> <span class="pre">-L</span> <span class="pre">6924:HOSTNAME:6924</span></code>
+(replacing the login with your login and the hostname with the hostname
+of the computer running the grading app)</li>
+</ol>
+</div>
 <div class="section" id="updated-grading-app">
 <span id="updated-grading-app"></span><h3>Updated grading app<a class="headerlink" href="#updated-grading-app" title="Permalink to this headline">¶</a></h3>
 <p>The grading app has been updated after the Fall 2018 semester ended.</p>

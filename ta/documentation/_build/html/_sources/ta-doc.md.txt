@@ -12,6 +12,15 @@
 5. Start grading! There are buttons that will help at the bottom of the page,
 and at the top of the page there is a button to view the student code.
 
+### Grading remotely
+If you want to grade remotely, you should
+1. ssh in to a department machine
+2. run `hostname` to figure out which computer you are on
+3. run `cs111-grade`
+4. On your machine, open a terminal and run this command:
+    `ssh CSLOGIN@ssh.cs.brown.edu -N -L 6924:HOSTNAME:6924`
+(replacing the login with your login and the hostname with the hostname
+of the computer running the grading app)
 
 ### Updated grading app
 The grading app has been updated after the Fall 2018 semester ended.

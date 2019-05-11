@@ -187,7 +187,7 @@ assignment (False by default)</li>
 </div>
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>creates HTA_Assignment</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -362,7 +362,7 @@ the student’s grade report</td>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.id_to_login">
-<code class="descname">id_to_login</code><span class="sig-paren">(</span><em>id: int</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.id_to_login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.id_to_login" title="Permalink to this definition">¶</a></dt>
+<code class="descname">id_to_login</code><span class="sig-paren">(</span><em>ident: int</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.id_to_login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.id_to_login" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get anonymous ID of student by login</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -492,20 +492,17 @@ this method does)</td>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.send_emails">
-<code class="descname">send_emails</code><span class="sig-paren">(</span><em>yag: yagmail.sender.SMTP</em>, <em>logins: Optional[List[str]] = None</em>, <em>override_send_to: Optional[str] = None</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.send_emails"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.send_emails" title="Permalink to this definition">¶</a></dt>
+<code class="descname">send_emails</code><span class="sig-paren">(</span><em>yag: yagmail.sender.SMTP</em>, <em>logins: Optional[List[str]] = None</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.send_emails"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.send_emails" title="Permalink to this definition">¶</a></dt>
 <dd><p>sends email reports to a list of students</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>yag</strong> (<em>yagmail.sender.SMTP</em>) – a yagmail SMTP instance (should be <a class="reference external" href="mailto:cs0111&#37;&#52;&#48;brown&#46;edu">cs0111<span>&#64;</span>brown<span>&#46;</span>edu</a>)</li>
+<li><strong>yag</strong> (<em>yagmail.sender.SMTP</em>) – a yagmail SMTP instance (should have email send_from from
+assignments.json)</li>
 <li><strong>logins</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – if None, sends to all students who handed assignment
 in. otherwise, sends to all students in this list</li>
-<li><strong>override_send_to</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – to be used if you would like to test report
-sending; all emails will be sent to this
-address if supplied, otherwise to the relevant
-student’s Brown email address (by default)</li>
 </ul>
 </td>
 </tr>

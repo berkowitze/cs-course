@@ -1,0 +1,32 @@
+Beginning of the semester checklist:
+
+0) Make sure last semester's data is cleared.
+
+1) Copy the handin form over
+    a) Make sure grading/handin data from previous year is cleared.
+        cs111-asgn-hub > Course Options
+    b) Make a copy of the current handin form.
+    e) Clear the Forms' responses.
+    c) Dump the Forms' responses into a spreadsheet.
+    d) Get that spreadsheet's ID and put it into config.py
+
+2) Hookup handin submission checking
+    a) Log into a department machine in the TA grading rooms (Blab or Jlab).
+       Melissa worked well for the Fall 2018 semester!
+    b) Make a crontab using
+       crontab -e
+    c) Put this into the crontab: (check for handins every 2 minutes)
+    */2 * * * * /course/cs0111/htabin/cs111-check-handins
+
+3) While on dept machine, setup group updating.
+    a) To get group data, we need to be able to get data on student logins.
+       For that we need to be able to login to our Brown account without typing
+       in our password every single time the script runs.
+       To do this, you need to make a KEYTAB.
+
+
+
+    b) Put the group updating.
+    */20 * * * * /usr/bin/kinit YOURUSERNAME@AD.BROWN.EDU -k -t 
+
+4) Setup any configuration needed in config.py.

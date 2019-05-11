@@ -178,7 +178,7 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>proj_dir</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – If group_asgn is False, None. If group_asgn is True,
+<li><strong>proj_dir</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – If not a group asgn, None. If is a group_asgn,
 the name of the common directory to use
 (for multi-assignment projects). For example, “project3”</li>
 <li><strong>full_name</strong> (<em>str</em>) – Full name of assignment (i.e. “Homework 2”)</li>
@@ -863,7 +863,7 @@ blocklists and the handin being extracted already</td>
 
 <dl class="method">
 <dt id="classes.Handin.save_data">
-<code class="descname">save_data</code><span class="sig-paren">(</span><em>data: dict, new_comments: Dict[str, Any], emoji: bool</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes.html#Handin.save_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.save_data" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_data</code><span class="sig-paren">(</span><em>data: dict, new_comments: Dict[str, Any], emoji: bool</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/classes.html#Handin.save_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.save_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves new data from grading app to rubric file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -874,6 +874,7 @@ blocklists and the handin being extracted already</td>
 (rubric_item -&gt; rubric_value) dict values</li>
 <li><strong>new_comments</strong> (<em>Tuple</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>]</em>) – a tuple of general new comments to give and a
 dictionary of (category -&gt; comments to give)</li>
+<li><strong>emoji</strong> (<em>bool</em>) – Whether or not this rubric has deserved an emoji!</li>
 </ul>
 </td>
 </tr>
@@ -890,7 +891,9 @@ dictionary of (category -&gt; comments to give)</li>
 <dl class="method">
 <dt id="classes.Handin.set_complete">
 <code class="descname">set_complete</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/classes.html#Handin.set_complete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.set_complete" title="Permalink to this definition">¶</a></dt>
-<dd><p>handin grading complete, checks if complete first</p>
+<dd><p>handin grading complete, checks if complete first
+:returns: whether or not the handin was already complete
+:rtype: bool</p>
 </dd></dl>
 
 <dl class="method">

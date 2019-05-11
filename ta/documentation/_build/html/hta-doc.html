@@ -94,6 +94,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#assignments-json"><code class="docutils literal notranslate"><span class="pre">assignments.json</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cs111-asgn-hub"><code class="docutils literal notranslate"><span class="pre">cs111-asgn-hub</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#asgnipython"><code class="docutils literal notranslate"><span class="pre">asgnipython</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#backups">Backups</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ta-doc.html">UTA Relevant Documentation</a></li>
@@ -301,6 +302,21 @@ and everything from <code class="docutils literal notranslate"><span class="pre"
 and methods available. the <code class="docutils literal notranslate"><span class="pre">magic_update</span></code> function is how you update rubrics.
 you may also want to use <code class="docutils literal notranslate"><span class="pre">asgnipython</span></code> to force the reset of assignment grading
 by doing <code class="docutils literal notranslate"><span class="pre">HTA_Assignment(&quot;Assignment</span> <span class="pre">Name&quot;).reset_grading(True)</span></code>.</p>
+</div>
+<div class="section" id="backups">
+<span id="backups"></span><h2>Backups<a class="headerlink" href="#backups" title="Permalink to this headline">¶</a></h2>
+<p>The backup system is not particularly sophisiticated but it is better than nothing.
+I mostly recommend using it at the end of the semester to save data in case it is
+needed in future years. It will only back up data relevant to the grading app, as
+well as anything inside the <code class="docutils literal notranslate"><span class="pre">/ta/grading/data</span></code> directory.</p>
+<p>Restoring backups simply makes a new backup, then overwrites all files
+with the contents of the backup.</p>
+<p>There is currently no way of backing up individual assignments or componenets
+of the grading app; if you want this, you need to either implement it into
+the grading app or do it by hand in bash.</p>
+<p>There is also the <code class="docutils literal notranslate"><span class="pre">.snapshots</span></code> system, which backs up the entire CS department
+directory system every ~3 hours. Don’t rely on this for long term storage though,
+it should generally only be used for recovering files after mistakes were made.</p>
 </div>
 </div>
 
