@@ -351,6 +351,7 @@ function getComments() {
 }
 
 function saveHandin(tryComplete) {
+    console.log('SAVING with completed = ' + tryComplete);
     formData = fetchFormInfo();
     comments = getComments();
     activeId = $('main').data('active-id');

@@ -51,9 +51,9 @@ class HTA_Assignment(Assignment):
         :param \*args: any args to use in Assignment initialization
         :param \*\*kwargs: any keyword args to use in Assignment initialization
         """
+
         # initialize TA version of Assignment class
         super().__init__(*args, **kwargs)
-
         if self.anonymous:
             jpath = f'{self.mini_name}.json'
             self.anon_path = pjoin(anon_map_path, jpath)
@@ -73,6 +73,14 @@ class HTA_Assignment(Assignment):
             f'{grade_base_path} directory does not exist'
         self.emails_sent = self._json['sent_emails']
         self.groups_loaded = False
+
+    def load(self) -> None:
+        super().load()
+        with locked_file(self.anon_path) as f:
+            data: Dict[str, int] = json.load(f)
+
+        self._login_to_id_map: Dict[str, int] = data
+        self._id_to_login_map: Dict[int, str] = {data[k]: k for k in data}
 
     def init_grading(self) -> None:
         """
@@ -158,8 +166,7 @@ class HTA_Assignment(Assignment):
         with locked_file(self.anon_path, 'w') as f:
             json.dump(anon_map, f, sort_keys=True, indent=2)
 
-        self._login_to_id_map: Dict[str, int]
-        self._login_to_id_map = anon_map
+        self._login_to_id_map: Dict[str, int] = anon_map
         self._id_to_login_map: Dict[int, str]
         self._id_to_login_map = {anon_map[k]: k for k in anon_map}
         self.login_handin_list: List[str] = submitted_students
@@ -440,7 +447,7 @@ class HTA_Assignment(Assignment):
                 continue
             if pexists(h.grade_path):
                 os.remove(h.grade_path)
-            
+
             # remove from log
             with locked_file(q.log_filepath) as f:
                 data = json.load(f)
@@ -722,7 +729,7 @@ class HTA_Assignment(Assignment):
         # TODO: clean up getting anonymous id for both group and non group asgn
         # TODO: put generation of rubric summary in different method
         # TODO: put override/backup/general report location files in method
-
+        print('Loading for ' + login)
         final_path = latest_submission_path(self.handin_path,
                                             login,
                                             self.mini_name)
@@ -791,7 +798,7 @@ class HTA_Assignment(Assignment):
                     raw_grade[key] += report_grade[key]
                 else:
                     raw_grade[key] = report_grade[key]
-
+        
         final_grade: Grade = determine_grade(raw_grade, late, self)
 
         grade_string = 'Grade Summary\n'

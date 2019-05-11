@@ -191,53 +191,59 @@ def loaded_rubric_check(rubric: Rubric) -> None:
 
     """
 
+    def p(s):
+        return f'\nInvalid section of rubric: \n{s}\n'
+
     def has_keys(d: Mapping, keys: List[str]) -> bool:
         """ makes sure d has only the keys specified """
         return all([k in d for k in keys]) and all([k in keys for k in d])
 
     def check_rubric_category(rc: RubricCategory) -> bool:
-        assert has_keys(rc, ['fudge_points', 'comments', 'rubric_items'])
-        assert check_comments(rc['comments'])
-        assert isinstance(rc['rubric_items'], list)
-        assert all(map(check_item, rc['rubric_items']))
-        assert isinstance(rc['fudge_points'], list)
-        assert isinstance(rc['fudge_points'][0], float)
-        assert isinstance(rc['fudge_points'][1], float)
-        assert len(rc['fudge_points']) == 2
+        assert has_keys(rc, ['fudge_points', 'comments', 'rubric_items']), p(rc)
+        assert check_comments(rc['comments']), rc['comments']
+        assert isinstance(rc['rubric_items'], list), rc['rubric_items']
+        assert all([check_item(ri) for ri in rc['rubric_items']]), \
+                p(rc['rubric_items'])
+        assert isinstance(rc['fudge_points'], list), p(rc)
+        assert isinstance(rc['fudge_points'][0], float), p(rc)
+        assert isinstance(rc['fudge_points'][1], float), p(rc)
+        assert len(rc['fudge_points']) == 2, p(rc)
         return True
 
     def check_item(ri: RubricItem) -> bool:
-        assert has_keys(ri, ['descr', 'selected', 'options'])
-        assert isinstance(ri['descr'], str)
-        assert isinstance(ri['selected'], (type(None), int))
-        assert isinstance(ri['options'], list)
-        assert all(map(check_opt, ri['options']))
+        assert has_keys(ri, ['descr', 'selected', 'options']), p(ri)
+        assert isinstance(ri['descr'], str), p(ri['descr'])
+        assert isinstance(ri['selected'], (type(None), int)), p(ri['selected'])
+        assert isinstance(ri['options'], list), p(ri['options'])
+        assert all([check_opt(opt) for opt in ri['options']]), p(ri['options'])
         return True
 
     def check_opt(ro: RubricOption):
-        assert has_keys(ro, ['point_val', 'descr'])
-        assert isinstance(ro, dict)
-        assert isinstance(ro['point_val'], int)
-        assert isinstance(ro['descr'], str)
+        assert has_keys(ro, ['point_val', 'descr']), p(ro)
+        assert isinstance(ro, dict), p(ro)
+        assert isinstance(ro['point_val'], int), p(ro)
+        assert isinstance(ro['descr'], str), p(ro['descr'])
         return True
 
     def check_comments(comments: Comments) -> bool:
-        assert has_keys(comments, ['given', 'un_given'])
-        assert isinstance(comments, dict)
-        assert isinstance(comments['given'], list)
-        assert isinstance(comments['un_given'], list)
-        assert all(map(lambda s: isinstance(s, str),
-                       comments['given']))
-        assert all(map(lambda s: isinstance(s, str),
-                       comments['un_given']))
+        assert has_keys(comments, ['given', 'un_given']), p(comments)
+        assert isinstance(comments, dict), p(comments)
+        assert isinstance(comments['given'], list), p(comments['given'])
+        assert isinstance(comments['un_given'], list), p(comments['un_given'])
+        assert all([isinstance(s, str) for s in comments['given']]), \
+                p(comments['given'])
+        assert all([isinstance(s, str) for s in comments['un_given']]), \
+                p(comments['un_given'])
         return True
 
-    assert has_keys(rubric, ['rubric', 'comments', 'emoji'])
-    assert check_comments(rubric['comments'])
+    assert has_keys(rubric, ['rubric', 'comments', 'emoji']), p(rubric.keys())
+    assert check_comments(rubric['comments']), p(rubric['comments'])
 
-    assert isinstance(rubric, dict)  # loaded rubric is a dictionary
-    assert isinstance(rubric['rubric'], dict)  # rubric key is dict
-    assert all(map(check_rubric_category, rubric['rubric'].values()))
+    assert isinstance(rubric, dict), p('Entire rubric should be dict')
+    assert isinstance(rubric['rubric'], dict), \
+            p('rubric subcategory should be dict')  # rubric key is dict
+    vals = rubric['rubric'].values()
+    assert all([check_rubric_category(rc) for rc in vals])
 
 
 def bracket_check(path: str) -> None:

@@ -180,6 +180,7 @@ def unextract_handin():
 @app.route('/save_handin')
 @is_logged_in
 def save_handin():
+    print('saving')
     ident = request.args['id']
     assert workflow['handin'].id == int(ident), \
         'trying to unextract inactive handin'
