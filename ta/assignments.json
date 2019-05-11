@@ -1,395 +1,84 @@
 {
   "aa_README": [
-    "all keys must be the same as the Google Form dropdown option", 
+    "all keys must be the same as the Google Form dropdown option",
     "dates are mm/dd/yyyy HH:MM_M format (i.e. 11/29/2018 05:00PM)",
     "format for each assignment in custom_types.py"
   ],
   "assignments": {
-    "CS18 Bridgework - BSTs": {
-      "anonymous": false, 
-      "due": "02/01/2019 05:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "02/02/2019 01:00PM", 
-      "questions": [
-        {
-          "col": "AJ", 
-          "filename": "bsts.arr", 
-          "ts_lang": "arr"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "CS18 Bridgework - Programming Practice": {
-      "anonymous": false, 
-      "due": "02/01/2019 05:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "02/02/2019 01:00PM", 
-      "questions": [
-        {
-          "col": "AQ", 
-          "filename": "filesystem.arr", 
-          "ts_lang": "arr"
-        }, 
-        {
-          "col": "AR", 
-          "filename": "crossing.arr", 
-          "ts_lang": "arr"
-        }, 
-        {
-          "col": "AS", 
-          "filename": "reflections.txt", 
-          "ts_lang": "arr"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "CS18 Bridgework - Running Times": {
-      "anonymous": false, 
-      "due": "02/10/2019 10:23PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "02/11/2019 06:23PM", 
-      "questions": [
-        {
-          "col": "AK", 
-          "filename": "runningtimes.pdf", 
-          "ts_lang": null
-        }, 
-        {
-          "col": "AN", 
-          "filename": "runningtimes.rtf", 
-          "ts_lang": null
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "CS18 Bridgework - Sorting": {
-      "anonymous": false, 
-      "due": "02/01/2019 05:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "02/02/2019 01:00PM", 
-      "questions": [
-        {
-          "col": "AI", 
-          "filename": "sorting.arr", 
-          "ts_lang": "arr"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "Drill 14": {
-      "anonymous": true, 
-      "due": "11/05/2018 08:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "11/06/2018 04:00PM", 
-      "questions": [
-        {
-          "col": "Y", 
-          "filename": "drill14.py", 
-          "ts_lang": "py"
-        }
-      ], 
-      "sent_emails": false
-    }, 
     "Homework 1": {
-      "anonymous": false, 
-      "due": "09/11/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "09/12/2018 05:00PM", 
+      "anonymous": false,
+      "due": "04/20/2020 09:00PM",
+      "emails_sent": false,
+      "grading_completed": false,
+      "grading_started": true,
+      "group_data": null,
+      "late_due": "04/21/2020 09:00PM",
       "questions": [
         {
-          "col": "D", 
-          "filename": "flags.arr", 
-          "ts_lang": "arr"
+          "col": "D",
+          "filename": "flags.arr",
+          "ts_lang": "Pyret"
         }
-      ], 
+      ],
       "sent_emails": false
-    }, 
+    },
     "Homework 2": {
-      "anonymous": false, 
-      "due": "09/19/2018 06:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "09/20/2018 02:00PM", 
+      "anonymous": true,
+      "due": "04/22/2020 09:00PM",
+      "grading_completed": false,
+      "grading_started": false,
+      "group_data": null,
+      "late_due": "04/23/2020 09:00PM",
       "questions": [
         {
-          "col": "F", 
-          "filename": "bingebreaker.txt", 
-          "ts_lang": "NONE"
-        }, 
+          "col": "E",
+          "filename": "lol.pdf",
+          "ts_lang": null
+        },
         {
-          "col": "G", 
-          "filename": "coordinates.arr", 
-          "ts_lang": "arr"
-        }, 
-        {
-          "col": "H", 
-          "filename": "circle.arr", 
-          "ts_lang": "arr"
-        }, 
-        {
-          "col": "I", 
-          "filename": "battleplans.arr", 
-          "ts_lang": "arr"
+          "col": "F",
+          "filename": "blah.py",
+          "ts_lang": "Python"
         }
-      ], 
+      ],
       "sent_emails": false
-    }, 
-    "Homework 3": {
-      "anonymous": false, 
-      "due": "09/25/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "09/26/2018 05:00PM", 
-      "questions": [
-        {
-          "col": "K", 
-          "filename": "safety.arr", 
-          "ts_lang": "arr"
-        }, 
-        {
-          "col": "L", 
-          "filename": "calculate-rate.arr", 
-          "ts_lang": "arr"
-        }, 
-        {
-          "col": "M", 
-          "filename": "sunset.arr", 
-          "ts_lang": "arr"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "Homework 4": {
-      "anonymous": false, 
-      "due": "10/02/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "10/03/2018 05:00PM", 
-      "questions": [
-        {
-          "col": "O", 
-          "filename": "planets-table.arr", 
-          "ts_lang": "arr"
-        }, 
-        {
-          "col": "P", 
-          "filename": "climate-tables.arr", 
-          "ts_lang": "arr"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "Homework 6": {
-      "anonymous": false, 
-      "due": "10/23/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "10/24/2018 05:00PM", 
-      "questions": [
-        {
-          "col": "U", 
-          "filename": "shakespeare.arr", 
-          "ts_lang": "arr"
-        }, 
-        {
-          "col": "V", 
-          "filename": "fruits.arr", 
-          "ts_lang": "arr"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "Homework 7": {
-      "anonymous": true, 
-      "due": "11/13/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "11/14/2018 05:00PM", 
-      "questions": [
-        {
-          "col": "AA", 
-          "filename": "election.py", 
-          "ts_lang": "py"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "Homework 8": {
-      "anonymous": true, 
-      "due": "11/20/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "11/21/2018 05:00PM", 
-      "questions": [
-        {
-          "col": "AC", 
-          "filename": "memory.txt", 
-          "ts_lang": "py"
-        }
-      ], 
-      "sent_emails": false
-    }, 
+    },
     "Project 1": {
-      "anonymous": false, 
-      "due": "10/16/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
+      "anonymous": false,
+      "due": "04/21/2020 09:00PM",
+      "grading_completed": false,
+      "grading_started": false,
       "group_data": {
-        "multi_part_name": "project1", 
+        "multi_part_name": "project1",
         "partner_col": null
-      }, 
-      "late_due": "10/17/2018 05:00PM", 
+      },
+      "late_due": "04/22/2020 09:00PM",
       "questions": [
         {
-          "col": "T", 
-          "filename": "transit-report.pdf", 
-          "ts_lang": "NONE"
-        }, 
-        {
-          "col": "S", 
-          "filename": "transit-analysis.arr", 
-          "ts_lang": "arr"
+          "col": "I",
+          "filename": "finalhandin.py",
+          "ts_lang": "Python"
         }
-      ], 
+      ],
       "sent_emails": false
-    }, 
+    },
     "Project 1 Design Check": {
-      "anonymous": false, 
-      "due": "10/14/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
+      "anonymous": false,
+      "due": "04/20/2020 04:20PM",
+      "grading_completed": false,
+      "grading_started": false,
       "group_data": {
-        "multi_part_name": "project1", 
-        "partner_col": null
-      }, 
-      "late_due": "10/15/2018 05:00PM", 
+        "multi_part_name": "project1",
+        "partner_col": "H"
+      },
+      "late_due": "04/21/2020 04:20PM",
       "questions": [
         {
-          "col": "R", 
-          "filename": "project-1-design-check.pdf", 
-          "ts_lang": "NONE"
+          "col": "G",
+          "filename": "allcode.py",
+          "ts_lang": "Python"
         }
-      ], 
-      "sent_emails": false
-    }, 
-    "Project 2": {
-      "anonymous": false, 
-      "due": "11/06/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": {
-        "multi_part_name": "project2", 
-        "partner_col": null
-      }, 
-      "late_due": "11/07/2018 05:00PM", 
-      "questions": [
-        {
-          "col": "Z", 
-          "filename": "magicmaze.arr", 
-          "ts_lang": "arr"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "Project 2 Design Check": {
-      "anonymous": false, 
-      "due": "11/10/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": {
-        "multi_part_name": "project2", 
-        "partner_col": null
-      }, 
-      "late_due": "11/11/2018 05:00PM", 
-      "questions": [
-        {
-          "col": "X", 
-          "filename": "magicmaze.arr", 
-          "ts_lang": "arr"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "Project 3": {
-      "anonymous": false, 
-      "due": "12/11/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": {
-        "multi_part_name": "project3", 
-        "partner_col": null
-      }, 
-      "late_due": "12/12/2018 05:00PM", 
-      "questions": [
-        {
-          "col": "AF", 
-          "filename": "books.py", 
-          "ts_lang": "py"
-        }, 
-        {
-          "col": "AG", 
-          "filename": "bookstest.py", 
-          "ts_lang": "py"
-        }, 
-        {
-          "col": "AH", 
-          "filename": "reflection.txt", 
-          "ts_lang": "py"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "Project 3 Design Check": {
-      "anonymous": false, 
-      "due": "12/30/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": {
-        "multi_part_name": "project3", 
-        "partner_col": "AE"
-      }, 
-      "late_due": "12/31/2018 05:00PM", 
-      "questions": [
-        {
-          "col": "AD", 
-          "filename": "books.py", 
-          "ts_lang": "py"
-        }
-      ], 
-      "sent_emails": false
-    }, 
-    "testing": {
-      "anonymous": true, 
-      "due": "04/05/2018 09:00PM", 
-      "grading_completed": false, 
-      "grading_started": false, 
-      "group_data": null, 
-      "late_due": "04/06/2018 05:00PM", 
-      "questions": [
-        {
-          "col": "AT", 
-          "filename": "LOL.arr", 
-          "ts_lang": "arr"
-        }
-      ], 
+      ],
       "sent_emails": false
     }
   }

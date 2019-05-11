@@ -15,7 +15,7 @@ class HandinConfig:
     late_days = 3  # late days on individual assignments
     # allow use of late days on projects (not implemented yet)
     late_days_on_projects = False
-    spreadsheet_id = '1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8'
+    spreadsheet_id = '1kT5ShSvteQNyOq13VlGHsZH0Rs78-oQLh1JFORvgXVQ'
     sheet_name = 'handins'
     student_email_col = 'B'
     start_col = 'A'
@@ -54,7 +54,7 @@ class HandinConfig:
 
 class CONFIG:
     base_path = '/course/cs0111'
-    test_mode = True
+    test_mode = False
     email_from = 'csci0111@brown.edu'
     email_errors_to = 'elias_berkowitz@brown.edu'
     hta_email = 'elias_berkowitz@brown.edu'
