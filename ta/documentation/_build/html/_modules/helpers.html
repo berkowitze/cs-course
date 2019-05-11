@@ -152,6 +152,9 @@
 
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">pjoin</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">exists</span> <span class="k">as</span> <span class="n">pexists</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span>
@@ -159,12 +162,16 @@
 <span class="kn">from</span> <span class="nn">filelock</span> <span class="k">import</span> <span class="n">FileLock</span>
 
 <span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="p">(</span><span class="n">Rubric</span><span class="p">,</span> <span class="n">RubricCategory</span><span class="p">,</span> <span class="n">RubricItem</span><span class="p">,</span> <span class="n">RubricOption</span><span class="p">,</span>
-                          <span class="n">Bracket</span><span class="p">,</span> <span class="n">BracketItem</span><span class="p">,</span> <span class="n">Comments</span><span class="p">)</span>
+                          <span class="n">Bracket</span><span class="p">,</span> <span class="n">BracketItem</span><span class="p">,</span> <span class="n">Comments</span><span class="p">,</span> <span class="n">AssignmentJson</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">config</span> <span class="k">import</span> <span class="n">CONFIG</span>
 
-<span class="n">pjoin</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span>
-
-<span class="n">BASE_PATH</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;/course/cs0111&#39;</span>
+<span class="n">BASE_PATH</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">base_path</span>
 <span class="n">res_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;resource-lock.lock&#39;</span><span class="p">)</span>
+
+<span class="n">moss_langs</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;cc&quot;</span><span class="p">,</span> <span class="s2">&quot;java&quot;</span><span class="p">,</span> <span class="s2">&quot;ml&quot;</span><span class="p">,</span> <span class="s2">&quot;pascal&quot;</span><span class="p">,</span> <span class="s2">&quot;ada&quot;</span><span class="p">,</span> <span class="s2">&quot;lisp&quot;</span><span class="p">,</span> <span class="s2">&quot;scheme&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;haskell&quot;</span><span class="p">,</span> <span class="s2">&quot;fortran&quot;</span><span class="p">,</span> <span class="s2">&quot;ascii&quot;</span><span class="p">,</span> <span class="s2">&quot;vhdl&quot;</span><span class="p">,</span> <span class="s2">&quot;perl&quot;</span><span class="p">,</span> <span class="s2">&quot;matlab&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="s2">&quot;mips&quot;</span><span class="p">,</span> <span class="s2">&quot;prolog&quot;</span><span class="p">,</span> <span class="s2">&quot;spice&quot;</span><span class="p">,</span> <span class="s2">&quot;vb&quot;</span><span class="p">,</span> <span class="s2">&quot;csharp&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;modula2&quot;</span><span class="p">,</span> <span class="s2">&quot;a8086&quot;</span><span class="p">,</span> <span class="s2">&quot;javascript&quot;</span><span class="p">,</span> <span class="s2">&quot;plsql&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="locked_file"><a class="viewcode-back" href="../helpers.html#helpers.locked_file">[docs]</a><span class="nd">@contextmanager</span>
@@ -185,24 +192,31 @@
 <span class="sd">            text = f.read()</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">test_mode</span> <span class="ow">and</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;locked_file(</span><span class="si">{filename!r}</span><span class="s1">, </span><span class="si">{mode!r}</span><span class="s1">)&#39;</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;a&#39;</span> <span class="ow">or</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;w&#39;</span><span class="p">):</span>
         <span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;Can only open locked file in r, w, or a mode (just in case)&#39;</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pexists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;File </span><span class="si">{filename}</span><span class="s1"> not found.&#39;</span><span class="p">)</span>
+
     <span class="n">lock_path</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;.lock&#39;</span>
     <span class="n">lock</span> <span class="o">=</span> <span class="n">FileLock</span><span class="p">(</span><span class="n">lock_path</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># throw error after 10 seconds</span>
     <span class="k">with</span> <span class="n">lock</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="n">f</span>
-
-        <span class="c1"># after file is closed, attempt to remove the .lock</span>
-        <span class="c1"># file; the file is only clutter, it won&#39;t have an impact</span>
-        <span class="c1"># on anything, so don&#39;t try too hard</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">lock_path</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
-            <span class="k">raise</span>
-        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-            <span class="k">pass</span></div>
+            <span class="k">yield</span> <span class="n">f</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># after file is closed, attempt to remove the .lock</span>
+            <span class="c1"># file; the file is only clutter, it won&#39;t have an impact</span>
+            <span class="c1"># on anything, so don&#39;t try too hard</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">lock_path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+                <span class="k">raise</span>
+            <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+                <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="json_edit"><a class="viewcode-back" href="../helpers.html#helpers.json_edit">[docs]</a><span class="nd">@contextmanager</span>
@@ -289,7 +303,7 @@
 <span class="sd">    :raises AssertionError: invalid JSON file (filename or data in file)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">f</span><span class="s1">&#39;json path </span><span class="si">{path}</span><span class="s1"> does not exist&#39;</span>
+    <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">f</span><span class="s1">&#39;json path </span><span class="si">{path}</span><span class="s1"> does not exist&#39;</span>
     <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">path</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.json&#39;</span><span class="p">,</span> \
         <span class="n">f</span><span class="s1">&#39;json path </span><span class="si">{path}</span><span class="s1"> has invalid extension&#39;</span>
 
@@ -476,7 +490,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    removes all duplicates from the input list. order is maintained.</span>
-<span class="sd">    input list is not modified</span>
+<span class="sd">    input list is not modified. linear runtime.</span>
 
 <span class="sd">    :param lst: any list</span>
 <span class="sd">    :type lst: list</span>
@@ -487,12 +501,14 @@
 
     <span class="c1"># Create an empty list to store unique elements</span>
     <span class="n">unique_list</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">unique_set</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
     <span class="c1"># Iterate over the original list and for each element</span>
     <span class="c1"># add it to uniqueList, if its not already there.</span>
     <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">elem</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">elem</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_set</span><span class="p">:</span>
             <span class="n">unique_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+            <span class="n">unique_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">unique_list</span></div>
 
@@ -515,6 +531,71 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[32m</span><span class="si">{s}</span><span class="se">\033</span><span class="s1">[0m&#39;</span></div>
+
+
+<div class="viewcode-block" id="col_str_to_num"><a class="viewcode-back" href="../helpers.html#helpers.col_str_to_num">[docs]</a><span class="k">def</span> <span class="nf">col_str_to_num</span><span class="p">(</span><span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    convert a spreadsheet column letter to the number, starting from 1,</span>
+<span class="sd">    corresponding to that column</span>
+
+<span class="sd">    example:</span>
+
+<span class="sd">    &gt;&gt;&gt; col_str_to_num(&quot;C&quot;)</span>
+<span class="sd">    3</span>
+
+<span class="sd">    :param col: column to convert</span>
+<span class="sd">    :type col: str</span>
+<span class="sd">    :returns: the number of the column that col corresponds to</span>
+<span class="sd">    :rtype: int</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_letters</span><span class="p">:</span>
+            <span class="n">num</span> <span class="o">=</span> <span class="n">num</span> <span class="o">*</span> <span class="mi">26</span> <span class="o">+</span> <span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span> <span class="o">-</span> <span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="col_num_to_str"><a class="viewcode-back" href="../helpers.html#helpers.col_num_to_str">[docs]</a><span class="k">def</span> <span class="nf">col_num_to_str</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    convert a spreadsheet column number to the corresponding column, starting</span>
+<span class="sd">    from n = 1 corresponding to A</span>
+
+<span class="sd">    example:</span>
+
+<span class="sd">    &gt;&gt;&gt; col_num_to_str(4)</span>
+<span class="sd">    &#39;D&#39;</span>
+<span class="sd">    &gt;&gt;&gt; col_num_to_str(27)</span>
+<span class="sd">    &#39;AA&#39;</span>
+
+<span class="sd">    :param n: column number to convert</span>
+<span class="sd">    :type col: int</span>
+<span class="sd">    :returns: the column label that n corresponds to</span>
+<span class="sd">    :rtype: str</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">while</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">26</span><span class="p">)</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">65</span> <span class="o">+</span> <span class="n">remainder</span><span class="p">)</span> <span class="o">+</span> <span class="n">string</span>
+
+    <span class="k">return</span> <span class="n">string</span></div>
+
+
+<div class="viewcode-block" id="check_assignments"><a class="viewcode-back" href="../helpers.html#helpers.check_assignments">[docs]</a><span class="k">def</span> <span class="nf">check_assignments</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">AssignmentJson</span><span class="p">):</span>
+    <span class="n">ecol</span> <span class="o">=</span> <span class="n">col_str_to_num</span><span class="p">(</span><span class="n">CONFIG</span><span class="o">.</span><span class="n">handin</span><span class="o">.</span><span class="n">end_col</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">asgn</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">][</span><span class="n">asgn</span><span class="p">][</span><span class="s1">&#39;questions&#39;</span><span class="p">]:</span>
+            <span class="n">qcol</span> <span class="o">=</span> <span class="n">col_str_to_num</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="s1">&#39;col&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">qcol</span> <span class="o">&gt;</span> <span class="n">ecol</span><span class="p">:</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span><span class="s1">&#39;assignments.json assignment </span><span class="si">{asgn}</span><span class="s1"> has question &#39;</span>
+                     <span class="n">f</span><span class="s1">&#39;</span><span class="si">{q[&quot;filename&quot;]}</span><span class="s1"> referencing column </span><span class="si">{qcol}</span><span class="s1">, which</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="n">f</span><span class="s1">&#39;is over the end_col &quot;</span><span class="si">{ecol}</span><span class="s1"> (set in assignments.json)&#39;</span>
+                     <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

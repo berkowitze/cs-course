@@ -183,6 +183,61 @@ file, raising an error if it is not</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="helpers.check_assignments">
+<code class="descclassname">helpers.</code><code class="descname">check_assignments</code><span class="sig-paren">(</span><em>data: importlib._bootstrap.AssignmentJson</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/helpers.html#check_assignments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.check_assignments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="helpers.col_num_to_str">
+<code class="descclassname">helpers.</code><code class="descname">col_num_to_str</code><span class="sig-paren">(</span><em>n: int</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/helpers.html#col_num_to_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.col_num_to_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert a spreadsheet column number to the corresponding column, starting
+from n = 1 corresponding to A</p>
+<p>example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">col_num_to_str</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="go">&#39;D&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">col_num_to_str</span><span class="p">(</span><span class="mi">27</span><span class="p">)</span>
+<span class="go">&#39;AA&#39;</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – column number to convert</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the column label that n corresponds to</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="helpers.col_str_to_num">
+<code class="descclassname">helpers.</code><code class="descname">col_str_to_num</code><span class="sig-paren">(</span><em>col: str</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/helpers.html#col_str_to_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.col_str_to_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert a spreadsheet column letter to the number, starting from 1,
+corresponding to that column</p>
+<p>example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">col_str_to_num</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>col</strong> (<em>str</em>) – column to convert</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the number of the column that col corresponds to</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="helpers.green">
 <code class="descclassname">helpers.</code><code class="descname">green</code><span class="sig-paren">(</span><em>s: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/helpers.html#green"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.green" title="Permalink to this definition">¶</a></dt>
 <dd><p>given a string s, return s wrapped in the escape characters required
@@ -341,7 +396,7 @@ to print the string in a red color to the terminal (ANSI codes)</p>
 <dt id="helpers.remove_duplicates">
 <code class="descclassname">helpers.</code><code class="descname">remove_duplicates</code><span class="sig-paren">(</span><em>lst: list</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/helpers.html#remove_duplicates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#helpers.remove_duplicates" title="Permalink to this definition">¶</a></dt>
 <dd><p>removes all duplicates from the input list. order is maintained.
-input list is not modified</p>
+input list is not modified. linear runtime.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

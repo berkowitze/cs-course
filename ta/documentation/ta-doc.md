@@ -12,6 +12,15 @@
 5. Start grading! There are buttons that will help at the bottom of the page,
 and at the top of the page there is a button to view the student code.
 
+### Grading remotely
+If you want to grade remotely, you should
+1. ssh in to a department machine
+2. run `hostname` to figure out which computer you are on
+3. run `cs111-grade`
+4. On your machine, open a terminal and run this command:
+    `ssh CSLOGIN@ssh.cs.brown.edu -N -L 6924:HOSTNAME:6924`
+(replacing the login with your login and the hostname with the hostname
+of the computer running the grading app)
 
 ### Updated grading app
 The grading app has been updated after the Fall 2018 semester ended.
@@ -162,6 +171,10 @@ For example:
 
 ## How to write testsuites
 
+You can see an example of a Python testsuite in
+`/ta/grading/data/tests/fun.py`. If you want to modify the testsuite
+infrastructure, you will need to go into the `testing_helpers.py` file.
+
 The grading app already knows how to run Python testsuites. If you want to try
 Pyret testsuites, go for it, but it's super slow and you don't get good info
 out of it so I recommend having Pyret testsuites just print out what to copy
@@ -171,10 +184,6 @@ For Python, there is a more involved infrastructure for writing testsuites.
 If you want the testsuite results to feed into the student's grade
 automatically, you will need to update the code for that (see the 
 [customization documentation](customization.html#customizing-testsuites)).
-
-You can see an example of a Python testsuite in
-`/ta/grading/data/tests/fun.py`. If you want to modify the testsuite
-infrastructure, you will need to go into the `testing_helpers.py` file.
 
 `fun.py` is a testing file where students might write a two functions,
 `append` and `remove-3s`.

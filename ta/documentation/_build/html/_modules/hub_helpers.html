@@ -157,8 +157,8 @@
 <span class="kn">import</span> <span class="nn">yagmail</span>
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Set</span>
-<span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="n">locked_file</span>
-<span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="n">Grade</span>
+<span class="kn">from</span> <span class="nn">helpers</span> <span class="k">import</span> <span class="n">locked_file</span><span class="p">,</span> <span class="n">CONFIG</span>
+<span class="kn">from</span> <span class="nn">custom_types</span> <span class="k">import</span> <span class="n">Grade</span><span class="p">,</span> <span class="n">AssignmentData</span>
 <span class="kn">from</span> <span class="nn">hta_helpers</span> <span class="k">import</span> <span class="n">load_students</span>
 
 <span class="c1"># WARNING:</span>
@@ -168,7 +168,7 @@
 <span class="c1"># canvas data in hta folder called canvas-grades-11-17.csv</span>
 <span class="c1"># drill 14 was done through grading app</span>
 
-<span class="n">BASE_PATH</span> <span class="o">=</span> <span class="s1">&#39;/course/cs0111&#39;</span>
+<span class="n">BASE_PATH</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">base_path</span>
 <span class="n">grade_dir</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta&#39;</span><span class="p">,</span> <span class="s1">&#39;grades&#39;</span><span class="p">)</span>
 <span class="n">sum_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta&#39;</span><span class="p">,</span> <span class="s1">&#39;summaries&#39;</span><span class="p">)</span>
 <span class="n">lab_base</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta&#39;</span><span class="p">,</span> <span class="s1">&#39;grading&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;labs&#39;</span><span class="p">)</span>
@@ -177,12 +177,12 @@
 <span class="n">lab_excp_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/grading/data/labs/exceptions.txt&#39;</span><span class="p">)</span>
 <span class="n">ta_group_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;hta/groups/tas.txt&#39;</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">asgn_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">asgn_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AssignmentData</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]</span>
 
-<span class="n">asgns</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">asgn</span> <span class="ow">in</span> <span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">]:</span>
-    <span class="k">if</span> <span class="n">asgn_data</span><span class="p">[</span><span class="s1">&#39;assignments&#39;</span><span class="p">][</span><span class="n">asgn</span><span class="p">][</span><span class="s1">&#39;grading_completed&#39;</span><span class="p">]:</span>
-        <span class="n">asgns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asgn</span><span class="p">)</span>
+<span class="n">completed_asgn_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">asgn</span> <span class="ow">in</span> <span class="n">asgn_data</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">asgn_data</span><span class="p">[</span><span class="n">asgn</span><span class="p">][</span><span class="s1">&#39;grading_completed&#39;</span><span class="p">]:</span>
+        <span class="n">completed_asgn_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">asgn</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_full_grade_dict"><a class="viewcode-back" href="../hub_helpers.html#hub_helpers.get_full_grade_dict">[docs]</a><span class="k">def</span> <span class="nf">get_full_grade_dict</span><span class="p">(</span><span class="n">students</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -229,7 +229,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sdir</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Trying to get nonexistent grade_dict for </span><span class="si">{login}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">asgn</span> <span class="ow">in</span> <span class="n">asgns</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">asgn</span> <span class="ow">in</span> <span class="n">completed_asgn_names</span><span class="p">:</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">asgn</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">individual_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">sdir</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">individual_path</span><span class="p">):</span>
@@ -451,8 +451,7 @@
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">S</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="send_summaries"><a class="viewcode-back" href="../hub_helpers.html#hub_helpers.send_summaries">[docs]</a><span class="k">def</span> <span class="nf">send_summaries</span><span class="p">(</span><span class="n">resummarize</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                   <span class="n">override_email</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="send_summaries"><a class="viewcode-back" href="../hub_helpers.html#hub_helpers.send_summaries">[docs]</a><span class="k">def</span> <span class="nf">send_summaries</span><span class="p">(</span><span class="n">resummarize</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    send course grade summaries</span>
@@ -460,9 +459,6 @@
 <span class="sd">    :param resummarize: whether or not to regenerate grade summaries, or None</span>
 <span class="sd">                        to have program prompt whether or not to regenerate</span>
 <span class="sd">    :type resummarize: Optional[bool], optional</span>
-<span class="sd">    :param override_email: email to send summaries to (for testing) or None</span>
-<span class="sd">                           to send to the student. defaults to None</span>
-<span class="sd">    :type override_email: Optional[str], optional</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">resummarize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -478,7 +474,7 @@
     <span class="k">if</span> <span class="n">resummarize</span><span class="p">:</span>
         <span class="n">generate_grade_summaries</span><span class="p">(</span><span class="n">write</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="n">yag</span> <span class="o">=</span> <span class="n">yagmail</span><span class="o">.</span><span class="n">SMTP</span><span class="p">(</span><span class="s1">&#39;csci0111@brown.edu&#39;</span><span class="p">)</span>
+    <span class="n">yag</span> <span class="o">=</span> <span class="n">yagmail</span><span class="o">.</span><span class="n">SMTP</span><span class="p">(</span><span class="n">CONFIG</span><span class="o">.</span><span class="n">email_from</span><span class="p">)</span>
     <span class="n">full_students</span> <span class="o">=</span> <span class="n">load_students</span><span class="p">()</span>
     <span class="n">login_to_email</span> <span class="o">=</span> <span class="p">{</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">full_students</span><span class="p">}</span>
     <span class="n">students</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">line</span><span class="p">:</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">full_students</span><span class="p">))</span>
@@ -493,17 +489,14 @@
             <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;skipping login </span><span class="si">{login}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">continue</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">contents</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;&lt;pre&gt;{f.read()}&lt;/pre&gt;&#39;</span>
 
         <span class="n">em</span> <span class="o">=</span> <span class="n">login_to_email</span><span class="p">[</span><span class="n">login</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">override_email</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">send_to</span> <span class="o">=</span> <span class="n">em</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">send_to</span> <span class="o">=</span> <span class="n">override_email</span>
+        <span class="n">to</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">test_mode_emails_to</span> <span class="k">if</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">test_mode</span> <span class="k">else</span> <span class="n">em</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Sending </span><span class="si">{login}</span><span class="s1"> summary to </span><span class="si">{send_to}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">yag</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">to</span><span class="o">=</span><span class="n">send_to</span><span class="p">,</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Sending </span><span class="si">{login}</span><span class="s1"> summary to </span><span class="si">{to}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">yag</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">to</span><span class="o">=</span><span class="n">to</span><span class="p">,</span>
                  <span class="n">subject</span><span class="o">=</span><span class="s1">&#39;Aggregated grade report&#39;</span><span class="p">,</span>
                  <span class="n">contents</span><span class="o">=</span><span class="p">[</span><span class="n">contents</span><span class="p">])</span></div>
 

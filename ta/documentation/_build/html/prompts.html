@@ -160,18 +160,23 @@
   <div class="section" id="module-prompts">
 <span id="prompts-module"></span><h1>prompts module<a class="headerlink" href="#module-prompts" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
+<dt id="prompts.date_prompt">
+<code class="descclassname">prompts.</code><code class="descname">date_prompt</code><span class="sig-paren">(</span><em>readable_format: str = 'mm/dd/yyyy hh:mm [a/p]m'</em>, <em>datetime_format: str = '%m/%d/%Y %I:%M %p'</em>, <em>default: Optional[datetime.datetime] = None</em>, <em>after: Optional[datetime.datetime] = None</em>, <em>after_msg: Optional[str] = None</em>, <em>enforce_after: bool = False</em>, <em>**kwargs</em><span class="sig-paren">)</span> &#x2192; Optional[datetime.datetime]<a class="reference internal" href="_modules/prompts.html#date_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.date_prompt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="prompts.ez_prompt">
-<code class="descclassname">prompts.</code><code class="descname">ez_prompt</code><span class="sig-paren">(</span><em>prompt: str, checker: Optional[Callable[[str], bool]] = None, fail_check_msg: Optional[str] = None, raise_on_ctrl_c: bool = False</em><span class="sig-paren">)</span> &#x2192; Optional[str]<a class="reference internal" href="_modules/prompts.html#ez_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.ez_prompt" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prompts.</code><code class="descname">ez_prompt</code><span class="sig-paren">(</span><em>prompt: str, checker: Optional[Callable[[str], bool]] = None, fail_check_msg: Optional[str] = None, raise_on_ctrl_c: bool = False, exit_on_ctrl_c: bool = False</em><span class="sig-paren">)</span> &#x2192; Optional[str]<a class="reference internal" href="_modules/prompts.html#ez_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.ez_prompt" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="prompts.int_prompt">
-<code class="descclassname">prompts.</code><code class="descname">int_prompt</code><span class="sig-paren">(</span><em>maximum: int</em>, <em>prompt: str = '&gt; '</em>, <em>minimum: int = 1</em><span class="sig-paren">)</span> &#x2192; Optional[int]<a class="reference internal" href="_modules/prompts.html#int_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.int_prompt" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prompts.</code><code class="descname">int_prompt</code><span class="sig-paren">(</span><em>maximum: int</em>, <em>prompt: str = '&gt; '</em>, <em>minimum: int = 1</em>, <em>**kwargs</em><span class="sig-paren">)</span> &#x2192; Optional[int]<a class="reference internal" href="_modules/prompts.html#int_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.int_prompt" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="prompts.opt_prompt">
-<code class="descclassname">prompts.</code><code class="descname">opt_prompt</code><span class="sig-paren">(</span><em>opts: List[str], prompt: str = '&gt; ', pre_string: str = ''</em><span class="sig-paren">)</span> &#x2192; Optional[int]<a class="reference internal" href="_modules/prompts.html#opt_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.opt_prompt" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prompts.</code><code class="descname">opt_prompt</code><span class="sig-paren">(</span><em>opts: List[str], prompt: str = '&gt; ', pre_string: str = '', **kwargs</em><span class="sig-paren">)</span> &#x2192; Optional[int]<a class="reference internal" href="_modules/prompts.html#opt_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.opt_prompt" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -181,12 +186,12 @@
 
 <dl class="function">
 <dt id="prompts.toggle_prompt">
-<code class="descclassname">prompts.</code><code class="descname">toggle_prompt</code><span class="sig-paren">(</span><em>options: List[str], toggled: Union[List[str], Set[str], None] = None</em><span class="sig-paren">)</span> &#x2192; Optional[Set[str]]<a class="reference internal" href="_modules/prompts.html#toggle_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.toggle_prompt" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prompts.</code><code class="descname">toggle_prompt</code><span class="sig-paren">(</span><em>options: List[str], toggled: Union[List[str], Set[str], None] = None, **kwargs</em><span class="sig-paren">)</span> &#x2192; Optional[Set[str]]<a class="reference internal" href="_modules/prompts.html#toggle_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.toggle_prompt" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="prompts.yn_prompt">
-<code class="descclassname">prompts.</code><code class="descname">yn_prompt</code><span class="sig-paren">(</span><em>pre_text: str = None</em><span class="sig-paren">)</span> &#x2192; Optional[bool]<a class="reference internal" href="_modules/prompts.html#yn_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.yn_prompt" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prompts.</code><code class="descname">yn_prompt</code><span class="sig-paren">(</span><em>pre_text: str = None</em>, <em>**kwargs</em><span class="sig-paren">)</span> &#x2192; Optional[bool]<a class="reference internal" href="_modules/prompts.html#yn_prompt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prompts.yn_prompt" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
