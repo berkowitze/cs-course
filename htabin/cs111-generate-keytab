@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+echo -n "Username: "
+read username;
+
+echo -n "Password: "
+read -s password
+
+echo -e "addent -password -p $username@AD.BROWN.EDU -k 1 -e rc4-hmac\n$password\nwkt tab.keytab" | ktutil 1&>/dev/null
+
+echo ""
+echo "Keytab outputted to tab.keytab"
