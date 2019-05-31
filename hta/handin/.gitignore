@@ -13,3 +13,5 @@
 !students
 !submission_log.txt
 !config.py
+!handin_helpers.py
+!custom_types.py
