@@ -8,6 +8,7 @@
 !cs111-update-password
 !cs111-restore-backup
 !cs111-data-backup
+!cs111-generate-keytab
 !group-data
 !hta-ta-file
 !lintall
