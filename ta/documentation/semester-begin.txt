@@ -22,11 +22,12 @@ Beginning of the semester checklist:
     a) To get group data, we need to be able to get data on student logins.
        For that we need to be able to login to our Brown account without typing
        in our password every single time the script runs.
-       To do this, you need to make a KEYTAB.
+       To do this, you need to make a KEYTAB. Generate one with
+        cd /course/cs0111/htabin
+        ./cs111-generate-keytab
+       (using your Brown credentials)
 
-
-
-    b) Put the group updating.
-    */20 * * * * /usr/bin/kinit YOURUSERNAME@AD.BROWN.EDU -k -t 
+    b) Put the group-updating script into the crontab:
+    */20 * * * * /usr/bin/kinit YOURUSERNAME@AD.BROWN.EDU -k -t tab.keytab
 
 4) Setup any configuration needed in config.py.
