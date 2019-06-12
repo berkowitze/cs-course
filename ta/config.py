@@ -22,7 +22,7 @@ class HandinConfig:
     end_col = 'AT'
     start_row = 2
     assignment_name_col = 'C'
-    test_sheet_ssid = '1ekM3rwsYOfo7xKdJDl1ub1MZgb3L2-8rzKtbzw2jGI8'
+    test_sheet_ssid = '1r1sqsA8fp-1NZi5tMPc0P_LcLS4Zm_DAaUlmtTG7KFI'
     test_sheet_name = 'testing'
     log_path = '/course/cs0111/hta/handin/submission_log.txt'
     handin_path = '/course/cs0111/hta/handin/students'
