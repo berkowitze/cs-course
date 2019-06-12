@@ -87,17 +87,13 @@ def get_student_grade_dict(login: str) -> Dict[str, Grade]:
             full_grade[asgn] = {'Grade': 'No handin'}
             continue
 
-        fs = os.listdir(individual_path)
-        if 'grade-override.json' in fs:
-            p = pjoin(individual_path, 'grade-override.json')
-        else:
-            p = pjoin(individual_path, 'grade.json')
+        grade_path = pjoin(individual_path, 'grade.json')
 
-        if not os.path.exists(p):
+        if not os.path.exists(grade_path):
             print(f'Nonexistent grade in {individual_path}, continuing...')
             continue
 
-        with locked_file(p) as f:
+        with locked_file(grade_path) as f:
             grade: Grade = json.load(f)
 
         full_grade[asgn] = grade

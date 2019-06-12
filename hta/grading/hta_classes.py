@@ -1,12 +1,12 @@
 import csv
 import zipfile
-from typing import Set, Iterable
-
 import yagmail
 
+from typing import Set, Iterable
 from classes import *
 from custom_types import *
 from hta_helpers import *
+from datetime import datetime
 
 anon_map_path: str = pjoin(BASE_PATH, 'hta/grading/anonymization')
 handin_base_path: str = pjoin(BASE_PATH, 'hta/handin/students')
@@ -262,7 +262,7 @@ class HTA_Assignment(Assignment):
             self._id_to_login_map[ident] = login
             return ident
 
-    def id_to_login(self, ident: int) -> str: # override Assignment version
+    def id_to_login(self, ident: int) -> str:  # override Assignment version
         """
 
         Get anonymous ID of student by login
@@ -608,8 +608,7 @@ class HTA_Assignment(Assignment):
         for student in handins:
             d = self._generate_report(handins=handins[student],
                                       login=student,
-                                      soft=True,
-                                      overrides=self.emails_sent)
+                                      write_files=False)
             data.append(d)
 
         return data
@@ -633,17 +632,12 @@ class HTA_Assignment(Assignment):
         :rtype: bool
 
         """
-        grade_dir = pjoin(grade_base_path, login, self.mini_name)
-        report_path = pjoin(grade_dir, 'report.txt')
-        grade_path = pjoin(grade_dir, 'grade.json')
-        override_r_p = pjoin(grade_dir, 'report-override.txt')
-        override_g_p = pjoin(grade_dir, 'grade-override.json')
-        return pexists(report_path) or pexists(override_r_p)
+        report_fp = pjoin(grade_base_path, login, self.mini_name, 'report.txt')
+        return pexists(report_fp)
 
     def generate_one_report(self,
                             login: str,
-                            soft: bool = True,
-                            overrides: bool = False
+                            write_files: bool = False
                             ) -> GradeData:
         """
 
@@ -663,17 +657,14 @@ class HTA_Assignment(Assignment):
 
         """
         ident = self.login_to_id(login)
-        ps: List[Optional[Handin]] = []
+        handins: List[Optional[Handin]] = []
         for q in self.questions:
             try:
-                ps.append(q.get_handin_by_id(ident))
+                handins.append(q.get_handin_by_id(ident))
             except ValueError:
-                ps.append(None)
+                handins.append(None)
 
-        return self._generate_report(ps,
-                                     login,
-                                     soft=soft,
-                                     overrides=overrides)
+        return self._generate_report(handins, login, write_files=write_files)
 
     def _get_path_to_code(self, login: str) -> str:
         """
@@ -697,8 +688,7 @@ class HTA_Assignment(Assignment):
     def _generate_report(self,
                          handins: List[Optional[Handin]],
                          login: str,
-                         soft=True,
-                         overrides=False
+                         write_files: bool = False
                          ) -> GradeData:
         """
 
@@ -712,12 +702,12 @@ class HTA_Assignment(Assignment):
         :type handins: List[Optional[Handin]]
         :param login: login of student generating report
         :type login: str
-        :param soft: whether or not to only return the report information,
-                     rather than writing it into files; defaults to ``True``
-        :type soft: bool, optional
-        :param overrides: whether or not to generate override reports
-                          defaults to ``False``
-        :type overrides: bool, optional
+        :param write_files: whether or not to write generated grade reported
+                            data to report files.
+                            True: writes to files and returns 4-tuple
+                            False: returns 4-tuple
+                     rather than writing it into files; defaults to ``False``
+        :type write_files: bool, optional
         :returns: a (login, raw student grade, grade report) 3-tuple
         :rtype: Tuple[str, RawGrade, Grade, str]
 
@@ -732,50 +722,39 @@ class HTA_Assignment(Assignment):
         # TODO: clean up getting anonymous id for both group and non group asgn
         # TODO: put generation of rubric summary in different method
         # TODO: put override/backup/general report location files in method
-        print('Loading for ' + login)
-        final_path = latest_submission_path(self.handin_path,
-                                            login,
-                                            self.mini_name)
-        late = (final_path is not None and '-late' in final_path)
 
         grade_dir = pjoin(grade_base_path, login, self.mini_name)
         report_path = pjoin(grade_dir, 'report.txt')
         summary_path = pjoin(grade_dir, 'rubric-summary.txt')
         grade_path = pjoin(grade_dir, 'grade.json')
-        override_r_p = pjoin(grade_dir, 'report-override.txt')
-        override_g_p = pjoin(grade_dir, 'grade-override.json')
-        if overrides and not soft:
-            report_path = override_r_p
-            grade_path = override_g_p
-            if pexists(report_path):
-                # if making overrides would overwrite an override...
-                print(f'Copying existing override for {login} to backup files')
-                shutil.copy(report_path,
-                            pjoin(grade_dir, 'report-override-backup.txt'))
-                shutil.copy(grade_path,
-                            pjoin(grade_dir, 'grade-override-backup.json'))
+        backup_dir = pjoin(grade_dir, 'grade-backups')
 
-        if (pexists(override_r_p) != pexists(override_g_p)):
-            err = (
-                   f'For {self}, student {login} must have both '
-                   f'report-override.txt and grade-override.json'
-                  )
-            raise TypeError(err)
-        if pexists(override_r_p):
-            # by extension both exist because of last check
-            with locked_file(override_r_p) as f:
-                full_string = f.read()
+        final_path = latest_submission_path(self.handin_path,
+                                            login,
+                                            self.mini_name)
 
-            with locked_file(override_g_p) as f:
-                given_grade = json.load(f)
+        late = (final_path is not None and '-late' in final_path)
 
-            return login, None, given_grade, full_string
+        if write_files and pexists(grade_path):
+            try:
+                os.mkdir(backup_dir)
+            except FileExistsError:
+                pass
 
-        print("HERE")
+            dt_str = datetime.now().strftime('%Y-%m-%d--%H-%M-%S')
+            report_bfp = pjoin(backup_dir, f'report--{dt_str}.txt')
+            summary_bfp = pjoin(backup_dir, f'rubric-summary--{dt_str}.txt')
+            grade_bfp = pjoin(backup_dir, f'grade--{dt_str}.json')
+
+            shutil.copy(report_path, report_bfp)
+            shutil.copy(summary_path, summary_bfp)
+            shutil.copy(grade_path, grade_bfp)
+
         summary_str = ''
         for handin in handins:
-            if handin is None:
+            if handin is None:  # no handin for this question
                 continue
+
             summary_str += f'{handin.question}\n'
             cmd = [pjoin(BASE_PATH, 'tabin', 'cs111-rubric-info'),
                    handin.grade_path]
@@ -816,7 +795,7 @@ class HTA_Assignment(Assignment):
             grade_string += '(Late deduction applied)'
 
         full_string += f'\n{grade_string}\n'
-        if soft:
+        if not write_files:
             return login, raw_grade, final_grade, full_string
 
         # write appropriate files
@@ -885,14 +864,9 @@ class HTA_Assignment(Assignment):
                      contents=[f'<pre>{report}</pre>'])
 
     def get_generated_grade_report(self, login: str) -> str:
-        gb = pjoin(grade_base_path, login, self.mini_name)
-        if 'report-override.txt' in os.listdir(gb):
-            f = pjoin(gb, 'report-override.txt')
-        else:
-            f = pjoin(gb, 'report.txt')
-
-        with locked_file(f) as fl:
-            grade = fl.read()
+        grade_fp = pjoin(grade_base_path, login, self.mini_name, 'report.txt')
+        with locked_file(grade_fp) as f:
+            grade = f.read()
 
         return grade
 

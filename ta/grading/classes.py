@@ -204,6 +204,8 @@ class Assignment:
     :ivar _id_to_login_map: a map from anonymous ID to login for this asgn
     :vartype _id_to_login_map: Dict[int, str]
 
+    :raises KeyError: if key is not in the assignments.json thing
+
     """
     def __init__(self, key: str, load_if_started: bool = True) -> None:
         """

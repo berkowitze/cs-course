@@ -186,7 +186,7 @@ def get_handin_report_str(rubric: Rubric,
 
         return s
 
-    report_str = f'{question.code_filename}\n'
+    report_str = f'Question {self._qnumb}: {question.code_filename}\n'
     for cat in rubric['rubric']:
         given_cs = rubric['rubric'][cat]['comments']['given']
         report_str += comment_section(cat, given_cs)
