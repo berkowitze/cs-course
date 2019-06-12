@@ -73,8 +73,7 @@ def handle(row: List[str]) -> None:
 
     # Then change the student's grade
     if grade_updated:
-        # TODO : Update soft/overrides
-        asgn.generate_one_report(student_login, soft=False, overrides=True)
+        asgn.generate_one_report(student_login, write_files=True)
         asgn.send_emails(yag, [student_login])
 
     # Send another email with the instructor's response:

@@ -241,8 +241,9 @@ while True:
         logins = student_list()
         handins = asgn.get_handin_dict(logins)
         for student in handins:
-            asgn._generate_report(handins[student], login=student,
-                                  soft=False, overrides=overrides)
+            asgn._generate_report(handins[student],
+                                  login=student,
+                                  write_files=True)
 
         print('Grade reports generated.')
         STATE = State.modify_asgn
@@ -271,8 +272,7 @@ while True:
                 elif resp12 == 1:
                     asgn._generate_report(handin_list,
                                           login=login2,
-                                          soft=False,
-                                          overrides=True)
+                                          write_files=True)
                     print('Report regenerated')
 
             to_send = [login2]
