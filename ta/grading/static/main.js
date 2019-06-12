@@ -223,8 +223,11 @@ function handinLoaded(jProblemData) {
         $('#handin-flag').text('Flag');
         $('#handin-flag').data('flag', true);
     }
-    $('main .container').load('/render_rubric', function(){
-        $('.tag-editor-tag').attr('oncontextmenu', 'return tagRightClick(this)');
+    $('main .container').load('/render_rubric', function(e) {
+        $('.tag-editor').contextmenu(function(e) {
+            return tagEditorRightClick(e);
+        });
+//        $('.tag-editor').attr('oncontextmenu', 'return tagEditorRightClick(this)');
     });
 }
 
@@ -473,8 +476,12 @@ function preTagSave(field, editor, given, tag, giving) {
     // giving new unique comment
 }
 
-function tagRightClick(x) {
-    tag = $(x);
+function tagEditorRightClick(e) {
+    const elem = $(e.target);
+    if (!elem.hasClass('tag-editor-tag')) {
+        return false;
+    }
+    const tag = elem;
     field = tag.parentsUntil('ul.tag-editor').parent().siblings('input');
     category = tag.parents('.category-div').data('category');
     if (confirm('Make comment global?')) {

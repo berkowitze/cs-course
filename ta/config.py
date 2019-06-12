@@ -15,8 +15,8 @@ class HandinConfig:
     late_days = 3  # late days on individual assignments
     # allow use of late days on projects (not implemented yet)
     late_days_on_projects = False
-    spreadsheet_id = '1kT5ShSvteQNyOq13VlGHsZH0Rs78-oQLh1JFORvgXVQ'
-    sheet_name = 'handins'
+    spreadsheet_id = '1r1sqsA8fp-1NZi5tMPc0P_LcLS4Zm_DAaUlmtTG7KFI'
+    sheet_name = 'Handins'
     student_email_col = 'B'
     start_col = 'A'
     end_col = 'AT'

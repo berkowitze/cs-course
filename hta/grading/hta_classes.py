@@ -71,7 +71,10 @@ class HTA_Assignment(Assignment):
 
         assert pexists(grade_base_path), \
             f'{grade_base_path} directory does not exist'
-        self.emails_sent = self._json['sent_emails']
+        
+        # We also use emails_sent as boolean value for whether grading has
+        # completed or not (in addition to already sending the emails)
+        self.emails_sent = self._json['emails_sent']
         self.groups_loaded = False
 
     def load(self) -> None:
@@ -768,6 +771,7 @@ class HTA_Assignment(Assignment):
 
             return login, None, given_grade, full_string
 
+        print("HERE")
         summary_str = ''
         for handin in handins:
             if handin is None:
@@ -798,7 +802,7 @@ class HTA_Assignment(Assignment):
                     raw_grade[key] += report_grade[key]
                 else:
                     raw_grade[key] = report_grade[key]
-        
+
         final_grade: Grade = determine_grade(raw_grade, late, self)
 
         grade_string = 'Grade Summary\n'
@@ -978,11 +982,11 @@ class HTA_Assignment(Assignment):
     def set_emails_sent(self):
         """
 
-        sets sent_emails in assignments.json to true for this assignment
+        sets emails_sent in assignments.json to true for this assignment
 
         """
         with json_edit(asgn_data_path) as data:
-            data['assignments'][self.full_name]['sent_emails'] = True
+            data['assignments'][self.full_name]['emails_sent'] = True
 
     def deanonymize(self):
         """
