@@ -96,9 +96,9 @@ def handle(row: List[str]) -> None:
 
     # figure out grader
     grader = handin.grader
-    asgn_lnk = urllib.parse.quote(asgn.full_name)
+    asgn_link = urllib.parse.quote(asgn.full_name)
     link_template = settings['response-form-filled-link']
-    filled_link = link_template.format(assignment_name=asgn.full_name,
+    filled_link = link_template.format(assignment_name=asgn_link,
                                        indicated_question=indicated_question,
                                        student_ID=student_ID)
 
@@ -107,20 +107,21 @@ def handle(row: List[str]) -> None:
         # generate and send email to grader
         email_to = f'{grader}@cs.brown.edu'
         subject = f'Grade complaint for {row[2]} question {row[3]}'
+        complaint = row[4].replace('\n', '<br/>')
         body = f"""
         <ul>
             <li><strong>Assignment:</strong> {row[2]}</li>
             <li><strong>Question:</strong> {row[3]}</li>
             <li><strong>Anonymous ID:</strong> {student_ID}</li>
-            <li><strong>Complaint content:</strong> {row[4]}</li>
+            <li><strong>Complaint content:</strong><br/>{complaint}</li>
         </ul>
         <p>Please use <a href='{filled_link}'>this Google Form</a> to respond
-        to this grade request.</p>
+        to this grade complaint.</p>
         <p>Please refer to <a href='{instruction_link}'>these Regrade
         Instructions</a> for more details on how to handle grade requests.</p>
         """.replace('\n', '')
 
-        print(f'Sending grade change request to {email_to}')
+        print(f'\tSending grade change request to {email_to}')
         yag.send(email_to, subject, body)
     else:
         err_subject = 'Error processing grade complaint'
@@ -150,7 +151,7 @@ for i, row in enumerate(rows):
     if not row:
         continue
 
-    if len(row) > 5 and row[5]:
+    if len(row) > 5 and row[5] == 'TRUE':
         continue
 
     print(f'Handling row {i + 2} with timestamp {row[0]} and email {row[1]}')
