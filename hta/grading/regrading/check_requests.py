@@ -12,6 +12,8 @@ from helpers import locked_file, CONFIG, BASE_PATH
 from googleapi import sheets_api
 from hta_classes import HTA_Assignment
 
+# quiet mode just overwrites print function, it's terrible but it works
+# and logging is annoying
 if len(sys.argv) > 1 and (sys.argv[1] == '--quiet' or sys.argv[1] == '-q'):
     def print(*args, **kwargs):
         pass
@@ -23,12 +25,12 @@ data_file = pjoin(BASE_PATH, 'ta/assignments.json')
 with locked_file(data_file) as f:
     data = json.load(f)
 
-settings = pjoin(BASE_PATH, 'hta/grading/regrading/settings.json')
-with locked_file(settings) as f:
-    ssid = json.load(f)['request-ssid']
+settings_path = pjoin(BASE_PATH, 'hta/grading/regrading/settings.json')
+with locked_file(settings_path) as f:
+    settings = json.load(f)
 
-
-instruction_link = 'https://docs.google.com/document/d/1xWOYBp_9_GIg3ON_z2zFUfE8RBGoPLi7ZBQgmplTuqQ/edit'
+ssid = settings['request-ssid']
+instruction_link = settings['regrade-instructions']
 
 
 class FormError(Exception):
@@ -37,44 +39,69 @@ class FormError(Exception):
 
 def handle(row: List[str]) -> None:
     # figure out who the student is
-    em_to_login_cmd = pjoin(BASE_PATH, 'tabin/email-to-login')
-    student_login = subprocess.check_output([em_to_login_cmd, row[1]], text=True).strip()
+    student_email = row[1]
+    em_to_login = [pjoin(BASE_PATH, 'tabin/email-to-login'), student_email]
+    student_login = subprocess.check_output(em_to_login, text=True).strip()
     if not student_login:
-        # TODO : send this student an email?
-        print('bye')
+        subject = 'Error processing grade complaint'
+        body = (
+          f'<p>There was an error processing your grade complaint request.</p>'
+          f'<p>There was no account associated with the Brown email '
+          f'{student_email}.</p>'
+          f'<p>If you believe this is an error, please '
+          f'<a href="mailto:{CONFIG.hta_email}">email the HTAs</a>.'
+        ).replace('\n', '')
+        yag.send(student_email, subject, body)
+        hta_head = '<p>POTENTIAL ERROR PROCESSING GRADE CHANGE REQUEST:</p>'
+        yag.send(CONFIG.hta_email, subject, hta_head + body)
         return
 
     try:
         asgn = HTA_Assignment(row[2])
     except KeyError:
-        raise FormError(f'No such assignment {row[2]}')
+        raise FormError(f'No assignment with name {row[2]!r} was found.')
 
     if not asgn.emails_sent:
-        # ignore the student
-        raise FormError(f'Chill this assignment has not been graded yet')
+        raise FormError(f'Assignment {asgn.full_name!r} is not graded yet')
 
     try:
         student_ID = asgn.login_to_id(student_login)
     except ValueError:
-        raise FormError(f'No such handin {row[2]}')
+        err = (
+                f'No submission found for {asgn.full_name!r} for student with'
+                f' email {row[2]!r} login {student_login!r}'
+              )
+        raise FormError(err)
 
     # figure out the question/assignment
-    indicated_question = row[3]
+    indicated_question = int(row[3])
     try:
-        real_question = asgn.questions[int(indicated_question) - 1]
+        real_question = asgn.questions[indicated_question - 1]
     except IndexError:
-        raise FormError(f'No such question {row[3]}')
+        err = (
+               f'Invalid question number (questions range from 1'
+               f' to {len(asgn.questions)} for {asgn.full_name})'
+              )
+        raise FormError(err)
 
     # figure out the handin based on the question
     try:
         handin = real_question.get_handin_by_id(student_ID)
     except ValueError:
-        raise FormError(f'No such handin for question {row[3]}')
+        err = (
+                f'No submission found for student {student_ID} '
+                f'{asgn.full_name} question {indicated_question}.'
+              )
+        raise FormError(err)
 
     # figure out grader
     grader = handin.grader
     asgn_lnk = urllib.parse.quote(asgn.full_name)
-    filled_link = f'https://docs.google.com/forms/d/e/1FAIpQLSe3eNapyqLg74xMy_O4TBxebwgT4aZ0Kl50JYtWhdNzHnYonw/viewform?usp=pp_url&entry.2102360043={asgn_lnk}&entry.1573848516={row[3]}&entry.660184789={student_ID}'
+    link_template = settings['response-form-filled-link']
+    filled_link = link_template.format(assignment_name=asgn.full_name,
+                                       indicated_question=indicated_question,
+                                       student_ID=student_ID)
+
     # Tis when assignment has not been graded yet? Weird
     if grader is not None:
         # generate and send email to grader
@@ -87,26 +114,38 @@ def handle(row: List[str]) -> None:
             <li><strong>Anonymous ID:</strong> {student_ID}</li>
             <li><strong>Complaint content:</strong> {row[4]}</li>
         </ul>
-        <p>Please use <a href='{filled_link}'>this Google Form</a> to respond to this grade request.</p>
-        <p>Please refer to <a href='{instruction_link}'>these Regrade Instructions</a> for more details on how to handle grade requests.</p>
+        <p>Please use <a href='{filled_link}'>this Google Form</a> to respond
+        to this grade request.</p>
+        <p>Please refer to <a href='{instruction_link}'>these Regrade
+        Instructions</a> for more details on how to handle grade requests.</p>
         """.replace('\n', '')
 
         print(f'Sending grade change request to {email_to}')
         yag.send(email_to, subject, body)
     else:
-        # Ignore? Or email the student? Meh
-        print('hi')
-        pass
+        err_subject = 'Error processing grade complaint'
+        err_body = (
+                     'We could not find a grader for your handin. This is '
+                     'likely an issue on our side; the HTAs have also been '
+                     'notified of the issue and will let you know when '
+                     'it is resolved.'
+                    )
+        yag.send(student_email, err_subject, err_body)
+
+        hta_err_body = f"""Potential error with regrade request system.
+        A grader was not found for student {student_ID} who requested a
+        regrade on {asgn.full_name} question {indicated_question}."""
+        yag.send(CONFIG.hta_email, err_subject, hta_err_body)
 
 
 print('Checking requests starting...')
 
-rng = 'A1:F'
+rng = 'A2:F'  # starting at 2 to remove header
 service = sheets_api()
 spreadsheets = service.spreadsheets().values()
 result = spreadsheets.get(spreadsheetId=ssid, range=rng).execute()
-rows = result['values'][1:]
-handle_column = "F"
+rows = result['values']
+handle_column = 'F'
 for i, row in enumerate(rows):
     if not row:
         continue
@@ -114,7 +153,7 @@ for i, row in enumerate(rows):
     if len(row) > 5 and row[5]:
         continue
 
-    print('Handling row: ' + str(row))
+    print(f'Handling row {i + 2} with timestamp {row[0]} and email {row[1]}')
 
     handled = False
     try:
@@ -126,16 +165,30 @@ for i, row in enumerate(rows):
 
         Error message: {e.args[0]}
 
-        <a href="mailto:cs0111headtas@lists.brown.edu">Email the htas</a> if you have any questions.
+        <a href="mailto:cs0111headtas@lists.brown.edu">Email the htas</a> if
+        you have any questions or believe this is an error.
         """
         yag.send(row[1], 'Invalid regrade request', body)
         handled = True
-        # After successfully handling, update handled on Gsheets
     if handled:
-        resp = spreadsheets.update(spreadsheetId=ssid,
-                                   range=f'{handle_column}{i+2}',
-                                   valueInputOption='RAW',
-                                   body={'values': [[True]]}).execute()
+        # After successfully handling, update handled on Gsheets
+        cell = f'{handle_column}{i+2}'
+        try:
+            spreadsheets.update(spreadsheetId=ssid,
+                                range=cell,
+                                valueInputOption='RAW',
+                                body={'values': [[True]]}).execute()
+        except Exception as e:
+            ss_url = f'https://docs.google.com/spreadsheets/d/{ssid}'
+            err = (
+                    'BAD HANDLE IMMMEDIATELY: Regrade request was '
+                    'successfully processed but there was an error when '
+                    'setting the handled column to TRUE in the Google Sheet.'
+                    f'Manually set the value of cell {cell} to TRUE in this'
+                    f'spreadsheet: {ss_url}. Also, forward this email to '
+                    f'Eli at eliberkowitz@gmail.com.'
+                    )
+            raise ValueError(err) from e
 
 
 print('Checking requests complete.')
