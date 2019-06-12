@@ -204,8 +204,7 @@ class AssignmentData(TypedDict):  # currently unused
     due: str
     grading_started: bool
     grading_completed: bool
-    # TODO: make this emails_sent it'll make the key order nicer to look at
-    sent_emails: bool
+    emails_sent: bool
     # TODO: make this due_late again for key order niceness lul
     late_due: str
     group_data: Optional[GroupData]

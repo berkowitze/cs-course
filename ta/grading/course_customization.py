@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import json
 import random
+import urllib.parse
 from textwrap import fill
 from typing import Sequence, TYPE_CHECKING
 
@@ -201,6 +202,8 @@ def get_handin_report_str(rubric: Rubric,
 
         report_str += f'\n{emoji_text}\n\n'
 
-    report_str += f'Grader: {grader_login} ({grader_login}@cs.brown.edu)'
+    asgn_lnk = urllib.parse.quote(question.assignment.full_name)
+    complaint_lnk = f'https://docs.google.com/forms/d/e/1FAIpQLSetfASPqeG_pc8Jw4CCYIgVpRblxJTIJ36sYPjE55fYHNnM2A/viewform?usp=pp_url&entry.1832652590={asgn_lnk}&entry.1252387205={question._qnumb}'
+    report_str += f'Please direct any grade complaint/question to: {complaint_lnk}'
     report_str += f'\n\n{"-" * 74}\n'
     return report_str
