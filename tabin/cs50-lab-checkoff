@@ -1,4 +1,4 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/course/cs0050/ta/venv/bin/python
 
 import os
 import sys
@@ -7,10 +7,12 @@ import tabulate
 from typing import List, Set, Tuple, Iterable
 
 import prompts
+
+from config import CONFIG
 from helpers import line_read, locked_file, json_edit
 
 
-BASE_PATH = '/course/cs0111'
+BASE_PATH = CONFIG.BASE_PATH
 lab_base = os.path.join(BASE_PATH, 'ta/grading/data/labs')
 lab_data_path = os.path.join(lab_base, 'lab-data.json')
 lab_roster_path = os.path.join(lab_base, 'roster.json')

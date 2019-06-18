@@ -1,4 +1,4 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/course/cs0050/ta/venv/bin/python
 
 # Usage: clear-comments <path-to-json-rubric>
 # given a JSON file path, clears all comments from that

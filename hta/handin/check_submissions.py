@@ -382,7 +382,7 @@ class Response:
             c = (
                  f'Student {self.login} submitted {self.asgn_name!r} after '
                  f'grading had started.\nTo grade,'
-                 f'run cs111-grade and extract the handin. Let an HTA know '
+                 f'run cs50-grade and extract the handin. Let an HTA know '
                  f'when you are done so the report can be sent.'
                  )
             yag.send(to=CONFIG.hta_email,

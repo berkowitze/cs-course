@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-umask 007
-
-/course/cs0111/ta/venv/bin/python /course/cs0111/hta/grading/asgn-hub.py

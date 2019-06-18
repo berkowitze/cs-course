@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+cd /course/cs0050/ta/grading
+umask 007
+
+/course/cs0050/ta/venv/bin/python /course/cs0050/ta/grading/grading_app.py "$@"
+
+

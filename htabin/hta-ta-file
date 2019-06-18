@@ -6,7 +6,7 @@
 # TA's to get on that filepath. second argument should
 # be alphabetic permissions: rwx, rx, etc., not numeric
 
-BASE_GROUP="cs-0111"
+BASE_GROUP="cs-0050"
 
 if [ "$1" == "-h" ]; then # help command supplied
     echo "gives HTAs full access, TAs custom access, and others no access"

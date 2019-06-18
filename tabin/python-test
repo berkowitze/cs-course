@@ -1,3 +1,3 @@
 #!/usr/local/bin/bash
 
-/course/cs0111/ta/venv/bin/python3.7 "$1" "$2" 2>&1 || echo "^^ Code failed during TA testing with error above ^^"
+/course/cs0050/ta/venv/bin/python3.7 "$1" "$2" 2>&1 || echo "^^ Code failed during TA testing with error above ^^"

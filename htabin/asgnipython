@@ -5,4 +5,4 @@ echo "Type asgn.method_name?<press enter> to see information about how to use a 
 echo "this works for all methods/functions."
 
 umask 007
-/course/cs0111/ta/venv/bin/ipython -i /course/cs0111/hta/grading/hta_classes.py
+/course/cs0050/ta/venv/bin/ipython -i /course/cs0050/hta/grading/hta_classes.py

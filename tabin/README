@@ -1,12 +1,12 @@
-`cs111-rubric-info` which takes a command line path parameter to a JSON file,
+`cs50-rubric-info` which takes a command line path parameter to a JSON file,
 for example
-`cs111-rubric-info /course/cs0111/ta/grading/data/rubrics/homework4/q1.json`
+`cs50-rubric-info /course/cs0050/ta/grading/data/rubrics/homework4/q1.json`
 
 This effectively pretty-prints the rubric file, so you don't have all the JSON notation and comments floating around.
 
 It's used to print every students rubric into a file in their grade directory
 so TAs can easily look at them (though to change things they still have to use the
 grading app or modify the JSON directly).
-For example, `/course/cs0111/hta/grades/eberkowi/homework1/rubric-summary.txt`.
+For example, `/course/cs0050/hta/grades/eberkowi/homework1/rubric-summary.txt`.
 (the txts won't exist for <= Homework 4 though).
 

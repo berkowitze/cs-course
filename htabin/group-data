@@ -1,4 +1,4 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/course/cs0050/ta/venv/bin/python
 
 # Notes:
 #  - if running from ssh/fastx, make sure to run "kinit" first

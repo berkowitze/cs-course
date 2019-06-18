@@ -16,6 +16,8 @@ grade_base_path: str = pjoin(BASE_PATH, 'hta/grades')
 final_grade_path: str = pjoin(BASE_PATH, 'ta/grading/grades')
 GradeData = Tuple[str, Optional[RawGrade], Grade, str]
 
+rubric_info_exec = pjoin(BASE_PATH, 'tabin', 'cs50-rubric-info')
+
 
 class HTA_Assignment(Assignment):
     """
@@ -756,7 +758,7 @@ class HTA_Assignment(Assignment):
                 continue
 
             summary_str += f'{handin.question}\n'
-            cmd = [pjoin(BASE_PATH, 'tabin', 'cs111-rubric-info'),
+            cmd = [rubric_info_exec,
                    handin.grade_path]
             try:
                 p_sum = subprocess.check_output(cmd).decode()
