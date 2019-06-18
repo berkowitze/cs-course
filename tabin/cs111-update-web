@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-cd /course/cs0111/www/assets/parsers
-/course/cs0111/www/web-env/bin/python2.7 /course/cs0111/www/assets/parsers/jsonhtml.py

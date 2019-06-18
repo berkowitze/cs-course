@@ -10,6 +10,7 @@
 import re
 import subprocess
 import sys
+import sys
 from typing import Dict
 
 if len(sys.argv) != 2:
@@ -41,6 +42,9 @@ def todict(s: str) -> Dict[str, str]:
     d = {}
     kvs = s.split(',')
     for kv in kvs:
+        if not kv:
+            continue
+
         k, v = kv.split('=')
         d[k] = v
 
@@ -68,7 +72,9 @@ output = subprocess.check_output(['awk', '{print $2}'], stdin=o2.stdout)
 o2.wait()
 
 members = output.decode().strip().split('\n')
+if members == ['']:
+    sys.exit(0)
 
-data = list(map(todict, members))
+data = [todict(m) for m in members]
 unames = [d['CN'] for d in data]
 print(' '.join(list(sorted(unames))))

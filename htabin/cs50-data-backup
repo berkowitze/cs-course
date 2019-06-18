@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE=/course/cs0111;
+BASE=/course/cs0050;
 BACKUPPATH=${BASE}/hta/data_backups;
 cd $BASE;
 

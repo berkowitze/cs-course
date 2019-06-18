@@ -108,7 +108,7 @@ def latest_submission_path(base: str,
     Returns None if no submission for this student on this assignment,
     and the path of the student's latest submission if they did submit
 
-    :param base: handin base path (i.e. /course/cs0111/hta/handin/students)
+    :param base: handin base path (i.e. /course/cs0050/hta/handin/students)
     :type base: str
     :param login: login of student to get submission path for
     :type login: str
@@ -120,11 +120,11 @@ def latest_submission_path(base: str,
 
     **example**:
 
-    >>> latest_submission_path('/course/cs0111/hta/handin/students',
+    >>> latest_submission_path('/course/cs0050/hta/handin/students',
                                'eberkowi',
                                'homework4')
-    '/course/cs0111/hta/handin/students/eberkowi/homework4/5-submission'
-    >>> latest_submission_path('/course/cs0111/hta/handin/students',
+    '/course/cs0050/hta/handin/students/eberkowi/homework4/5-submission'
+    >>> latest_submission_path('/course/cs0050/hta/handin/students',
                                'eberkowi',
                                'homework3')
     None

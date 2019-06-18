@@ -22,6 +22,9 @@ from helpers import red, moss_langs
 
 asgns: List[HTA_Assignment] = get_hta_asgn_list()
 
+backup_exec = pjoin(BASE_PATH, 'htabin/cs50-data-backup')
+restore_backup = pjoin(BASE_PATH, 'htabin/cs50-restore-backup')
+
 
 @unique
 class State(Enum):
@@ -370,13 +373,11 @@ while True:
             if fn is None:
                 break
 
-            make_backup = pjoin(BASE_PATH, 'htabin/cs111-data-backup')
             print('Creating backup...')
-            subprocess.call([make_backup, fn])
+            subprocess.call([backup_exec, fn])
             print('')
 
         elif resp14 == 2:
-            restore_backup = pjoin(BASE_PATH, 'htabin/cs111-restore-backup')
             subprocess.call(restore_backup)
 
         elif resp14 == 3:
@@ -439,7 +440,7 @@ while True:
         8. All extension data will be removed.
 
         You should be able to restore all this data using the restore
-        option in cs111-asgn-hub.
+        option in cs50-asgn-hub.
 
         Do not ctrl-c once starting; if you want to cancel, restore
         a backup instead. If this script fails, restore the backup then debug.
@@ -454,8 +455,7 @@ while True:
             continue
 
         print('Creating backup...')
-        make_backup = pjoin(BASE_PATH, 'htabin/cs111-data-backup')
-        subprocess.call(make_backup)
+        subprocess.call(backup_exec)
         print('')
 
         for assignment in get_hta_asgn_list():

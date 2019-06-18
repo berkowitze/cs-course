@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-umask 007
-lockfile -5 -r 3 /course/cs0111/hta/handin/handin-lock.lock || exit 1
-cd /course/cs0111/hta/handin
-/course/cs0111/ta/venv/bin/python /course/cs0111/hta/handin/check_submissions.py
-rm -f /course/cs0111/hta/handin/handin-lock.lock

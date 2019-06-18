@@ -1,4 +1,4 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/course/cs0050/ta/venv/bin/python
 
 import os
 import sys
@@ -23,7 +23,7 @@ backup_path = pjoin(BASE_PATH, 'hta/data_backups')
 
 backups = [f for f in os.listdir(backup_path) if f.endswith('.zip')]
 if not backups:
-    print('No backups to restore. You can make one using cs111-asgn-hub')
+    print('No backups to restore. You can make one using cs50-asgn-hub')
 
 print('Which backup do you want to restore?')
 b = opt_prompt(backups)
@@ -49,7 +49,7 @@ elif resp != 'CONFIRM':
     sys.exit(1)
 
 print('Creating backup...')
-data_backup = pjoin(BASE_PATH, 'htabin/cs111-data-backup')
+data_backup = pjoin(BASE_PATH, 'htabin/cs50-data-backup')
 subprocess.call(data_backup)
 
 os.chdir(BASE_PATH)

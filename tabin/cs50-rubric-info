@@ -1,4 +1,4 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/course/cs0050/ta/venv/bin/python
 
 import json
 import sys
@@ -7,7 +7,7 @@ from typing import List
 from custom_types import Rubric, RubricItem
 
 if not len(sys.argv) == 2:
-    print('Usage: cs111-rubric-info <path-to-rubric>')
+    print('Usage: cs50-rubric-info <path-to-rubric>')
 
 if not os.path.exists(sys.argv[1]):
     raise OSError('%s does not exist' % sys.argv[1])
