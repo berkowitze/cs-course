@@ -37,6 +37,9 @@ jinja_env = Environment(loader=FileSystemLoader(template_path))
 jinja_env.trim_blocks = True
 jinja_env.lstrip_blocks = True
 
+dry_run = len(sys.argv) > 1 and sys.argv[1] == '--dry'
+if dry_run:
+    print('Running submission checking in dry mode')
 
 class HState(Enum):
     on_time = auto()  # on time
@@ -183,7 +186,10 @@ class Response:
 
         dt_fmt = '%m/%d/%Y %I:%M%p'
         self.due = datetime.strptime(self.asgn['due'], dt_fmt)
-        self.late_due = datetime.strptime(self.asgn['late_due'], dt_fmt)
+        if HCONFIG.default_late_deadline is None:
+            self.late_due = None
+        else:
+            self.late_due = datetime.strptime(self.asgn['late_due'], dt_fmt)
 
     def get_status(self) -> HState:
         sub_time = self.sub_time
@@ -206,6 +212,8 @@ class Response:
                     return HState.first_deadline_buffer
                 else:
                     return HState.on_time
+            elif late_due is None:
+                return HState.late
             elif sub_time <= late_due:
                 if add_late_day(self.login, self.dir_name):
                     return HState.using_late_day
@@ -256,6 +264,10 @@ class Response:
             self.__download(False)
         elif late:
             pass  # do not download late submissions
+        
+        if dry_run:
+            print(f'Dry process of {self.login} row={self.ident+2} asgn={self.asgn_name}')
+            return
 
         if status == HState.on_time:
             self.__confirm_email(late=False, warn=False)
@@ -493,8 +505,8 @@ def fetch_submissions() -> List[Response]:
 
     try:
         vals = result['values']
-    except KeyError as e:
-        raise ValueError('Handin spreadsheet is empty') from e
+    except KeyError as e:  # this happens when the handin spreadsheet is empty
+        sys.exit(0)
 
     responses = []
     for i, row in enumerate(vals):

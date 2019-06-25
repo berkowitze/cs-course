@@ -1,3 +1,5 @@
+from typing import Optional
+
 class HandinConfig:
     # minutes after submission up to which student won't be
     # penalized for lateness
@@ -10,9 +12,10 @@ class HandinConfig:
     # hours after which assignment submission without an extension is cut off
     # can be overriden for each assignment
     # the handin_late_buffer is added to this
-    default_late_deadline = 24
+    # or None if students cannot submit late
+    default_late_deadline: Optional[int] = 24
 
-    late_days = 3  # late days on individual assignments
+    late_days = 0  # late days on individual assignments
     # allow use of late days on projects (not implemented yet)
     late_days_on_projects = False
     spreadsheet_id = '1coAma09FTbk7uickCOQLjrQTsZ0mrNUzqzGbpcKt7NQ'
