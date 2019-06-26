@@ -58,7 +58,7 @@ class HTA_Assignment(Assignment):
             jpath = f'{self.mini_name}.json'
             self.anon_path = pjoin(anon_map_path, jpath)
         else:
-            assert self.anon_path != '', 'error with anon path tell eli'
+            assert self.anon_path != '', 'error in anon path tell eli'
 
         # load list of logins that handed in this assignment
         if self.started and self.loaded:
@@ -67,11 +67,14 @@ class HTA_Assignment(Assignment):
 
             self.login_handin_list = list(d.keys())
 
+        asgn_specific_name = f'{self.mini_name}'
         self.handin_path = handin_base_path
 
         assert pexists(grade_base_path), \
             f'{grade_base_path} directory does not exist'
-        
+
+        self.sfiles_base_path = pjoin(s_files_base_path, asgn_specific_name)
+
         # We also use emails_sent as boolean value for whether grading has
         # completed or not (in addition to already sending the emails)
         self.emails_sent = self._json['emails_sent']
@@ -148,7 +151,7 @@ class HTA_Assignment(Assignment):
         """
         sub_paths = []
         anon_map: Dict[str, int] = {}
-
+        print(self.handin_path)
         file_sys = os.walk(self.handin_path)
         students = next(file_sys)[1]
         submitted_students = []
@@ -900,14 +903,19 @@ class HTA_Assignment(Assignment):
             printer('Removed grade path...')
         except Exception:
             pass
-        try:
-            shutil.rmtree(self.files_path)
-            printer('Removed student files path...')
-        except Exception:
-            pass
+    #try:
+        shutil.rmtree(self.files_path)
+     #       printer('Removed student files path...')
+	#except Exception:
+	    #pass
         try:
             os.remove(self.blocklist_path)
             printer('Removed blocklists...')
+        except Exception:
+            pass
+        try:
+            os.remove(self.sfiles_base_path)
+            printer('Removed TA versions of the handins...')
         except Exception:
             pass
         try:
