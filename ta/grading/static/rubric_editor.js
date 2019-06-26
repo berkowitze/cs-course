@@ -141,7 +141,12 @@ function setupEditor() {
     },
     {
       text: 'Rubric Option',
-      title: 'I'
+      title: 'Insert a new rubric option',
+      className: 'jsoneditor-type-object',
+      value: {
+        point_val: 0,
+        descr: "option description"
+      }
     }]
   };
   // create the editor
