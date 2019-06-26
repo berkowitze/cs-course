@@ -16,4 +16,9 @@ SCOPES = ['https://www.googleapis.com/auth/drive',
 flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
 creds = tools.run_flow(flow, store)
 
-print(f'The refresh token is:\n{creds.refresh_token}')
+ref_tok = creds.refresh_token
+print(f'Refresh Token: {ref_tok}')
+with open('ref_tok.txt') as f:
+    f.write(ref_tok)
+
+print(f'Written to ref_tok.txt')
