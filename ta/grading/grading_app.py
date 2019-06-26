@@ -1,15 +1,17 @@
 import os
 import sys
 import random
-import flask
 import json
 import getpass
 import argparse
-from flask import Flask, session, redirect, url_for, request, render_template
+from flask import (Flask, session, redirect, url_for,
+                   request, render_template)
 from functools import wraps
 from passlib.hash import sha256_crypt
 from typing import Callable, List, Tuple, Any, NewType, Dict, Optional
-from classes import started_asgns, Assignment, ta_path, hta_path, User
+from classes import (started_asgns, Assignment, ta_path, hta_path, User, 
+                     all_asgns, rubric_base_path, locked_file, json_edit,
+                     rubric_schema_path, loaded_rubric_check)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--port', default=6924, type=int,
@@ -286,6 +288,63 @@ def rubric():
 @app.route('/sandbox')
 def sandbox():
     return render_template('sandbox.html')
+
+@is_logged_in
+@app.route('/edit-rubric')
+def edit_rubric():
+    return render_template('edit_rubric.html', asgns=all_asgns())
+
+@app.route('/rubricSchema')
+def rubricSchema():
+    with locked_file(rubric_schema_path) as f:
+        return json.dumps(json.load(f))
+
+
+@is_logged_in
+@app.route('/load_rubric/<mini_name>/<qn>')
+def load_rubric(mini_name, qn):
+    rubric_path = os.path.join(rubric_base_path, mini_name, f'q{qn}.json')
+    if not os.path.exists(rubric_path):
+        return 'null'
+    else:
+        with locked_file(rubric_path) as f:
+            return json.dumps(json.load(f))
+
+@is_logged_in
+@app.route('/create_rubric/<mini_name>/<qn>')
+def create_rubric(mini_name, qn):
+    base_path = os.path.join(rubric_base_path, mini_name)
+    blank_rubric_path = os.path.join(rubric_base_path, 'blank-rubric.json')
+    if not os.path.exists(base_path):
+        os.mkdir(base_path)
+
+    rubric_path = os.path.join(base_path, f'q{qn}.json')
+    if os.path.exists(rubric_path):
+        raise ValueError(f'Rubric already exists for {mini_name} question {qn}')
+
+    with locked_file(blank_rubric_path) as f:
+        blank_rubric = json.load(f)
+
+    with locked_file(rubric_path, 'w') as f:
+        json.dump(blank_rubric, f, indent=2, sort_keys=True)
+
+    return json.dumps(blank_rubric)
+
+@is_logged_in
+@app.route('/update_rubric/<mini_name>/<qn>', methods=['POST'])
+def update_rubric(mini_name, qn):
+    rubric = request.json
+    try:
+        loaded_rubric_check(rubric)
+        success = True
+    except AssertionError as e:
+        success = False
+        if len(e.args) > 0:
+            m = e.args[0]
+        else:
+            m = 'No message'
+
+    return 'Success' if success else m
 
 
 def get_max_points(cat):

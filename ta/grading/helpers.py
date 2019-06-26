@@ -205,8 +205,8 @@ def loaded_rubric_check(rubric: Rubric) -> None:
         assert all([check_item(ri) for ri in rc['rubric_items']]), \
                 p(rc['rubric_items'])
         assert isinstance(rc['fudge_points'], list), p(rc)
-        assert isinstance(rc['fudge_points'][0], float), p(rc)
-        assert isinstance(rc['fudge_points'][1], float), p(rc)
+        assert isinstance(rc['fudge_points'][0], (int, float)), p(rc)
+        assert isinstance(rc['fudge_points'][1], (int, float)), p(rc)
         assert len(rc['fudge_points']) == 2, p(rc)
         return True
 
@@ -237,6 +237,7 @@ def loaded_rubric_check(rubric: Rubric) -> None:
         return True
 
     assert has_keys(rubric, ['rubric', 'comments', 'emoji']), p(rubric.keys())
+    assert isinstance(rubric['emoji'], bool)
     assert check_comments(rubric['comments']), p(rubric['comments'])
 
     assert isinstance(rubric, dict), p('Entire rubric should be dict')
