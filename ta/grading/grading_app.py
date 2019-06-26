@@ -336,9 +336,13 @@ def create_rubric(mini_name, qn):
 @app.route('/update_rubric/<mini_name>/<qn>', methods=['POST'])
 @is_logged_in
 def update_rubric(mini_name, qn):
+    rubric_path = os.path.join(rubric_base_path, mini_name, f'q{qn}.json')
     rubric = request.json
     try:
         loaded_rubric_check(rubric)
+        with locked_file(rubric_path, 'w') as f:
+            json.dump(rubric, f, indent=2, sort_keys=True)
+
         success = True
     except AssertionError as e:
         success = False
@@ -346,6 +350,7 @@ def update_rubric(mini_name, qn):
             m = e.args[0]
         else:
             m = 'No message'
+
 
     return 'Success' if success else m
 
