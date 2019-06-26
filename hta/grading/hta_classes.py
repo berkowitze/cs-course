@@ -290,6 +290,23 @@ class HTA_Assignment(Assignment):
 
         raise ValueError(f'id {ident} does not exist in map for {self}')
 
+    def max_grades(self) -> Dict[str, int]:
+        """ returns dictionary of `category` -> `max category grade` """
+        maxes = defaultdict(int)
+        for q in self.questions:
+            rub = q.get_rubric()
+            for cat in rub['rubric']:
+                cat_val = 0
+                for item in rub['rubric'][cat]['rubric_items']:
+                    opts = item['options']
+                    cat_val += max([opt['point_val'] for opt in opts])
+
+                maxes[cat] += cat_val
+
+        return maxes
+
+
+
     def _transfer_handins(self) -> None:
         """
 

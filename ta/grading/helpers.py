@@ -221,7 +221,7 @@ def loaded_rubric_check(rubric: Rubric) -> None:
     def check_opt(ro: RubricOption):
         assert has_keys(ro, ['point_val', 'descr']), p(ro)
         assert isinstance(ro, dict), p(ro)
-        assert isinstance(ro['point_val'], int), p(ro)
+        assert isinstance(ro['point_val'], (float, int)), p(ro)
         assert isinstance(ro['descr'], str), p(ro['descr'])
         return True
 
