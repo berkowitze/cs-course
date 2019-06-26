@@ -259,6 +259,9 @@ def preview_report():
 # handle authentication
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if session.get('logged_in', False):
+        return redirect('/')
+
     if request.method == 'POST':
         user_passwd = request.form['password']
         # user_passwd = request.args['password']
@@ -289,8 +292,8 @@ def rubric():
 def sandbox():
     return render_template('sandbox.html')
 
-@is_logged_in
 @app.route('/edit-rubric')
+@is_logged_in
 def edit_rubric():
     return render_template('edit_rubric.html', asgns=all_asgns())
 
@@ -300,8 +303,8 @@ def rubricSchema():
         return json.dumps(json.load(f))
 
 
-@is_logged_in
 @app.route('/load_rubric/<mini_name>/<qn>')
+@is_logged_in
 def load_rubric(mini_name, qn):
     rubric_path = os.path.join(rubric_base_path, mini_name, f'q{qn}.json')
     if not os.path.exists(rubric_path):
@@ -310,8 +313,8 @@ def load_rubric(mini_name, qn):
         with locked_file(rubric_path) as f:
             return json.dumps(json.load(f))
 
-@is_logged_in
 @app.route('/create_rubric/<mini_name>/<qn>')
+@is_logged_in
 def create_rubric(mini_name, qn):
     base_path = os.path.join(rubric_base_path, mini_name)
     blank_rubric_path = os.path.join(rubric_base_path, 'blank-rubric.json')
@@ -330,8 +333,8 @@ def create_rubric(mini_name, qn):
 
     return json.dumps(blank_rubric)
 
-@is_logged_in
 @app.route('/update_rubric/<mini_name>/<qn>', methods=['POST'])
+@is_logged_in
 def update_rubric(mini_name, qn):
     rubric = request.json
     try:
