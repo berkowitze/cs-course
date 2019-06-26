@@ -17,27 +17,6 @@ if TYPE_CHECKING:
 emoji_path = os.path.join(BASE_PATH, 'ta/asciianimals')
 emojis = os.listdir(emoji_path)
 
-
-def increasing(lst: list) -> bool:
-    """
-
-    returns whether or not the input list is increasing (non-decreasing)
-    (all numbers larger or equal to than previous numbers)
-
-    :param lst: sequence of numbers
-    :type lst: Sequence[float]
-    :returns: True if lst is non-decreasing, False otherwise
-    :rtype: bool
-
-    """
-    while len(lst) >= 2:
-        fst = lst.pop(0)
-        if fst > lst[0]:
-            return False
-
-    return True
-
-
 def full_asgn_name_to_dirname(asgn_name: str) -> str:
     """
 
@@ -106,50 +85,16 @@ def determine_grade(raw_grade: RawGrade,
     {"Functionality": "Check Plus", "Design": "Check Minus"}
 
     """
-    def use_bracket(b_item: List[BracketItem],
-                    score: Union[int, float]
-                    ) -> str:
-        bounds = [k['upper_bound_inclusive'] for k in b_item]
-        if not increasing(bounds):
-            raise ValueError('Bounds must increase throughout bracket')
-
-        for i, item in enumerate(b_item):
-            if score <= item['upper_bound_inclusive']:
-                cg = item['grade']
-                if not late:
-                    return cg
-                elif late and i == 0:
-                    # lowest grade anyway...
-                    return cg
-                else:
-                    # go down a grade bracket
-                    ng = b_item[i - 1]['grade']
-                    return f"{cg} -> {ng}"
-
-        g = b_item[-1]['grade']
-        print(f'Warning: grade above uppermost bound. Giving {g}')
-        return g
-
-    # "No Handin" only comes from a None in the grade dictionary
-    with locked_file(asgn.bracket_path) as f:
-        brackets: Bracket = json.load(f)
-
-    assert brackets.keys() == raw_grade.keys(), 'invalid bracket'
-
+    max_grades = asgn.max_grades()  # cat -> max possible grade
     final_grade = {}
-    for cat in brackets:
-        cg = raw_grade[cat]
-        if cg is None:
+    for cat in raw_grade:
+        if raw_grade[cat] is None:
             final_grade[cat] = "No handin"
-        else:
-            if brackets[cat] == "Numeric":
-                if late:
-                    g = f'{cg} -> {cg - 1}'
-                    final_grade[cat] = g
-                else:
-                    final_grade[cat] = str(cg)
-            else:
-                final_grade[cat] = use_bracket(brackets[cat], cg)
+            continue
+
+        max_grade = max_grades[cat]
+        grade_val = max(raw_grade[cat], 0)
+        final_grade[cat] = f"{grade_val} / {max_grade}"
 
     return final_grade
 
