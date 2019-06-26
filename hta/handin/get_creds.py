@@ -15,7 +15,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive',
           'https://www.googleapis.com/auth/spreadsheets']
 flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
 creds = tools.run_flow(flow, store)
-
+os.umask(0o007)
 ref_tok = creds.refresh_token
 print(f'Refresh Token: {ref_tok}')
 with open('ref_tok.txt') as f:
