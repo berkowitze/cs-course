@@ -142,10 +142,17 @@ while True:
     elif STATE == State.start_grading:
         print(f'{asgn.full_name} grading unstarted. Start it?')
 
-        resp6 = opt_prompt(['Yes', 'No', 'Go back'])
+        resp6 = opt_prompt(['Yes', 'No', 'Go back', 'Reset Grading'])
         if resp6 is None:
             break
         elif resp6 == 3 or resp6 == 2:
+            STATE = State.asgn_home
+            continue
+        elif resp6 == 4:
+		#try:
+            asgn.reset_grading(True)
+	    #except Exception:
+		    # pass
             STATE = State.asgn_home
             continue
 
@@ -158,6 +165,13 @@ while True:
             elif resp7 == 3 or resp7 == 2:
                 STATE = State.asgn_home
                 continue
+	
+        try:
+            asgn._check_startable()
+        except OSError as e:
+            print("Some error with the json file. Please read error message.")
+            print(e.strerror)
+            break
 
         try:
             asgn.init_grading()
@@ -400,8 +414,13 @@ while True:
                 date_data.append((f, dt))
             except ValueError:
                 continue
-
-        mx_dat = max(date_data, key=lambda dat: dat[1])
+        
+        try:
+            mx_dat = max(date_data, key=lambda dat: dat[1])
+        except ValueError:
+            print('No backups to remove!')
+            state = STATE.course_home
+            continue
 
         # set of date-named files that are not the latest backup
         to_remove = {dat[0] for dat in date_data if dat is not mx_dat}
