@@ -12,3 +12,5 @@
 !todo
 !update_rubric.py
 !config.py
+!rubric_schema.json
+!data/rubrics

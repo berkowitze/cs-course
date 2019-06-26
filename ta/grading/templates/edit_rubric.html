@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rubric Editor</title>
+    <script src="/static/jquery.js"></script>
+    <link href="/static/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="/static/jsoneditor.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='rubric_editor.js') }}"></script>
+
+    <style type="text/css">
+        body {
+            font: 11pt sans-serif;
+        }
+        #jsoneditor {
+            width: 65vw;
+            height: 500px;
+            margin: 0 auto;
+        }
+
+        .jsoneditor-tree {
+            overflow-x: inherit !important;
+        }
+
+        .jsoneditor-is-not-default {
+            font-weight: bold;
+        }
+
+        #rubric-select, #create-button, #save-button {
+            margin: 1em;
+            display: inline-block;
+            height: 2em;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class='rubric-selection'>
+            <select id='rubric-select' onchange='selectRubric()'>
+                <option>Select a question</option>
+                {% for asgn in asgns %}
+                {% for question in asgn._json["questions"] %}
+                <option data-asgn="{{ asgn.mini_name }}" value="{{ loop.index }}">{{ asgn.full_name }} Question {{ loop.index }}</option>
+                {% endfor %}
+                {% endfor %}
+            </select>
+            <span id='rubric-info'></span>
+            <button class='btn' disabled id='create-button' onclick='createRubric(this)'>Create rubric</button>
+            <button id='save-button' onclick='pushUpdate()' disabled>Save</button>
+        </div>
+        <div id="jsoneditor"></div>
+    </main>
+</body>
+</html>
