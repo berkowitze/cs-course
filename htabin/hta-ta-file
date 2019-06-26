@@ -21,7 +21,7 @@ fi
 
 
 # give HTAs full access
-chgrp $BASE_GROUP"hta" $1
+chgrp $BASE_GROUP"ta" $1
 chmod 770 $1
 
 # give TAs argument-2 access

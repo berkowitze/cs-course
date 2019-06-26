@@ -147,7 +147,7 @@ new_data = {
             'late_due': late_due.strftime('%m/%d/%Y %I:%M%p'),
             'grading_completed': False,
             'grading_started': False,
-            'sent_emails': False,
+            'emails_sent': False,
             'group_data': group_data,
             'questions': qs
            }
