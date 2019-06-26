@@ -1,4 +1,4 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/course/cs0050/ta/venv/bin/python
 
 import argparse
 

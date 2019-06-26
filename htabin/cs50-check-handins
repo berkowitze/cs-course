@@ -2,5 +2,5 @@
 umask 007
 lockfile -5 -r 3 /course/cs0050/hta/handin/handin-lock.lock || exit 1
 cd /course/cs0050/hta/handin
-/course/cs0050/ta/venv/bin/python /course/cs0050/hta/handin/check_submissions.py
+/course/cs0050/ta/venv/bin/python /course/cs0050/hta/handin/check_submissions.py "$@"
 rm -f /course/cs0050/hta/handin/handin-lock.lock
