@@ -1,0 +1,69 @@
+{
+    "rubric": {
+        "type": "object",
+        "properties": {
+            "emoji": {"type": "boolean"},
+            "comments": {"$ref": "comments"},
+            "rubric": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": {"$ref": "rubricCategory"}
+            }
+        },
+        "required": ["emoji", "comments", "rubric"],
+        "additionalProperties": false
+    },
+    "comments": {
+        "type": "object",
+        "properties": {
+            "given": {"type": "array", "items": {"type": "string"}},
+            "un_given": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["given", "un_given"],
+        "additionalProperties": false
+    },
+    "rubricCategory": {
+        "type": "object",
+        "properties": {
+            "comments": {"$ref": "comments"},
+            "fudge_points": {
+                "type": "array",
+                "items": [
+                    {
+                        "type": "number"
+                    },
+                    {
+                        "type": "number"
+                    }],
+                "additionalItems": false
+            },
+            "rubric_items": {
+                "type": "array", "items": {"$ref": "rubricItem"}
+            }
+        },
+        "required": ["comments", "fudge_points", "rubric_items"],
+        "additionalProperties": false
+    },
+    "rubricItem": {
+        "type": "object",
+        "properties": {
+            "descr": {"type": "string"},
+            "options": {
+                "type": "array",
+                "items": {"$ref": "rubricOption"}
+            },
+            "selected": {"type": ["null", "number"]}
+        },
+        "required": ["descr", "options", "selected"],
+        "additionalProperties": false
+    },
+    "rubricOption": {
+        "type": "object",
+        "properties": {
+            "descr": {"type": "string"},
+            "point_val": {"type": "number"}
+        },
+        "required": ["descr", "point_val"],
+        "additionalProperties": false
+    }
+}

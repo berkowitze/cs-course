@@ -41,6 +41,7 @@ grade_base_path = pjoin(DATA_PATH, 'grades')
 s_files_base_path = pjoin(DATA_PATH, 'sfiles')
 anon_base_path = pjoin(DATA_PATH, 'anonymization')
 blocklist_path = pjoin(DATA_PATH, 'blocklists')
+rubric_schema_path = pjoin(BASE_PATH, 'ta/grading/rubric_schema.json')
 assert pexists(asgn_data_path), f'No data file "{asgn_data_path}"'
 
 with locked_file(asgn_data_path) as f:
