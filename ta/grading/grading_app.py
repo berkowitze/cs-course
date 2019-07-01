@@ -392,9 +392,14 @@ def check_updater(mini_name, qn):
     p = Popen([os.path.join(BASE_PATH, 'tabin/mypy'),
                temp_filename], stdout=PIPE, stderr=STDOUT)
     output = p.stdout.read().decode()
-    import userupdater
-    reload(userupdater)
-
+    try:
+        import userupdater
+        reload(userupdater)
+    except SyntaxError as e:
+        return json.dumps({
+                'preview': None,
+                'results': f'ERROR: SyntaxError in updater\nLine: {e.lineno}'
+            })
     try:
         userupdater.updater(rubric)
     except Exception as e:
@@ -434,10 +439,24 @@ def run_updater():
     with locked_file(temp_filename, 'w') as f:
         f.write(code)
 
-    import userupdater
-    reload(userupdater)
-    q = Assignment(asgn_key).questions[int(qn) - 1]
-    q.magic_update(userupdater.updater)
+    try:
+        import userupdater
+        reload(userupdater)
+    except SyntaxError as e:
+        err = f'ERROR: SyntaxError in updater\nLine: {e.lineno}'
+        return err
+
+    try:
+        q = Assignment(asgn_key).questions[int(qn) - 1]
+    except AssertionError as e:
+        return f'Assertion failed while loading assignment: {e.args[0]}'
+    try:
+        q.magic_update(userupdater.updater)
+    except AssertionError as e:
+        return f'AssertionError in magic_update: {e.args[0]}'
+    except Exception as e:
+        return f'Exception running updater function: {e}'
+
     return 'Success'
 
 
