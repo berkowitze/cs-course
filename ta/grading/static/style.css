@@ -254,3 +254,8 @@ ul.tag-editor.ui-sortable, .category-div .comments-sel {
 #emoji-div {
     margin-top: 1em;
 }
+
+nav a {
+    color: black;
+    text-decoration: underline;
+}
