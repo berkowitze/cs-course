@@ -1,17 +1,22 @@
 import os
+import traceback
 import sys
 import random
 import json
 import getpass
 import argparse
+from importlib import reload
+from subprocess import Popen, PIPE, STDOUT
 from flask import (Flask, session, redirect, url_for,
                    request, render_template)
+from flask_assets import Environment, Bundle
 from functools import wraps
 from passlib.hash import sha256_crypt
 from typing import Callable, List, Tuple, Any, NewType, Dict, Optional
 from classes import (started_asgns, Assignment, ta_path, hta_path, User, 
                      all_asgns, rubric_base_path, locked_file, json_edit,
-                     rubric_schema_path, loaded_rubric_check)
+                     rubric_schema_path, loaded_rubric_check, asgn_data, BASE_PATH)
+from course_customization import full_asgn_name_to_dirname as fatd
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--port', default=6924, type=int,
@@ -32,6 +37,12 @@ args = parser.parse_args()
 
 # set up the web app
 app = Flask(__name__)
+temp_filename = 'userupdater.py'
+assets = Environment(app)
+assets.url = app.static_url_path
+
+scss = Bundle('sass/rubric-edit.scss', filters='pyscss', output='gen/rubric-edit.css')
+assets.register('scss_rubric_edit', scss)
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 
@@ -259,6 +270,9 @@ def preview_report():
 # handle authentication
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if session.get('logged_in', False):
+        return redirect('/')
+
     if request.method == 'POST':
         user_passwd = request.form['password']
         # user_passwd = request.args['password']
@@ -289,8 +303,8 @@ def rubric():
 def sandbox():
     return render_template('sandbox.html')
 
-@is_logged_in
 @app.route('/edit-rubric')
+@is_logged_in
 def edit_rubric():
     return render_template('edit_rubric.html', asgns=all_asgns())
 
@@ -300,18 +314,30 @@ def rubricSchema():
         return json.dumps(json.load(f))
 
 
-@is_logged_in
 @app.route('/load_rubric/<mini_name>/<qn>')
+@is_logged_in
 def load_rubric(mini_name, qn):
     rubric_path = os.path.join(rubric_base_path, mini_name, f'q{qn}.json')
     if not os.path.exists(rubric_path):
         return 'null'
     else:
         with locked_file(rubric_path) as f:
-            return json.dumps(json.load(f))
+            rubric = json.load(f)
 
-@is_logged_in
+        started = False
+        for asgn in asgn_data['assignments']:
+            data = asgn_data['assignments'][asgn]
+            if (fatd(asgn) == mini_name and data['grading_started']):
+                started = True
+                break
+
+        return json.dumps({
+                'started': started,
+                'rubric': rubric
+            })
+
 @app.route('/create_rubric/<mini_name>/<qn>')
+@is_logged_in
 def create_rubric(mini_name, qn):
     base_path = os.path.join(rubric_base_path, mini_name)
     blank_rubric_path = os.path.join(rubric_base_path, 'blank-rubric.json')
@@ -330,8 +356,8 @@ def create_rubric(mini_name, qn):
 
     return json.dumps(blank_rubric)
 
-@is_logged_in
 @app.route('/update_rubric/<mini_name>/<qn>', methods=['POST'])
+@is_logged_in
 def update_rubric(mini_name, qn):
     rubric_path = os.path.join(rubric_base_path, mini_name, f'q{qn}.json')
     rubric = request.json
@@ -351,6 +377,69 @@ def update_rubric(mini_name, qn):
 
     return 'Success' if success else m
 
+@app.route('/check_updater/<mini_name>/<qn>', methods=['POST'])
+@is_logged_in
+def check_updater(mini_name, qn):
+    rubric_path = os.path.join(rubric_base_path, mini_name, f'q{qn}.json')
+    assert os.path.exists(rubric_path)
+    with locked_file(rubric_path) as f:
+        rubric = json.load(f)
+
+    code = request.json['code']
+    with locked_file(temp_filename, 'w') as f:
+        f.write(code)
+
+    p = Popen([os.path.join(BASE_PATH, 'tabin/mypy'),
+               temp_filename], stdout=PIPE, stderr=STDOUT)
+    output = p.stdout.read().decode()
+    import userupdater
+    reload(userupdater)
+
+    try:
+        userupdater.updater(rubric)
+    except Exception as e:
+        output += "\n\nUPDATER FAILED\nError:\n"
+        output += traceback.format_exc()
+        print(output)
+        return json.dumps({
+                'results': output,
+                'preview': None
+            })
+    try:
+        loaded_rubric_check(rubric)
+        valid_rubric = True
+    except AssertionError as e:
+        valid_rubric = False
+        output = e.args[0]
+
+    if not output and valid_rubric:
+        res = {
+            'results': 'Good',
+            'preview': rubric
+        }
+    else:
+        res = {
+            'results': output,
+            'preview': None
+        }
+
+    return json.dumps(res)
+
+@app.route('/run_updater', methods=['POST'])
+@is_logged_in
+def run_updater():
+    asgn_key = request.json['full_asgn']
+    qn = request.json['qn']
+    code = request.json['code']
+    with locked_file(temp_filename, 'w') as f:
+        f.write(code)
+
+    import userupdater
+    reload(userupdater)
+    q = Assignment(asgn_key).questions[int(qn) - 1]
+    q.magic_update(userupdater.updater)
+    return 'Success'
+
 
 def get_max_points(cat):
     max_val = 0
@@ -366,4 +455,4 @@ app.jinja_env.globals.update(get_max_points=get_max_points)
 if __name__ == '__main__':
     port = args.port
     runtime_dir = os.path.dirname(os.path.abspath(__file__))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=False)

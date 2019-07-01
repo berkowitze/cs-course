@@ -52,10 +52,11 @@ def get_empty_raw_grade(asgn: Assignment) -> RawGrade:
     {"Functionality": None, "Design": None}
 
     """
-    with locked_file(asgn.bracket_path) as f:
-        bracket: Bracket = json.load(f)
+    empty_grade: RawGrade = {}
+    for q in asgn.questions:
+        q_rub = q.copy_rubric()
+        empty_grade.update({cat: None for cat in q_rub['rubric']})
 
-    empty_grade: RawGrade = {k: None for k in bracket.keys()}
     return empty_grade
 
 
@@ -121,19 +122,34 @@ def get_handin_report_str(rubric: Rubric,
         if not comments:
             return ''
 
-        pre_string = '  '
-        s = f'{pre_string}{category}\n'
+        pre_string = '    '
+        s = ''
         for comment in comments:
             comment_lines = fill(comment, 74,
-                                 initial_indent=f'{pre_string}{pre_string}- ',
-                                 subsequent_indent=f'{pre_string * 2}  ')
+                                 initial_indent=f'{pre_string}- ',
+                                 subsequent_indent=f'{pre_string}  ')
             s += f'{comment_lines}\n\n'
 
         return s
 
-    report_str = f'Question {self._qnumb}: {question.code_filename}\n'
+    def grade_section(rc: RubricCategory) -> str:
+        gs = ''
+        for item in rc['rubric_items']:
+            assert item['selected'] is not None, 'unselected rubric item'
+            opt = item['options'][item['selected']]
+            pts = opt['point_val']
+            descr = opt['descr']
+            max_pts = max([opt['point_val'] for opt in item['options']])
+            gs += f'    {pts} / {max_pts} - {item["descr"]}: {descr}\n'
+        
+        gs += '\n'
+        return gs
+
+    report_str = f'Question {question._qnumb}: {question.code_filename}\n'
     for cat in rubric['rubric']:
         given_cs = rubric['rubric'][cat]['comments']['given']
+        report_str += f'  {cat}\n'
+        report_str += grade_section(rubric['rubric'][cat])
         report_str += comment_section(cat, given_cs)
 
     gen_comments = rubric['comments']['given']
