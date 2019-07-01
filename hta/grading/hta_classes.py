@@ -81,6 +81,9 @@ class HTA_Assignment(Assignment):
 
     def load(self) -> None:
         super().load()
+        if self.anonymous:
+            self.anon_path = pjoin(BASE_PATH, 'hta/grading/anonymization', f'{self.mini_name}.json')
+
         with locked_file(self.anon_path) as f:
             data: Dict[str, int] = json.load(f)
 
@@ -294,7 +297,7 @@ class HTA_Assignment(Assignment):
         """ returns dictionary of `category` -> `max category grade` """
         maxes = defaultdict(int)
         for q in self.questions:
-            rub = q.get_rubric()
+            rub = q.copy_rubric()
             for cat in rub['rubric']:
                 cat_val = 0
                 for item in rub['rubric'][cat]['rubric_items']:
@@ -400,7 +403,6 @@ class HTA_Assignment(Assignment):
 
         self._id_to_login_map[ident] = login
         self._login_to_id_map[login] = ident
-        self.login_handin_list.append(login)
 
         self._load_questions()
         for question in self.questions:
@@ -479,7 +481,6 @@ class HTA_Assignment(Assignment):
             with locked_file(q.log_filepath, 'w') as f:
                 json.dump(new_data, f, indent=2, sort_keys=True)
 
-        self.login_handin_list.remove(login)
         self._id_to_login_map.pop(ident, None)
         self._login_to_id_map.pop(login, None)
 

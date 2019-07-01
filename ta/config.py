@@ -59,7 +59,7 @@ class CONFIG:
     base_path = '/course/cs0050'
     test_mode = False
     email_from = 'csci0111@brown.edu'
-    email_errors_to = 'eliberkowitz@gmail.com'
+    email_errors_to = ['eliberkowitz@gmail.com', 'wpatter1@cs.brown.edu']
     hta_email = 'eliberkowitz@gmail.com'
     test_mode_emails_to = 'eliberkowitz@gmail.com'
     handin = HandinConfig

@@ -1,0 +1,31 @@
+body {
+  font: 11pt sans-serif; }
+
+  .jsoneditor-tree {
+    overflow-x: inherit !important; }
+
+    .jsoneditor-is-not-default {
+      font-weight: bold; }
+
+      #rubric-select, #create-button, #save-button {
+        margin: 1em;
+        display: inline-block;
+        height: 2em; }
+
+        main.edit-mode #jsoneditor {
+          width: 65vw;
+          height: 500px;
+          margin: 0 auto; }
+          main.edit-mode #updater {
+            display: none; }
+
+main.updater-mode div#updater {
+  display: inline-block;
+  width: 55vw;
+  height: 80vh;
+  float: right; }
+  main.updater-mode div#jsoneditor {
+    display: inline-block;
+    width: 35vw;
+    height: 79vh;
+    float: left; }
