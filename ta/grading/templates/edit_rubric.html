@@ -22,7 +22,7 @@
                 <option>Select a question</option>
                 {% for asgn in asgns %}
                 {% for question in asgn._json["questions"] %}
-                <option data-asgn="{{ asgn.mini_name }}" value="{{ loop.index }}">{{ asgn.full_name }} Question {{ loop.index }}</option>
+                <option data-full_asgn="{{ asgn.full_name }}" data-asgn="{{ asgn.mini_name }}" value="{{ loop.index }}">{{ asgn.full_name }} Question {{ loop.index }}</option>
                 {% endfor %}
                 {% endfor %}
             </select>

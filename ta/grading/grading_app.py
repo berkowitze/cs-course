@@ -37,7 +37,7 @@ args = parser.parse_args()
 
 # set up the web app
 app = Flask(__name__)
-
+temp_filename = 'userupdater.py'
 assets = Environment(app)
 assets.url = app.static_url_path
 
@@ -385,7 +385,6 @@ def check_updater(mini_name, qn):
     with locked_file(rubric_path) as f:
         rubric = json.load(f)
 
-    temp_filename = 'userupdater.py'
     code = request.json['code']
     with locked_file(temp_filename, 'w') as f:
         f.write(code)
@@ -425,6 +424,21 @@ def check_updater(mini_name, qn):
         }
 
     return json.dumps(res)
+
+@app.route('/run_updater', methods=['POST'])
+@is_logged_in
+def run_updater():
+    asgn_key = request.json['full_asgn']
+    qn = request.json['qn']
+    code = request.json['code']
+    with locked_file(temp_filename, 'w') as f:
+        f.write(code)
+
+    import userupdater
+    reload(userupdater)
+    q = Assignment(asgn_key).questions[int(qn) - 1]
+    q.magic_update(userupdater.updater)
+    return 'Success'
 
 
 def get_max_points(cat):
