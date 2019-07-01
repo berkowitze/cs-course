@@ -29,3 +29,8 @@ main.updater-mode div#updater {
     width: 35vw;
     height: 79vh;
     float: left; }
+    main.updater-mode .CodeMirror {
+      height: 55vh; }
+      main.updater-mode #errors {
+        max-height: 15vh;
+        overflow-y: scroll; }
