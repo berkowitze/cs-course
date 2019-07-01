@@ -12,11 +12,12 @@ String.prototype.replaceAll = function(search, replacement) {
 function selectedRubric() {
     const sel = $('#rubric-select');
     const asgn = sel.children(':selected').data('asgn');
+    const full_asgn = sel.children(':selected').data('full_asgn');
     if (asgn === undefined) {
         return null;
     }
     const qn = Number(sel.val());
-    return {asgn, qn};
+    return {asgn, qn, full_asgn};
 }
 
 function editMode(rubric) {
@@ -171,6 +172,43 @@ function previewUpdate(x) {
         else {
             $('#errors').html(text);
         }
+    })
+    .catch(err => {
+        console.error(err);
+        $('#errors').html(err);
+        b.text('Check & Preview updater');
+        b.prop('disabled', false);
+    });
+}
+
+function updateRubrics(x) {
+    const rubric = selectedRubric();
+    if (rubric == null) {
+        return;
+    }
+    b = $(x);
+    b.text('Checking...');
+    b.prop('disabled', true);
+    fetch('/run_updater', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            full_asgn: rubric.full_asgn,
+            qn: rubric.qn,
+            code: codeEditor.getValue()
+        })
+    })
+    .then(resp => resp.json())
+    .then(json => {
+        b.prop('disabled', false);
+        b.text('Update all rubrics');
+    })
+    .catch(err => {
+        console.error(err);
+        b.prop('disabled', false);
+        b.text('Update all rubrics');
     });
 }
 
