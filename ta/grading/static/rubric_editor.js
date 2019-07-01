@@ -1,5 +1,14 @@
 let unsavedChanges = false;
 
+let editor;
+let container;
+let codeEditor;
+
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.split(search).join(replacement);
+};
+
 function selectedRubric() {
     const sel = $('#rubric-select');
     const asgn = sel.children(':selected').data('asgn');
@@ -8,6 +17,27 @@ function selectedRubric() {
     }
     const qn = Number(sel.val());
     return {asgn, qn};
+}
+
+function editMode(rubric) {
+    $('main').addClass('edit-mode');
+    $('main').removeClass('updater-mode');
+    $('#mode').text('');
+    delete editor.options.onEditable;
+    editor.options.modes = ['tree', 'code', 'text'];
+    editor.setMode('tree');
+    editor.set(rubric);
+}
+
+function updaterMode(rubric) {
+    $('main').addClass('updater-mode');
+    $('main').removeClass('edit-mode');
+    $('#mode').text('(Read only - editable only by updater below)');
+    editor.options.onEditable = (p) => false;
+    editor.options.modes = ['code'];
+    editor.setMode('code');
+    codeEditor.refresh();
+    editor.set(rubric);
 }
 
 function selectRubric() {
@@ -21,13 +51,17 @@ function selectRubric() {
     fetch(`/load_rubric/${rubric.asgn}/${rubric.qn}`)
     .then(resp => resp.json())
     .then(rubric => {
-        console.log(rubric);
         if (rubric == null) {
             editor.set({"To start": "Click 'Create rubric'"})
             $('#create-button').prop('disabled', false);
         }
         else {
-            editor.set(rubric);
+            if (rubric['started']) {
+                updaterMode(rubric['rubric']);
+            }
+            else {
+                editMode(rubric['rubric']);
+            }
         }
     });
 }
@@ -43,7 +77,7 @@ function createRubric(b) {
     fetch(`/create_rubric/${rubric.asgn}/${rubric.qn}`)
     .then(resp => resp.json())
     .then(rubric => {
-        editor.set(rubric);
+        editMode(rubric);
         button.prop('disabled', true);
     });
 }
@@ -94,20 +128,50 @@ function exiting(e) {
     return message;
 }
 
-
-
-let editor;
-let container;
-
 function updated() {
     unsavedChanges = true;
-  try {
-    const content = editor.get();    
-  }
-  catch (err) {
-    console.log('error parsing json');
-    console.error(err);
-  }
+    try {
+        const content = editor.get();    
+    }
+    catch (err) {
+        console.log('error parsing json');
+        console.error(err);
+    }
+}
+
+function previewUpdate(x) {
+    const rubric = selectedRubric();
+    if (rubric == null) {
+        return;
+    }
+    b = $(x);
+    b.text('Checking...');
+    b.prop('disabled', true);
+    fetch(`/check_updater/${rubric.asgn}/${rubric.qn}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(
+        {
+            code: codeEditor.getValue()
+        }
+        )
+    })
+    .then(resp => resp.json())
+    .then(json => {
+        b.text('Check & Preview updater');
+        b.prop('disabled', false);
+
+        text = json.results.replaceAll('\n', '<br/>')
+        if (text == 'Good') {
+            $('#errors').html('Updater passed checks. Rubric preview loaded into JSON viewer.');
+            editor.set(json.preview);
+        }
+        else {
+            $('#errors').html(text);
+        }
+    });
 }
 
 function setupEditor() {
@@ -127,28 +191,28 @@ function setupEditor() {
         comments: {'given': [], 'un_given': []},
         fudge_points: [0, 5],
         rubric_items: []
-      }
-    },
-    {
-      text: 'Rubric Item',
-      title: 'Insert a new rubric item',
-      className: 'jsoneditor-type-object',
-      value: {
-        selected: null,
-        descr: 'Item Description',
-        options: []
-      }
-    },
-    {
-      text: 'Rubric Option',
-      title: 'Insert a new rubric option',
-      className: 'jsoneditor-type-object',
-      value: {
-        point_val: 0,
-        descr: "option description"
-      }
-    }]
-  };
+    }
+},
+{
+  text: 'Rubric Item',
+  title: 'Insert a new rubric item',
+  className: 'jsoneditor-type-object',
+  value: {
+    selected: null,
+    descr: 'Item Description',
+    options: []
+}
+},
+{
+  text: 'Rubric Option',
+  title: 'Insert a new rubric option',
+  className: 'jsoneditor-type-object',
+  value: {
+    point_val: 0,
+    descr: "option description"
+}
+}]
+};
   // create the editor
   container = document.getElementById('jsoneditor');
   editor = new JSONEditor(container, options, {"To start": "Select a rubric to edit"});
@@ -165,8 +229,12 @@ $(document).ready(() => {
     rubricItem = schemas['rubricItem'];
     rubricOption = schemas['rubricOption'];
     setupEditor();
-  });
+});
   setInterval(() => {
     $('#save-button').prop('disabled', !unsavedChanges);
-  }, 300)
+}, 300);
+  codeEditor = CodeMirror.fromTextArea(document.getElementById('thingy'), {
+    lineNumbers: true,
+    mode: "python"
+});
 });
