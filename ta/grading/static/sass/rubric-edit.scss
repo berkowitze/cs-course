@@ -42,4 +42,13 @@ main.updater-mode {
         height: 79vh;
         float: left;
     }
+
+    .CodeMirror {
+        height: 55vh;
+    }
+
+    #errors {
+        max-height: 15vh;
+        overflow-y: scroll;
+    }
 }

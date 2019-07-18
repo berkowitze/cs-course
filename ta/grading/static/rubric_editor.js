@@ -186,6 +186,9 @@ function updateRubrics(x) {
     if (rubric == null) {
         return;
     }
+    if (!confirm('Confirm rubric update')) {
+        return;
+    }
     b = $(x);
     b.text('Checking...');
     b.prop('disabled', true);
@@ -200,13 +203,20 @@ function updateRubrics(x) {
             code: codeEditor.getValue()
         })
     })
-    .then(resp => resp.json())
-    .then(json => {
-        b.prop('disabled', false);
-        b.text('Update all rubrics');
+    .then(resp => resp.text())
+    .then(text => {
+        if (text == 'Success') {
+            alert('Rubrics sucessfully updated.');
+            b.prop('disabled', false);
+            b.text('Update all rubrics');
+        }
+        else {
+            alert(text);
+        }
     })
     .catch(err => {
         console.error(err);
+        alert(`Error updating rubrics: ${err}`);
         b.prop('disabled', false);
         b.text('Update all rubrics');
     });
