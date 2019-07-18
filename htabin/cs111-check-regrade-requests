@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+/course/cs0111/ta/venv/bin/python /course/cs0111/hta/grading/regrading/check_requests.py --quiet
