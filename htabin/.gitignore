@@ -18,3 +18,5 @@
 !helpers.py
 !prompts.py
 !config.py
+!cs111-check-regrade-requests
+!cs111-check-regrade-responses

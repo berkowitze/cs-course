@@ -1,4 +1,5 @@
 import json
+import sys
 
 from apiclient.discovery import Resource, build
 from google.oauth2.credentials import Credentials
@@ -27,7 +28,7 @@ def sheets_api() -> Resource:
     try:
         return build('sheets', 'v4', credentials=credentials)
     except OSError as e:
-        print(f'Network unreachable with errno {e.errno}')
+        print(f'Sheets network unreachable with errno {e.errno}')
         sys.exit(1)
 
 
@@ -43,5 +44,8 @@ def drive_api() -> Resource:
         client_secret=client_secret
     )
 
-    drive = build('drive', 'v3', credentials=credentials)
-    return drive
+    try:
+        return build('drive', 'v3', credentials=credentials)
+    except OSError as e:
+        print(f'Drive network unreachable with errno {e.errno}')
+        sys.exit(1)
