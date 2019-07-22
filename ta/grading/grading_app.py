@@ -263,7 +263,10 @@ def preview_report():
     ident = request.args['id']
     assert workflow['handin'].id == int(ident), \
         'trying to preview report of inactive handin'
-    report = workflow['handin'].generate_report_str()
+    try:
+        report = workflow['handin'].generate_report_str()
+    except AssertionError as e:
+        return f'Report unavailable\nError: {e.args[0]}'
     return render_template('preview_report.html', report=report)
 
 
@@ -317,6 +320,7 @@ def rubricSchema():
 @app.route('/load_rubric/<mini_name>/<qn>')
 @is_logged_in
 def load_rubric(mini_name, qn):
+    qndx = int(qn) - 1
     rubric_path = os.path.join(rubric_base_path, mini_name, f'q{qn}.json')
     if not os.path.exists(rubric_path):
         return 'null'
@@ -328,7 +332,10 @@ def load_rubric(mini_name, qn):
         for asgn in asgn_data['assignments']:
             data = asgn_data['assignments'][asgn]
             if (fatd(asgn) == mini_name and data['grading_started']):
-                started = True
+                cls_asgn = Assignment(asgn)
+                qn = cls_asgn.questions[qndx]
+                # grading has started if any handin is extracted
+                started = any([h.extracted for h in qn.handins])
                 break
 
         return json.dumps({
