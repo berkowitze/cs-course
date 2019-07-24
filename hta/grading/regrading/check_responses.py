@@ -134,8 +134,8 @@ for i, row in enumerate(rows):
 
         Error message: {e.args[0]}
 
-        <a href="mailto:wpatter1@cs.brown.edu">Email Will</a>,
-        or <a href="mailto:eliberkowitz@gmail.com">Eli</a> if you have any
+        <a href="mailto:{CONFIG.hta_email}">Email {CONFIG.hta_name}</a>,
+        or <a href="mailto:{CONFIG.error_handler_email}">{CONFIG.error_handler_name}</a> if you have any
         questions.
         """
         yag.send(row[1], 'Invalid regrade response', body)
@@ -157,7 +157,7 @@ for i, row in enumerate(rows):
                     'setting the handled column to TRUE in the Google Sheet.'
                     f'Manually set the value of cell {cell} to TRUE in this'
                     f'spreadsheet: {ss_url}. Also, forward this email to '
-                    f'Eli at eliberkowitz@gmail.com.'
+                    f'{CONFIG.error_handler_name} at {CONFIG.error_handler_email}.'
                     )
             raise ValueError(err) from e
 

@@ -64,3 +64,6 @@ class CONFIG:
     test_mode_emails_to = 'eliberkowitz@gmail.com'
     handin = HandinConfig
     supported_test_suites = ['Python', 'Pyret', '']
+    error_handler_email = 'eliberkowitz@gmail.com'
+    error_handler_name = 'Eli'
+    hta_name = 'Will'
