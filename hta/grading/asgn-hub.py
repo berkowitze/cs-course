@@ -254,6 +254,8 @@ while True:
     elif STATE == State.email_reports:
         resp11 = opt_prompt(['Send to individual student',
                              'Send to all students'])
+        # whether or not to update assignments.json with emails_sent: True
+        mark_sent = False 
         if resp11 is None:
             break
         elif resp11 == 1:
@@ -284,9 +286,13 @@ while True:
             # send reports to all students
             # TODO : change to those who handed in? careful for group projects
             to_send = student_list()
+            mark_sent = True
             print('After sending reports, deanonymize assignment if needed.')
 
         send_grade_reports(asgn, to_send)
+        if mark_sent:
+            asgn.set_emails_sent()
+
         STATE = State.modify_asgn
 
     elif STATE == State.view_flagged_handins:
