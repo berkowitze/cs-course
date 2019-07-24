@@ -166,7 +166,7 @@ for i, row in enumerate(rows):
 
         Error message: {e.args[0]}
 
-        <a href="mailto:cs0111headtas@lists.brown.edu">Email the htas</a> if
+        <a href="mailto:{CONFIG.hta_email}">Email Will</a> if
         you have any questions or believe this is an error.
         """
         yag.send(row[1], 'Invalid regrade request', body)
