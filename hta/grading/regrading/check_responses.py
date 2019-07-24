@@ -45,9 +45,9 @@ def handle(row: List[str]) -> None:
 
     # Figure out the student
     try:
-        student_login = asgn.id_to_login(int(row[6]))
+        student_login = asgn.id_to_login(int(row[4]))
     except ValueError:
-        raise FormError(f'No student with anonymous id {row[6]}')
+        raise FormError(f'No student with anonymous id {row[4]}')
 
     # figure out the question/assignment
     indicated_question = int(row[3])
@@ -62,14 +62,14 @@ def handle(row: List[str]) -> None:
 
     # figure out the handin based on the question
     try:
-        handin = real_question.get_handin_by_id(int(row[6]))
+        handin = real_question.get_handin_by_id(int(row[4]))
     except ValueError:
-        raise FormError(f'No such handin for question {row[3]}')
+        raise FormError(f'No such handin for question {row[3]} id {row[4]}')
 
     # figure out grader
     grader = handin.grader
 
-    grade_updated = (row[4] == 'Yes')
+    grade_updated = (row[5] == 'Yes')
 
     # Then change the student's grade
     if grade_updated:
@@ -83,11 +83,12 @@ def handle(row: List[str]) -> None:
     link_template = settings['request-form-filled-link']
     filled_link = link_template.format(assignment_name=asgn_link,
                                        indicated_question=indicated_question)
-    response = row[5].replace('\n', '<br/>')
+    response = row[6].replace('\n', '<br/>')
     body = f"""
     <ul>
         <li><strong>Assignment:</strong> {row[2]}</li>
         <li><strong>Question:</strong> {row[3]}</li>
+        <li><strong>Grade updated:</strong> {"Yes" if grade_updated else "No"}</li>
         <li><strong>Instructor's response:</strong><br/>{response}</li>
     </ul>
     <p>If you so desire, please use <a href='{filled_link}'>this Google
@@ -133,7 +134,7 @@ for i, row in enumerate(rows):
 
         Error message: {e.args[0]}
 
-        <a href="mailto:cs0111headtas@lists.brown.edu">Email the htas</a>,
+        <a href="mailto:wpatter1@cs.brown.edu">Email Will</a>,
         or <a href="mailto:eliberkowitz@gmail.com">Eli</a> if you have any
         questions.
         """
