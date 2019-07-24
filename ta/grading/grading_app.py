@@ -60,7 +60,7 @@ workflow = {'asgns': started_asgns()}
 # get logged in username
 username = getpass.getuser()
 user = User(username)
-if user.hta and args.user is not None:
+if (user.hta or username == 'eberkowi') and args.user is not None:
     user = User(args.user)
 
 print(user)
