@@ -6,6 +6,7 @@ import subprocess
 import sys
 import traceback
 import yagmail
+import socket
 import zipfile
 from contextlib import contextmanager
 from typing import Optional, List
@@ -501,7 +502,14 @@ def fetch_submissions() -> List[Response]:
 
     service = sheets_api()
     spreadsheets = service.spreadsheets().values()
-    result = spreadsheets.get(spreadsheetId=ss_id, range=rng).execute()
+    try:
+        result = spreadsheets.get(spreadsheetId=ss_id, range=rng).execute()
+    except socket.timeout:
+        print('socket timed out in spreadsheet get')
+        sys.exit(1)
+    except OSError as e:
+        print('OSError in spreadsheet get (511 check_submissions)')
+        sys.exit(1)
 
     try:
         vals = result['values']
