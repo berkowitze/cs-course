@@ -192,7 +192,7 @@ class Response:
         late_buffer = timedelta(minutes=HCONFIG.handin_late_buffer)
 
         student_ext = self.load_ext()
-        if student_ext is not None and student_ext.date < due:
+        if student_ext is not None and student_ext.until < due:
             #  extension given to pre-deadline time, might as well have no
             #  extension.
             print(f'Useless extension for {self.login}')
@@ -222,7 +222,7 @@ class Response:
             else:
                 return HState.late
         else:
-            ext_until = student_ext.date
+            ext_until = student_ext.until
             if ext_until <= late_due + late_buffer:
                 #  didn't get extension until late deadline
                 if sub_time <= ext_until + late_buffer:
@@ -352,7 +352,7 @@ class Response:
             assert ext is not None, 'applying extension when extension is None'
             ext_msg = (
                        f'Extension applied. You have until '
-                       f'{ext.date} to resubmit.'
+                       f'{ext.until} to resubmit.'
                        )
             msgs.append(make_span(ext_msg, 'green'))
 
@@ -408,12 +408,12 @@ class Response:
 
     def load_ext(self) -> Optional[Extension]:  # TODO : remove [why?]
         def relevant(e):
-            return e.student == self.login and e.asgn == self.dir_name
+            return e.login == self.login and e.asgn == self.dir_name
 
         s_a_exts = [ext for ext in extensions if relevant(ext)]
         if s_a_exts:
             # get furthest-reaching extension
-            return max(s_a_exts, key=lambda e: e.date)
+            return max(s_a_exts, key=lambda e: e.until)
         else:
             return None
 
