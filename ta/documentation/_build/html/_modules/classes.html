@@ -190,6 +190,7 @@
 <span class="n">s_files_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;sfiles&#39;</span><span class="p">)</span>
 <span class="n">anon_base_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;anonymization&#39;</span><span class="p">)</span>
 <span class="n">blocklist_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">DATA_PATH</span><span class="p">,</span> <span class="s1">&#39;blocklists&#39;</span><span class="p">)</span>
+<span class="n">rubric_schema_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s1">&#39;ta/grading/rubric_schema.json&#39;</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">pexists</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">),</span> <span class="n">f</span><span class="s1">&#39;No data file &quot;</span><span class="si">{asgn_data_path}</span><span class="s1">&quot;&#39;</span>
 
 <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">asgn_data_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -352,6 +353,8 @@
 <span class="sd">    :vartype _login_to_id_map: Dict[str, int]</span>
 <span class="sd">    :ivar _id_to_login_map: a map from anonymous ID to login for this asgn</span>
 <span class="sd">    :vartype _id_to_login_map: Dict[int, str]</span>
+
+<span class="sd">    :raises KeyError: if key is not in the assignments.json thing</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Assignment.__init__"><a class="viewcode-back" href="../classes.html#classes.Assignment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">load_if_started</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1027,11 +1030,14 @@
         <span class="n">rdata</span><span class="p">[</span><span class="s1">&#39;sfile-link&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handin_path</span>
         <span class="k">return</span> <span class="n">rdata</span></div>
 
-<div class="viewcode-block" id="Handin.get_code"><a class="viewcode-back" href="../classes.html#classes.Handin.get_code">[docs]</a>    <span class="k">def</span> <span class="nf">get_code</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="Handin.get_code"><a class="viewcode-back" href="../classes.html#classes.Handin.get_code">[docs]</a>    <span class="k">def</span> <span class="nf">get_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_tests</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        get student&#39;s code for this handin as a string, or an error string</span>
 <span class="sd">        if the code is not JSON decodable (it needs to be for the grading app)</span>
+
+<span class="sd">        if with_tests is True, appends the testing file for this question</span>
+<span class="sd">        to the end.</span>
 
 <span class="sd">        :returns: student code string or error string if code is not decodable</span>
 <span class="sd">        :rtype: str</span>
@@ -1047,11 +1053,18 @@
             <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Submission is a zip file; open in file viewer&#39;</span>
             <span class="k">return</span> <span class="n">msg</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># only ever reading this file, no need for lock</span>
+            <span class="c1"># should probably convert this to locked read at some point JIC</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="n">code</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-                    <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">with_tests</span> <span class="ow">and</span> <span class="n">pexists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">):</span>
+                    <span class="n">code</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;# {&quot;-&quot; * 20} TA TESTS {&quot;-&quot; * 20}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span><span class="o">.</span><span class="n">test_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">code</span> <span class="o">+=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+
             <span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
                 <span class="n">code</span> <span class="o">=</span> <span class="p">(</span>
                         <span class="n">f</span><span class="s1">&#39;Student code not decodable. Look at original handin&#39;</span>

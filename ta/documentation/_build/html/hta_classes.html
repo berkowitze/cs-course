@@ -205,7 +205,7 @@ assignment (False by default)</li>
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment._generate_report">
-<code class="descname">_generate_report</code><span class="sig-paren">(</span><em>handins: List[Optional[classes.Handin]], login: str, soft=True, overrides=False</em><span class="sig-paren">)</span> &#x2192; Tuple[str, Optional[Dict[str, Union[int, float, None]]], Union[int, float, str, Dict[str, str], Dict[str, int]], str]<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment._generate_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment._generate_report" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_generate_report</code><span class="sig-paren">(</span><em>handins: List[Optional[classes.Handin]], login: str, write_files: bool = False</em><span class="sig-paren">)</span> &#x2192; Tuple[str, Optional[Dict[str, Union[int, float, None]]], Union[int, float, str, Dict[str, str], Dict[str, int]], str]<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment._generate_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment._generate_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>given a list of Handins and student login,
 generate a report for that student.
 the third argument, soft, represents whether or not to write the grades
@@ -218,10 +218,14 @@ the grade (dictionary), and the text of the report.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>handins</strong> (<em>List</em><em>[</em><em>Optional</em><em>[</em><a class="reference internal" href="classes.html#classes.Handin" title="classes.Handin"><em>Handin</em></a><em>]</em><em>]</em>) – List of Handins/None if no Handin for that question</li>
 <li><strong>login</strong> (<em>str</em>) – login of student generating report</li>
-<li><strong>soft</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not to only return the report information,
-rather than writing it into files; defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code></li>
-<li><strong>overrides</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not to generate override reports
-defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code></li>
+<li><strong>write_files</strong> (<em>bool</em><em>, </em><em>optional</em>) – <dl class="docutils">
+<dt>whether or not to write generated grade reported</dt>
+<dd>data to report files.
+True: writes to files and returns 4-tuple
+False: returns 4-tuple</dd>
+</dl>
+<p>rather than writing it into files; defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</li>
 </ul>
 </td>
 </tr>
@@ -293,7 +297,7 @@ defaults to <code class="docutils literal notranslate"><span class="pre">False</
 
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.generate_one_report">
-<code class="descname">generate_one_report</code><span class="sig-paren">(</span><em>login: str</em>, <em>soft: bool = True</em>, <em>overrides: bool = False</em><span class="sig-paren">)</span> &#x2192; Tuple[str, Optional[Dict[str, Union[int, float, None]]], Union[int, float, str, Dict[str, str], Dict[str, int]], str]<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.generate_one_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.generate_one_report" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generate_one_report</code><span class="sig-paren">(</span><em>login: str</em>, <em>write_files: bool = False</em><span class="sig-paren">)</span> &#x2192; Tuple[str, Optional[Dict[str, Union[int, float, None]]], Union[int, float, str, Dict[str, str], Dict[str, int]], str]<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.generate_one_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.generate_one_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>generate full grade report for a single student for this assignment</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -384,6 +388,14 @@ the student’s grade report</td>
 <dt id="hta_classes.HTA_Assignment.init_grading">
 <code class="descname">init_grading</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.init_grading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.init_grading" title="Permalink to this definition">¶</a></dt>
 <dd><p>starts grading for this assignment</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hta_classes.HTA_Assignment.load">
+<code class="descname">load</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the assignment (checks all paths are proper and
+loads all assignment questions)
+:raises AssertionError: invalid assignment</p>
 </dd></dl>
 
 <dl class="method">
@@ -513,7 +525,7 @@ in. otherwise, sends to all students in this list</li>
 <dl class="method">
 <dt id="hta_classes.HTA_Assignment.set_emails_sent">
 <code class="descname">set_emails_sent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hta_classes.html#HTA_Assignment.set_emails_sent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hta_classes.HTA_Assignment.set_emails_sent" title="Permalink to this definition">¶</a></dt>
-<dd><p>sets sent_emails in assignments.json to true for this assignment</p>
+<dd><p>sets emails_sent in assignments.json to true for this assignment</p>
 </dd></dl>
 
 <dl class="method">

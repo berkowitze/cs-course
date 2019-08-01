@@ -177,7 +177,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first simple">
 <li><strong>proj_dir</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – If not a group asgn, None. If is a group_asgn,
 the name of the common directory to use
 (for multi-assignment projects). For example, “project3”</li>
@@ -203,6 +203,9 @@ this assignment</li>
 <li><strong>_login_to_id_map</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – a map from login to anonymous ID for this asgn</li>
 <li><strong>_id_to_login_map</strong> (<em>Dict</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – a map from anonymous ID to login for this asgn</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>KeyError</strong> – if key is not in the assignments.json thing</p>
 </td>
 </tr>
 </tbody>
@@ -744,9 +747,11 @@ should be loaded</td>
 
 <dl class="method">
 <dt id="classes.Handin.get_code">
-<code class="descname">get_code</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/classes.html#Handin.get_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.get_code" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_code</code><span class="sig-paren">(</span><em>with_tests: bool = False</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/classes.html#Handin.get_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#classes.Handin.get_code" title="Permalink to this definition">¶</a></dt>
 <dd><p>get student’s code for this handin as a string, or an error string
 if the code is not JSON decodable (it needs to be for the grading app)</p>
+<p>if with_tests is True, appends the testing file for this question
+to the end.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

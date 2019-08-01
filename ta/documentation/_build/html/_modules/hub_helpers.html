@@ -236,17 +236,13 @@
             <span class="n">full_grade</span><span class="p">[</span><span class="n">asgn</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;No handin&#39;</span><span class="p">}</span>
             <span class="k">continue</span>
 
-        <span class="n">fs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">individual_path</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">&#39;grade-override.json&#39;</span> <span class="ow">in</span> <span class="n">fs</span><span class="p">:</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">individual_path</span><span class="p">,</span> <span class="s1">&#39;grade-override.json&#39;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">individual_path</span><span class="p">,</span> <span class="s1">&#39;grade.json&#39;</span><span class="p">)</span>
+        <span class="n">grade_path</span> <span class="o">=</span> <span class="n">pjoin</span><span class="p">(</span><span class="n">individual_path</span><span class="p">,</span> <span class="s1">&#39;grade.json&#39;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">grade_path</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Nonexistent grade in </span><span class="si">{individual_path}</span><span class="s1">, continuing...&#39;</span><span class="p">)</span>
             <span class="k">continue</span>
 
-        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">locked_file</span><span class="p">(</span><span class="n">grade_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">grade</span><span class="p">:</span> <span class="n">Grade</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
         <span class="n">full_grade</span><span class="p">[</span><span class="n">asgn</span><span class="p">]</span> <span class="o">=</span> <span class="n">grade</span>
