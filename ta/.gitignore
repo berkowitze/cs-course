@@ -7,5 +7,4 @@
 !groups
 !question_extract_resource
 !requirements.txt
-!t-s-blocklist.json
 !config.py
