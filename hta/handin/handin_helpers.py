@@ -9,7 +9,7 @@ from helpers import BASE_PATH, CONFIG, col_str_to_num, locked_file, json_edit
 from typing import Optional, List
 from dataclasses import dataclass
 
-extension_path = os.path.join(BASE_PATH, 'hta/grading/extensions.txt')
+extension_path = os.path.join(BASE_PATH, 'hta/grading/extensions.json')
 late_days_path = os.path.join(BASE_PATH, 'hta/handin/late_days.json')
 
 
@@ -140,21 +140,12 @@ def make_span(text: str, color: Optional[str] = None) -> str:
 
 @dataclass
 class Extension:
-    student: str
+    login: str
     asgn: str
-    date: datetime
+    until: datetime
 
 
 def load_extensions():
     with locked_file(extension_path) as f:
-        lines = f.read().strip().split('\n')[1:]
+        return [Extension(**ext) for ext in json.load(f)]
 
-    exts = []
-    for line in lines:
-        parts = list(map(str.strip, line.split(' ')))
-        user = parts[0]
-        asgn = parts[1]
-        date = datetime.strptime(parts[2], '%m/%d/%Y-%I:%M%p')
-        exts.append(Extension(user, asgn, date))
-
-    return exts
