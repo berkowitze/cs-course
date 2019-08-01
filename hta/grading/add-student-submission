@@ -1,4 +1,5 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/bin/sh
+"exec" "`dirname $0`/../../ta/venv/bin/python" "$0" "$@";
 
 # don't move this script since it needs access to hta_classes.py
 

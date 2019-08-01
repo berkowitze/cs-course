@@ -151,7 +151,7 @@
 <span class="sd">The typing module: Support for gradual typing as defined by PEP 484.</span>
 
 <span class="sd">At large scale, the structure of the module is following:</span>
-<span class="sd">* Imports and exports, all public names should be explicitelly added to __all__.</span>
+<span class="sd">* Imports and exports, all public names should be explicitly added to __all__.</span>
 <span class="sd">* Internal helper functions: these should never be used in code outside this module.</span>
 <span class="sd">* _SpecialForm and its instances (special forms): Any, NoReturn, ClassVar, Union, Optional</span>
 <span class="sd">* Two classes whose instances can be type arguments in addition to types: ForwardRef and TypeVar</span>
@@ -279,7 +279,7 @@
     <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">_GenericAlias</span><span class="p">)</span> <span class="ow">and</span>
             <span class="n">arg</span><span class="o">.</span><span class="n">__origin__</span> <span class="ow">in</span> <span class="n">invalid_generic_forms</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{arg}</span><span class="s2"> is not valid as type argument&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">_SpecialForm</span><span class="p">)</span> <span class="ow">and</span> <span class="n">arg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Any</span> <span class="ow">or</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">_SpecialForm</span><span class="p">)</span> <span class="ow">and</span> <span class="n">arg</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Any</span><span class="p">,</span> <span class="n">NoReturn</span><span class="p">)</span> <span class="ow">or</span>
             <span class="n">arg</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Generic</span><span class="p">,</span> <span class="n">_Protocol</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Plain </span><span class="si">{arg}</span><span class="s2"> is not valid as type argument&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">ForwardRef</span><span class="p">)):</span>
@@ -658,7 +658,7 @@
 <span class="sd">    At runtime, isinstance(x, T) and issubclass(C, T) will raise TypeError.</span>
 
 <span class="sd">    Type variables defined with covariant=True or contravariant=True</span>
-<span class="sd">    can be used do declare covariant or contravariant generic types.</span>
+<span class="sd">    can be used to declare covariant or contravariant generic types.</span>
 <span class="sd">    See PEP 484 for more details. By default generic types are invariant</span>
 <span class="sd">    in all type variables.</span>
 
@@ -1391,6 +1391,7 @@
 <span class="n">AsyncContextManager</span> <span class="o">=</span> <span class="n">_alias</span><span class="p">(</span><span class="n">contextlib</span><span class="o">.</span><span class="n">AbstractAsyncContextManager</span><span class="p">,</span> <span class="n">T_co</span><span class="p">)</span>
 <span class="n">Dict</span> <span class="o">=</span> <span class="n">_alias</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="p">(</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">),</span> <span class="n">inst</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">DefaultDict</span> <span class="o">=</span> <span class="n">_alias</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">,</span> <span class="p">(</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">))</span>
+<span class="n">OrderedDict</span> <span class="o">=</span> <span class="n">_alias</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">,</span> <span class="p">(</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">))</span>
 <span class="n">Counter</span> <span class="o">=</span> <span class="n">_alias</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
 <span class="n">ChainMap</span> <span class="o">=</span> <span class="n">_alias</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">ChainMap</span><span class="p">,</span> <span class="p">(</span><span class="n">KT</span><span class="p">,</span> <span class="n">VT</span><span class="p">))</span>
 <span class="n">Generator</span> <span class="o">=</span> <span class="n">_alias</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Generator</span><span class="p">,</span> <span class="p">(</span><span class="n">T_co</span><span class="p">,</span> <span class="n">T_contra</span><span class="p">,</span> <span class="n">V_co</span><span class="p">))</span>

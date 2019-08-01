@@ -356,6 +356,9 @@ maximum number of fudge points to allow giving.</li>
 </div>
 <div class="section" id="how-to-write-testsuites">
 <span id="how-to-write-testsuites"></span><h2>How to write testsuites<a class="headerlink" href="#how-to-write-testsuites" title="Permalink to this headline">¶</a></h2>
+<p>You can see an example of a Python testsuite in
+<code class="docutils literal notranslate"><span class="pre">/ta/grading/data/tests/fun.py</span></code>. If you want to modify the testsuite
+infrastructure, you will need to go into the <code class="docutils literal notranslate"><span class="pre">testing_helpers.py</span></code> file.</p>
 <p>The grading app already knows how to run Python testsuites. If you want to try
 Pyret testsuites, go for it, but it’s super slow and you don’t get good info
 out of it so I recommend having Pyret testsuites just print out what to copy
@@ -364,9 +367,6 @@ paste into Pyret and then just run it in browser.</p>
 If you want the testsuite results to feed into the student’s grade
 automatically, you will need to update the code for that (see the
 <a class="reference external" href="customization.html#customizing-testsuites">customization documentation</a>).</p>
-<p>You can see an example of a Python testsuite in
-<code class="docutils literal notranslate"><span class="pre">/ta/grading/data/tests/fun.py</span></code>. If you want to modify the testsuite
-infrastructure, you will need to go into the <code class="docutils literal notranslate"><span class="pre">testing_helpers.py</span></code> file.</p>
 <p><code class="docutils literal notranslate"><span class="pre">fun.py</span></code> is a testing file where students might write a two functions,
 <code class="docutils literal notranslate"><span class="pre">append</span></code> and <code class="docutils literal notranslate"><span class="pre">remove-3s</span></code>.</p>
 <p>If you want to add new languages, look at the
