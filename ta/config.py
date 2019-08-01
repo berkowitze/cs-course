@@ -1,3 +1,5 @@
+__base_path__ = '/course/cs0111' # '__' just to keep things clean when importing
+
 class HandinConfig:
     # minutes after submission up to which student won't be
     # penalized for lateness
@@ -24,9 +26,9 @@ class HandinConfig:
     assignment_name_col = 'C'
     test_sheet_ssid = '1r1sqsA8fp-1NZi5tMPc0P_LcLS4Zm_DAaUlmtTG7KFI'
     test_sheet_name = 'testing'
-    log_path = '/course/cs0111/hta/handin/submission_log.txt'
-    handin_path = '/course/cs0111/hta/handin/students'
-    test_log_path = '/course/cs0111/hta/handin/test_submission_log.txt'
+    log_path = f'{__base_path__}/hta/handin/submission_log.txt'
+    handin_path = f'{__base_path__}/hta/handin/students'
+    test_log_path = f'{__base_path__}/hta/handin/test_submission_log.txt'
 
     @classmethod
     def get_range(cls, test_mode: bool = False) -> str:
@@ -53,7 +55,7 @@ class HandinConfig:
 
 
 class CONFIG:
-    base_path = '/course/cs0111'
+    base_path = __base_path__
     test_mode = False
     email_from = 'csci0111@brown.edu'
     email_errors_to = 'eliberkowitz@gmail.com'
