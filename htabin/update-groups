@@ -4,8 +4,9 @@
 # run when a student drops the course, for example. I'd recommend
 # a crontab running this once a minute in the first few weeks of the
 # semester so grading and handin scripts don't get messed up.
-BASE_PATH="/course/cs0111/hta/groups"
-PATH="$PATH:/course/cs0111/htabin"
+baseDir=$(dirname "$0/.." | xargs realpath);
+BASE_PATH="$baseDir/hta/groups"
+PATH="$PATH:$baseDir/htabin"
 
 function update-group() {
     P=$BASE_PATH/$3

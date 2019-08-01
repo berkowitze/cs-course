@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
-
-/course/cs0111/ta/venv/bin/python /course/cs0111/hta/grading/regrading/check_responses.py --quiet
+baseDir=$(dirname "$0/.." | xargs realpath);
+pyBin=$(echo "$execDir/ta/venv/bin" | xargs realpath);
+"$pyBin/python" "$baseDir/hta/grading/regrading/check_responses.py" --quiet

@@ -1,4 +1,5 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/bin/sh
+"exec" "`dirname $0`/../ta/venv/bin/python" "$0" "$@"
 
 import os
 import sys
@@ -8,10 +9,9 @@ from typing import List, Set
 
 import prompts
 from helpers import line_read, locked_file, json_edit
+import config
 
-BASE_PATH = '/course/cs0111'
-
-lab_base = os.path.join(BASE_PATH, 'ta/grading/data/labs')
+lab_base = os.path.join(CONFIG.base_path, 'ta/grading/data/labs')
 lab_data_path = os.path.join(lab_base, 'lab-data.json')
 lab_roster_path = os.path.join(lab_base, 'roster.json')
 
@@ -22,7 +22,7 @@ with locked_file(lab_roster_path) as f:
     data = json.load(f)
     LAB_LIST = sorted(data.keys())
 
-students_path = os.path.join(BASE_PATH, 'ta/groups/students.csv')
+students_path = os.path.join(CONFIG.base_path, 'ta/groups/students.csv')
 lines = line_read(students_path, delim=',')
 students = []
 ls = []

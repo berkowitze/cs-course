@@ -1,4 +1,5 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/bin/sh
+"exec" "`dirname $0`/../ta/venv/bin/python" "$0" "$@"
 
 import os
 import sys
@@ -6,11 +7,12 @@ import json
 import tabulate
 from typing import List, Set, Tuple, Iterable
 
+from config import CONFIG
 import prompts
 from helpers import line_read, locked_file, json_edit
 
 
-BASE_PATH = '/course/cs0111'
+BASE_PATH = CONFIG.base_path
 lab_base = os.path.join(BASE_PATH, 'ta/grading/data/labs')
 lab_data_path = os.path.join(lab_base, 'lab-data.json')
 lab_roster_path = os.path.join(lab_base, 'roster.json')

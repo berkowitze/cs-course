@@ -36,4 +36,4 @@ if sys.argv[1] == 'pyret':
     print(json.dumps(data, indent=2, sort_keys=True))
 elif sys.argv[1] == 'python':
     print('No formatting for python results implemented')
-    print('See /course/cs0111/tabin/print_results.py')
+    print('See /tabin/print_results.py')

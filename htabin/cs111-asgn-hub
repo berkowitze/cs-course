@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
-umask 007
-
-/course/cs0111/ta/venv/bin/python /course/cs0111/hta/grading/asgn-hub.py
+umask 007;
+execDir=$(dirname "$0" | xargs realpath);
+pyBin=$(echo "$execDir/../ta/venv/bin" | xargs realpath);
+"$pyBin/python" "$execDir/../hta/grading/asgn-hub.py";

@@ -1,12 +1,6 @@
-`cs111-rubric-info` which takes a command line path parameter to a JSON file,
-for example
-`cs111-rubric-info /course/cs0111/ta/grading/data/rubrics/homework4/q1.json`
+README
 
-This effectively pretty-prints the rubric file, so you don't have all the JSON notation and comments floating around.
+#!/bin/sh
+"exec" "`dirname $0`/../ta/venv/bin/python" "$0" "$@"
 
-It's used to print every students rubric into a file in their grade directory
-so TAs can easily look at them (though to change things they still have to use the
-grading app or modify the JSON directly).
-For example, `/course/cs0111/hta/grades/eberkowi/homework1/rubric-summary.txt`.
-(the txts won't exist for <= Homework 4 though).
-
+is all over the place because it allows the app to run the Python installed for this grading app using a relative path (../ta/venv/bin/python). This allows getting rid of a lot of /course/csxxxx lines which are really annoying when doing setup.
