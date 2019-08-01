@@ -30,7 +30,12 @@ with locked_file(asgn_path) as f:
 
 asgn_list = list(asgn_data['assignments'].keys())
 print(green('Give extension for:'))
+<<<<<<< HEAD
 asgn = asgn_list[opt_prompt(asgn_data['assignments'].keys()) - 1]
+=======
+asgn = asgn_list[opt_prompt(asgn_data['assignments'].keys(),
+                            exit_on_ctrl_c=True) - 1]
+>>>>>>> d12f1635d497769772195d187fcd5ed3b7ce8c77
 print()
 deadline = datetime.strptime(asgn_data['assignments'][asgn]['due'],
                              '%m/%d/%Y %I:%M%p')
@@ -40,7 +45,12 @@ print(f'{asgn} is due {green(deadline.strftime(dt_fmt))}')
 print(green('Give extension until:'))
 ext_until = date_prompt(enforce_after=True,
                         after=deadline,
+<<<<<<< HEAD
                         after_msg=after_msg)
+=======
+                        after_msg=after_msg,
+                        exit_on_ctrl_c=True)
+>>>>>>> d12f1635d497769772195d187fcd5ed3b7ce8c77
 print()
 
 mini_asgn = full_asgn_name_to_dirname(asgn)
