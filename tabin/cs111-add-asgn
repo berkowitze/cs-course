@@ -49,6 +49,12 @@ asgn = ez_prompt('> ', exit_on_ctrl_c=True, checker=nonempty,
 if asgn in data['assignments']:
     print(f'Assignment {asgn} already exists.')
     exit(1)
+for full_name in data['assignments']:
+    if full_asgn_name_to_dirname(full_name) == asgn:
+        print(f'Existing assignment {full_name} has conflicting name with {asgn}')
+        print('Use a different assignment name!')
+        exit(1)
+        break
 
 print(f'Gathering data for: {asgn!r}\n')
 
