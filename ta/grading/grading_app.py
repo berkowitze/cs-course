@@ -1,10 +1,10 @@
 import os
+import logging
 import traceback
 import sys
 import random
 import json
 import getpass
-import argparse
 from importlib import reload
 from subprocess import Popen, PIPE, STDOUT
 from flask import (Flask, session, redirect, url_for,
@@ -18,12 +18,9 @@ from classes import (started_asgns, Assignment, ta_path, hta_path, User,
                      rubric_schema_path, loaded_rubric_check, asgn_data, BASE_PATH)
 from course_customization import full_asgn_name_to_dirname as fatd
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-p', '--port', default=6924, type=int,
-                    help='Port to run the app on.')
-parser.add_argument('-u', '--user', type=str,
-                    help='TA to run the app as. HTAs only.')
-args = parser.parse_args()
+
+app = Flask(__name__)
+app.logger.setLevel(logging.DEBUG)
 
 # do not run this directly or file permissions will be messed up
 # and you need to be in a virtualenvironment
@@ -36,7 +33,7 @@ args = parser.parse_args()
 # but i also suppose that all these files arent exactly convenient
 
 # set up the web app
-app = Flask(__name__)
+
 temp_filename = 'userupdater.py'
 assets = Environment(app)
 assets.url = app.static_url_path
@@ -58,10 +55,11 @@ app.secret_key = '815tu28g78h8934tgju2893t0j83u2tfjt'
 workflow = {'asgns': started_asgns()}
 
 # get logged in username
+user_override = os.environ.get('GRADING_APP_USER', None)
 username = getpass.getuser()
 user = User(username)
-if user.hta and args.user is not None:
-    user = User(args.user)
+if user.hta and user_override is not None:
+    user = User(user_override)
 
 print(user)
 
@@ -508,8 +506,10 @@ def get_max_points(cat):
 
     return max_val
 
-
 if __name__ == '__main__':
-    port = args.port
+    port = os.environ.get('GRADING_APP_PORT', 6924)
     runtime_dir = os.path.dirname(os.path.abspath(__file__))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0',
+            ssl_context='adhoc',
+            port=port,
+            debug=False)
