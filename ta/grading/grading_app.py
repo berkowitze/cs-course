@@ -65,6 +65,68 @@ if user.hta and args.user is not None:
 
 print(user)
 
+__router = app.route # plz don't use this unless needed
+
+def logged_in_route(*args, **kwargs):
+    ''' make a route that requires the user to be logged in
+        has the same usage as @app.route(endpoint[, ...])
+        this helps the issue of doing
+
+            @app.route(...)
+            @is_logged_in
+            def f(): pass
+
+        vs
+
+            @is_logged_in
+            @app.route(...)
+            def f(): pass
+
+        #2 will lead to an unprotected route!
+        
+        instead
+
+            @logged_in_route(...)
+            def f(): pass
+
+        is what this allows
+        '''
+    def is_logged_in(f: Callable) -> Callable:
+        ''' this decorator ensures that the user is logged in when attempting
+        to access the wrapped route '''
+        @wraps(f)
+        def wrap(*args, **kwargs):
+            if 'logged_in' in session:
+                return f(*args, **kwargs)
+            else:
+                return redirect(url_for('login'))
+
+        return wrap
+
+    def inner(f):
+        # make a route with the inputs
+        route_wrapper = __router(*args, **kwargs)
+        # wrap the decorated function with a check for logged_in-ness
+        login_checker = is_logged_in(f)
+        # apply the route to the function that checks for login
+        return route_wrapper(login_checker)
+
+    return inner
+
+
+def not_logged_in_route(*args, **kwargs):
+    ''' same logic as logged_in_route, but no need to wrap f with a checker '''
+    def inner(f):
+        return __router(*args, **kwargs)(f)
+
+    return inner
+
+def doNotUseAppRoute(*args, **kwargs):
+    err = 'Do not use @app.route, use @logged_in_route or @not_logged_in_route'
+    raise ValueError(err)
+
+app.route = doNotUseAppRoute
+
 
 def is_logged_in(f: Callable) -> Callable:
     ''' this decorator ensures that the user is logged in when attempting
@@ -78,19 +140,14 @@ def is_logged_in(f: Callable) -> Callable:
 
     return wrap
 
-
-# index page
-@app.route('/')
-@is_logged_in
+@logged_in_route('/')
 def main():
     return render_template('index.html',
                            asgns=workflow['asgns'],
                            user=user.uname)
 
 
-# load an assignment
-@app.route('/load_asgn')
-@is_logged_in
+@logged_in_route('/load_asgn')
 def load_asgn():
     asgn_key = request.args['asgn']
     found = False
@@ -110,8 +167,7 @@ def load_asgn():
     return json.dumps(lst)
 
 
-@app.route('/load_prob')
-@is_logged_in
+@logged_in_route('/load_prob')
 def load_prob():
     try:
         q_ndx = int(request.args['prob']) - 1
@@ -131,8 +187,7 @@ def load_prob():
         return json.dumps(d)
 
 
-@app.route('/extract_handin')
-@is_logged_in
+@logged_in_route('/extract_handin')
 def extract_handin():
     if 'handin_login' in request.args:
         asgn = workflow['assignment']
@@ -153,8 +208,7 @@ def extract_handin():
         return json.dumps(handin.get_rubric_data())
 
 
-@app.route('/load_handin', methods=['GET'])
-@is_logged_in
+@logged_in_route('/load_handin', methods=['GET'])
 def load_handin():
     sid = int(request.args['sid'])
     handin = workflow['question'].get_handin_by_id(sid)
@@ -162,8 +216,7 @@ def load_handin():
     return json.dumps(handin.get_rubric_data())
 
 
-@app.route('/flag_handin')
-@is_logged_in
+@logged_in_route('/flag_handin')
 def flag_handin():
     flag = json.loads(request.args['flag'])
     ident = request.args['id']
@@ -179,8 +232,7 @@ def flag_handin():
                        'problemData': workflow['handin'].get_rubric_data()})
 
 
-@app.route('/unextract_handin')
-@is_logged_in
+@logged_in_route('/unextract_handin')
 def unextract_handin():
     ident = request.args['id']
     assert workflow['handin'].id == int(ident), \
@@ -190,8 +242,7 @@ def unextract_handin():
     return str(ident)
 
 
-@app.route('/save_handin')
-@is_logged_in
+@logged_in_route('/save_handin')
 def save_handin():
     print('saving')
     ident = request.args['id']
@@ -205,8 +256,7 @@ def save_handin():
     return 'true'
 
 
-@app.route('/add_global_comment', methods=['GET'])
-@is_logged_in
+@logged_in_route('/add_global_comment', methods=['GET'])
 def add_global_comment():
     print('hi')
     category = request.args['category']
@@ -223,8 +273,7 @@ def add_global_comment():
 
 
 # handin complete; don't save it though, that should be done separately
-@app.route('/complete_handin')
-@is_logged_in
+@logged_in_route('/complete_handin')
 def complete_handin():
     ident = request.args['id']
     assert workflow['handin'].id == int(ident), \
@@ -233,8 +282,7 @@ def complete_handin():
     return json.dumps(workflow['handin'].set_complete())
 
 
-@app.route('/view_code')
-@is_logged_in
+@logged_in_route('/view_code')
 def view_code():
     ident = request.args['id']
     assert workflow['handin'].id == int(ident), \
@@ -246,8 +294,7 @@ def view_code():
                            code_dir=code_dir)
 
 
-@app.route('/run_test')
-@is_logged_in
+@logged_in_route('/run_test')
 def run_test():
     ident = request.args['id']
     assert workflow['handin'].id == int(ident), \
@@ -257,8 +304,7 @@ def run_test():
     return json.dumps(workflow['handin'].run_test())
 
 
-@app.route('/preview_report')
-@is_logged_in
+@logged_in_route('/preview_report')
 def preview_report():
     ident = request.args['id']
     assert workflow['handin'].id == int(ident), \
@@ -271,7 +317,7 @@ def preview_report():
 
 
 # handle authentication
-@app.route('/login', methods=['GET', 'POST'])
+@not_logged_in_route('/login', methods=['GET', 'POST'])
 def login():
     if session.get('logged_in', False):
         return redirect('/')
@@ -289,36 +335,28 @@ def login():
 
 
 # logout (if you need to for some reason)
-@app.route('/logout')
-@is_logged_in
+@logged_in_route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
 
 
-@is_logged_in
-@app.route('/render_rubric')
+@logged_in_route('/render_rubric')
 def rubric():
     return render_template('rubric.html', handin=workflow['handin'])
 
 
-@app.route('/sandbox')
-def sandbox():
-    return render_template('sandbox.html')
-
-@app.route('/edit-rubric')
-@is_logged_in
+@logged_in_route('/edit-rubric')
 def edit_rubric():
     return render_template('edit_rubric.html', asgns=all_asgns())
 
-@app.route('/rubricSchema')
+@logged_in_route('/rubricSchema')
 def rubricSchema():
     with locked_file(rubric_schema_path) as f:
         return json.dumps(json.load(f))
 
 
-@app.route('/load_rubric/<mini_name>/<qn>')
-@is_logged_in
+@logged_in_route('/load_rubric/<mini_name>/<qn>')
 def load_rubric(mini_name, qn):
     qndx = int(qn) - 1
     rubric_path = os.path.join(rubric_base_path, mini_name, f'q{qn}.json')
@@ -343,8 +381,7 @@ def load_rubric(mini_name, qn):
                 'rubric': rubric
             })
 
-@app.route('/create_rubric/<mini_name>/<qn>')
-@is_logged_in
+@logged_in_route('/create_rubric/<mini_name>/<qn>')
 def create_rubric(mini_name, qn):
     base_path = os.path.join(rubric_base_path, mini_name)
     blank_rubric_path = os.path.join(rubric_base_path, 'blank-rubric.json')
@@ -363,8 +400,7 @@ def create_rubric(mini_name, qn):
 
     return json.dumps(blank_rubric)
 
-@app.route('/update_rubric/<mini_name>/<qn>', methods=['POST'])
-@is_logged_in
+@logged_in_route('/update_rubric/<mini_name>/<qn>', methods=['POST'])
 def update_rubric(mini_name, qn):
     rubric_path = os.path.join(rubric_base_path, mini_name, f'q{qn}.json')
     rubric = request.json
@@ -384,8 +420,7 @@ def update_rubric(mini_name, qn):
 
     return 'Success' if success else m
 
-@app.route('/check_updater/<mini_name>/<qn>', methods=['POST'])
-@is_logged_in
+@logged_in_route('/check_updater/<mini_name>/<qn>', methods=['POST'])
 def check_updater(mini_name, qn):
     rubric_path = os.path.join(rubric_base_path, mini_name, f'q{qn}.json')
     assert os.path.exists(rubric_path)
@@ -437,8 +472,7 @@ def check_updater(mini_name, qn):
 
     return json.dumps(res)
 
-@app.route('/run_updater', methods=['POST'])
-@is_logged_in
+@logged_in_route('/run_updater', methods=['POST'])
 def run_updater():
     asgn_key = request.json['full_asgn']
     qn = request.json['qn']
@@ -473,9 +507,6 @@ def get_max_points(cat):
         max_val += max(map(lambda opt: opt['point_val'], item['options']))
 
     return max_val
-
-
-app.jinja_env.globals.update(get_max_points=get_max_points)
 
 
 if __name__ == '__main__':
