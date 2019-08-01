@@ -26,5 +26,5 @@ shift $((OPTIND -1))
 umask 007;
 execDir=$(dirname $0);
 cd "$execDir/../ta/grading";
-
-"$execDir/../ta/venv/bin/gunicorn" --bind "127.0.0.1:$PORT" --certfile "$execDir/../ta/cert.pem" --keyfile "$execDir/../ta/key.pem" grading_app:app;
+HOST="0.0.0.0"
+"$execDir/../ta/venv/bin/gunicorn" --bind "$HOST:$PORT" --certfile "$execDir/../ta/cert.pem" --keyfile "$execDir/../ta/key.pem" grading_app:app;

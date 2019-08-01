@@ -17,6 +17,7 @@ from classes import (started_asgns, Assignment, ta_path, hta_path, User,
                      all_asgns, rubric_base_path, locked_file, json_edit,
                      rubric_schema_path, loaded_rubric_check, asgn_data, BASE_PATH)
 from course_customization import full_asgn_name_to_dirname as fatd
+from helpers import green
 
 
 app = Flask(__name__)
@@ -513,3 +514,5 @@ if __name__ == '__main__':
             ssl_context='adhoc',
             port=port,
             debug=False)
+else:
+    print(green('Open app in browser at https://localhost:6924'))
