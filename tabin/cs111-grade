@@ -1,8 +1,30 @@
 #!/usr/bin/env bash
 
-cd /course/cs0111/ta/grading
-umask 007
+OPTIND=1;  # Reset in case getopts has been used previously in the shell.
 
-/course/cs0111/ta/venv/bin/python /course/cs0111/ta/grading/grading_app.py "$@"
+PORT=6924;
+while getopts ":p:" opt; do
+  case ${opt} in
+    p )
+      PORT=$OPTARG
+      ;;
+    \? )
+      echo "Invalid option: $OPTARG" 1>&2;
+      exit 1;
+      ;;
+    : )
+      echo "Invalid option: $OPTARG requires an argument" 1>&2;
+      exit 1;
+      ;;
+  esac
+done
+shift $((OPTIND -1))
 
 
+#!/usr/bin/env bash
+
+umask 007;
+execDir=$(dirname $0);
+cd "$execDir/../ta/grading";
+
+"$execDir/../ta/venv/bin/gunicorn" --bind "127.0.0.1:$PORT" --certfile "$execDir/../ta/cert.pem" --keyfile "$execDir/../ta/key.pem" grading_app:app;

@@ -1,4 +1,5 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/bin/sh
+"exec" "`dirname $0`/../ta/venv/bin/python" "$0" "$@"
 
 # Usage: clear-comments <path-to-json-rubric>
 # given a JSON file path, clears all comments from that

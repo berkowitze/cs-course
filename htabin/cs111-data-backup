@@ -1,6 +1,5 @@
 #!/bin/bash
-
-BASE=/course/cs0111;
+BASE=$(dirname "$0/.." | xargs realpath);
 BACKUPPATH=${BASE}/hta/data_backups;
 cd $BASE;
 

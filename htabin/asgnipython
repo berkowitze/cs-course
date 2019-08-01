@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-echo "Use asgn = HTA_Assignment(\"Homework x\") to create an assignment!"
-echo "Type asgn.<press tab> to see options for the assignment object! This works for all objects."
-echo "Type asgn.method_name?<press enter> to see information about how to use a method."
-echo "this works for all methods/functions."
+echo "Use asgn = HTA_Assignment(\"Homework x\") to create an assignment!";
+echo "Type asgn.<press tab> to see options for the assignment object! This works for all objects.";
+echo "Type asgn.method_name?<press enter> to see information about how to use a method.";
+echo "this works for all methods/functions.";
 
-umask 007
-/course/cs0111/ta/venv/bin/ipython -i /course/cs0111/hta/grading/hta_classes.py
+umask 007;
+execDir=$(dirname "$0" | xargs realpath);
+pyBin=$(echo "$execDir/../ta/venv/bin" | xargs realpath);
+"$pyBin/ipython" -i $execDir/../hta/grading/hta_classes.py

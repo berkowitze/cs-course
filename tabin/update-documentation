@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-make -C /course/cs0111/ta/documentation html
+execDir=$(dirname "$0");
+p="$execDir/../ta/documentation"
+make -C $(realpath $p) html

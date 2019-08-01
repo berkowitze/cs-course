@@ -1,4 +1,5 @@
-#!/course/cs0111/ta/venv/bin/python
+#!/bin/sh
+"exec" "`dirname $0`/../ta/venv/bin/python" "$0" "$@"
 
 import getpass
 import json
@@ -9,14 +10,13 @@ import subprocess
 import sys
 from helpers import json_edit, line_read
 import tabulate
-
+from config import CONFIG
 from typing import Set, List
 
 os.umask(0o007)
 
-BASE_PATH = '/course/cs0111'
-anon_path = os.path.join(BASE_PATH, 'ta/t-s-blocklist.json')
-students_path = os.path.join(BASE_PATH, 'ta/groups/students.csv')
+anon_path = os.path.join(CONFIG.base_path, 'ta/t-s-blocklist.json')
+students_path = os.path.join(CONFIG.base_path, 'ta/groups/students.csv')
 
 assert os.path.exists(anon_path), f'anon_path {anon_path} does not exist'
 
