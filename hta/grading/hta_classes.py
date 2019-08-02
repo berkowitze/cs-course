@@ -52,13 +52,8 @@ class HTA_Assignment(Assignment):
         :param \*\*kwargs: any keyword args to use in Assignment initialization
         """
 
-        # initialize TA version of Assignment class
         super().__init__(*args, **kwargs)
-        if self.anonymous:
-            jpath = f'{self.mini_name}.json'
-            self.anon_path = pjoin(anon_map_path, jpath)
-        else:
-            assert self.anon_path != '', 'error in anon path tell eli'
+        # initialize TA version of Assignment class
 
         # load list of logins that handed in this assignment
         if self.started and self.loaded:
@@ -82,6 +77,11 @@ class HTA_Assignment(Assignment):
 
     def load(self) -> None:
         super().load()
+        if self.anonymous:
+            jpath = f'{self.mini_name}.json'
+            self.anon_path = pjoin(anon_map_path, jpath)
+        else:
+            assert self.anon_path != '', 'error in anon path tell eli'
         with locked_file(self.anon_path) as f:
             data: Dict[str, int] = json.load(f)
 
@@ -759,7 +759,7 @@ class HTA_Assignment(Assignment):
                 continue
 
             summary_str += f'{handin.question}\n'
-            cmd = [pjoin(BASE_PATH, 'tabin', 'cs111-rubric-info'),
+            cmd = [pjoin(BASE_PATH, 'tabin', 'rubric-info'),
                    handin.grade_path]
             try:
                 p_sum = subprocess.check_output(cmd).decode()
@@ -961,6 +961,7 @@ class HTA_Assignment(Assignment):
             asgn = asgn_data['assignments'][self.full_name]
             asgn['grading_completed'] = True
 
+    @require_resource
     def set_emails_sent(self):
         """
 
@@ -1025,6 +1026,21 @@ class HTA_Assignment(Assignment):
             rows.append(row)
 
         return rows
+
+    def max_grades(self) -> Dict[str, int]:
+        """ returns dictionary of `category` -> `max category grade` """
+        maxes = defaultdict(int)
+        for q in self.questions:
+            rub = q.copy_rubric()
+            for cat in rub['rubric']:
+                cat_val = 0
+                for item in rub['rubric'][cat]['rubric_items']:
+                    opts = item['options']
+                    cat_val += max([opt['point_val'] for opt in opts])
+
+                maxes[cat] += cat_val
+
+        return maxes
 
     def __repr__(self):
         return f'HTA-{super().__repr__()}'
