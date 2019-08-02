@@ -37,7 +37,7 @@ echo '
   yagmail.register(email, password)
 '
 
-git update-index --skip-worktree $basepath/ta/groups/students.csv $basepath/ta/groups/tas.txt $basepath/ta/groups/htas.txt $basepath/ta/groups/students.txt $basepath/ta/assignments.json $basepath/ta/t-s-blocklist.json $basepath/hta/s-t-blocklist.json
+git update-index --skip-worktree $basepath/ta/groups/students.csv $basepath/ta/groups/tas.txt $basepath/ta/groups/htas.txt $basepath/ta/groups/students.txt $basepath/ta/assignments.json $basepath/ta/t-s-blocklist.json $basepath/hta/s-t-blocklist.json $basepath/hta/handin/submission_log.txt $basepath/ta/config.py
 
 echo "yes" > $basepath/initialized.txt;
 git update-index --skip-worktree $basepath/initialized.txt;

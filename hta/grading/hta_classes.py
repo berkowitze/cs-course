@@ -52,8 +52,13 @@ class HTA_Assignment(Assignment):
         :param \*\*kwargs: any keyword args to use in Assignment initialization
         """
 
-        super().__init__(*args, **kwargs)
         # initialize TA version of Assignment class
+        super().__init__(load=False, *args, **kwargs)
+        if self.anonymous:
+            jpath = f'{self.mini_name}.json'
+            self.anon_path = pjoin(anon_map_path, jpath)
+        else:
+            assert self.anon_path != '', 'error in anon path tell eli'
 
         # load list of logins that handed in this assignment
         if self.started and self.loaded:
@@ -73,14 +78,10 @@ class HTA_Assignment(Assignment):
         # completed or not (in addition to already sending the emails)
         self.emails_sent = self._json['emails_sent']
         self.groups_loaded = False
+        self.load()
 
     def load(self) -> None:
         super().load()
-        if self.anonymous:
-            jpath = f'{self.mini_name}.json'
-            self.anon_path = pjoin(anon_map_path, jpath)
-        else:
-            assert self.anon_path != '', 'error in anon path tell eli'
         with locked_file(self.anon_path) as f:
             data: Dict[str, int] = json.load(f)
 
@@ -148,6 +149,7 @@ class HTA_Assignment(Assignment):
         being graded anonymously or not).
 
         """
+        print(f'creating anon map in {self.anon_path}')
         sub_paths = []
         anon_map: Dict[str, int] = {}
 
