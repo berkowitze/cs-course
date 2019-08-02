@@ -5,7 +5,8 @@ import urllib.parse
 from datetime import datetime
 from filelock import FileLock, Timeout
 from functools import lru_cache
-from helpers import BASE_PATH, CONFIG, col_str_to_num, locked_file, json_edit
+from helpers import (BASE_PATH, CONFIG, col_str_to_num,
+                     locked_file, json_edit)
 from typing import Optional, List
 from dataclasses import dataclass
 
