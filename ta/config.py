@@ -69,6 +69,13 @@ class HandinConfig:
             return cls.test_log_path
 
 
+class RegradeConfig:
+    request_ssid = "1q0jC_3WmuF-Anhm4AOzd931wjAHqesAXNtT-gIICqn0"
+    response_ssid = "1b7mDx_xCAIs9R23mSNtJHKuvP9VAPDYWMwaNTc-Q0CA"
+    regrade_instructions = "https://docs.google.com/document/d/1xWOYBp_9_GIg3ON_z2zFUfE8RBGoPLi7ZBQgmplTuqQ"
+    response_form_filled_link = "https://docs.google.com/forms/d/1Hs43pFSoRDhkE7MMfInY6ZCYuX5HpWFJAoqHdYELhfs/viewform?usp=pp_url&entry.2102360043={assignment_name}&entry.1573848516={indicated_question}&entry.660184789={student_ID}"
+    request_form_filled_link = "https://docs.google.com/forms/d/1ePAeYr-f59DT57QjkgjxgKOPDRPgaajnfsKrMqSVCYI/viewform?usp=pp_url&entry.1832652590={assignment_name}&entry.1252387205={indicated_question}"
+
 class CONFIG:
     # this needs a loooot of cleanup
     
@@ -91,7 +98,8 @@ class CONFIG:
     test_mode_emails_to = 'eliberkowitz@gmail.com'
 
     handin = HandinConfig
-    supported_test_suites = ['Python', 'Pyret', '']
+    regrade = RegradeConfig
+    eupported_test_suites = ['Python', 'Pyret', '']
 
     error_handler_email = 'eliberkowitz@gmail.com'
     error_handler_name = 'Eli'

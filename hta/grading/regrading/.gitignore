@@ -2,5 +2,4 @@
 !.gitignore
 !check_requests.py
 !check_responses.py
-!settings.json
 !googleapi.py

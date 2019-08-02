@@ -24,11 +24,7 @@ data_file = pjoin(BASE_PATH, 'ta/assignments.json')
 with locked_file(data_file) as f:
     data = json.load(f)
 
-settings_path = pjoin(BASE_PATH, 'hta/grading/regrading/settings.json')
-with locked_file(settings_path) as f:
-    settings = json.load(f)
-
-ssid = settings['response-ssid']
+ssid = CONFIG.regrade.response_ssid
 
 
 class FormError(Exception):
@@ -80,7 +76,7 @@ def handle(row: List[str]) -> None:
     email_to = f'{student_login}@cs.brown.edu'
     subject = f'Grade complaint response for {row[2]} question {row[3]}'
     asgn_link = urllib.parse.quote(asgn.full_name)
-    link_template = settings['request-form-filled-link']
+    link_template = CONFIG.regrade.request_form_filled_link
     filled_link = link_template.format(assignment_name=asgn_link,
                                        indicated_question=indicated_question)
     response = row[6].replace('\n', '<br/>')

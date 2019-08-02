@@ -25,12 +25,8 @@ data_file = pjoin(BASE_PATH, 'ta/assignments.json')
 with locked_file(data_file) as f:
     data = json.load(f)
 
-settings_path = pjoin(BASE_PATH, 'hta/grading/regrading/settings.json')
-with locked_file(settings_path) as f:
-    settings = json.load(f)
-
-ssid = settings['request-ssid']
-instruction_link = settings['regrade-instructions']
+ssid = CONFIG.regrade.request_ssid
+instruction_link = CONFIG.regrade.regrade_instructions
 
 
 class FormError(Exception):
@@ -97,7 +93,7 @@ def handle(row: List[str]) -> None:
     # figure out grader
     grader = handin.grader
     asgn_link = urllib.parse.quote(asgn.full_name)
-    link_template = settings['response-form-filled-link']
+    link_template = CONFIG.regrade.response_form_filled_link
     filled_link = link_template.format(assignment_name=asgn_link,
                                        indicated_question=indicated_question,
                                        student_ID=student_ID)
