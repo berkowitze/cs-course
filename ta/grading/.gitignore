@@ -13,3 +13,4 @@
 !update_rubric.py
 !rubric_schema.json
 !data/rubrics
+!config.py

@@ -4,6 +4,7 @@
 import json
 import os
 import string
+import subprocess
 import sys
 from os.path import join as pjoin
 from os.path import exists as pexists
@@ -24,10 +25,6 @@ moss_langs = ("c", "cc", "java", "ml", "pascal", "ada", "lisp", "scheme",
               "haskell", "fortran", "ascii", "vhdl", "perl", "matlab",
               "python", "mips", "prolog", "spice", "vb", "csharp",
               "modula2", "a8086", "javascript", "plsql")
-
-
-import subprocess
-import sys
 
 lang_dict = {
     'Python': 'py',

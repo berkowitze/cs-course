@@ -96,4 +96,7 @@ class CONFIG:
     error_handler_email = 'eliberkowitz@gmail.com'
     error_handler_name = 'Eli'
     hta_name = 'Will'
-
+    lang_dict = {
+        'Python': 'py',
+        'Pyret': 'arr'
+    }

@@ -17,7 +17,7 @@ from custom_types import (HTMLData, Log, LogItem, Rubric,
                           AssignmentJson, AssignmentData)
 from helpers import (loaded_rubric_check, locked_file, json_edit,
                      require_resource, update_comments, rubric_check,
-                     remove_duplicates, moss_langs, CONFIG, lang_dict)
+                     remove_duplicates, moss_langs, CONFIG)
 
 # READ BEFORE EDITING THIS FILE #
 # do not use the builtin `open` function; instead use the
@@ -513,7 +513,7 @@ class Question:
         if self._json['ts_lang'] is None:
             self.test_path = None
         else:
-            test_filename = f'q{qn}.{lang_dict[self._json["ts_lang"]]}'
+            test_filename = f'q{qn}.{CONFIG.lang_dict[self._json["ts_lang"]]}'
             self.test_path = pjoin(parent_assignment.test_path, test_filename)
 
         self.load_handins()
