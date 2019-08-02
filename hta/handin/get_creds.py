@@ -18,7 +18,7 @@ creds = tools.run_flow(flow, store)
 os.umask(0o007)
 ref_tok = creds.refresh_token
 print(f'Refresh Token: {ref_tok}')
-with open('ref_tok.txt') as f:
+with open('ref_tok.txt', 'w') as f:
     f.write(ref_tok)
 
 print(f'Written to ref_tok.txt')
