@@ -1,4 +1,4 @@
-__base_path__ = '/course/cs0111' # '__' just to keep things clean when importing
+__base_path__ = '/course/cs00' # '__' just to keep things clean when importing
 
 class HandinConfig:
     # minutes after submission up to which student won't be
@@ -17,13 +17,14 @@ class HandinConfig:
     late_days = 3  # late days on individual assignments
     # allow use of late days on projects (not implemented yet)
     late_days_on_projects = False
-    spreadsheet_id = '1r1sqsA8fp-1NZi5tMPc0P_LcLS4Zm_DAaUlmtTG7KFI'
+    spreadsheet_id = '1fcYiiVecWeSyMzdHIgtrX5x_TfzVYkV97AIkizFkiHY'
     sheet_name = 'Handins'
     student_email_col = 'B'
     start_col = 'A'
     end_col = 'AT'
     start_row = 2
     assignment_name_col = 'C'
+
     test_sheet_ssid = '1r1sqsA8fp-1NZi5tMPc0P_LcLS4Zm_DAaUlmtTG7KFI'
     test_sheet_name = 'testing'
     log_path = f'{__base_path__}/hta/handin/submission_log.txt'
