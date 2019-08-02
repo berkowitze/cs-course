@@ -1,7 +1,6 @@
 import yagmail
 import os
 import json
-import subprocess
 import sys
 import logging
 import urllib.parse
@@ -45,9 +44,10 @@ def handle(row: List[str]) -> None:
 
     # Figure out the student
     try:
-        student_login = asgn.id_to_login(int(row[6]))
+        sid = int(row[4])
+        student_login = asgn.id_to_login(sid)
     except ValueError:
-        raise FormError(f'No student with anonymous id {row[6]}')
+        raise FormError(f'No student with anonymous id {row[4]}')
 
     # figure out the question/assignment
     indicated_question = int(row[3])
@@ -62,14 +62,14 @@ def handle(row: List[str]) -> None:
 
     # figure out the handin based on the question
     try:
-        handin = real_question.get_handin_by_id(int(row[6]))
+        handin = real_question.get_handin_by_id(sid)
     except ValueError:
         raise FormError(f'No such handin for question {row[3]}')
 
     # figure out grader
     grader = handin.grader
 
-    grade_updated = (row[4] == 'Yes')
+    grade_updated = (row[5] == 'Yes')
 
     # Then change the student's grade
     if grade_updated:
@@ -83,7 +83,7 @@ def handle(row: List[str]) -> None:
     link_template = settings['request-form-filled-link']
     filled_link = link_template.format(assignment_name=asgn_link,
                                        indicated_question=indicated_question)
-    response = row[5].replace('\n', '<br/>')
+    response = row[6].replace('\n', '<br/>')
     body = f"""
     <ul>
         <li><strong>Assignment:</strong> {row[2]}</li>
