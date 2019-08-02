@@ -1,5 +1,6 @@
 import os
 import logging
+import webbrowser
 import traceback
 import sys
 import random
@@ -17,7 +18,7 @@ from classes import (started_asgns, Assignment, ta_path, hta_path, User,
                      all_asgns, rubric_base_path, locked_file, json_edit,
                      rubric_schema_path, loaded_rubric_check, asgn_data, BASE_PATH)
 from course_customization import full_asgn_name_to_dirname as fatd
-from helpers import green
+from helpers import green, open_folder
 
 
 app = Flask(__name__)
@@ -498,6 +499,15 @@ def run_updater():
         return f'Exception running updater function: {e}'
 
     return 'Success'
+
+@logged_in_route('/open_browser')
+def open_browser():
+    hp = workflow['handin'].handin_path
+    open_folder(hp)
+    # webbrowser.open(f'file://{hp}')
+    # print(hp)
+    return 'none'
+
 
 
 def get_max_points(cat):
