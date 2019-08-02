@@ -24,7 +24,7 @@ def get_partner_col() -> str:
     """
     print out information related to the partner column collected by the
     Google Form for this group assignment and returns the column letter """
-    print('')
+    print()
     print('You should collect partner data in the Google Form')
     print('according to the documentation (see INSERT LINK)')
     print('What column will partner information be stored in?')
@@ -51,6 +51,7 @@ asgn = ez_prompt('> ', exit_on_ctrl_c=True, checker=nonempty,
 if asgn in data['assignments']:
     print(f'Assignment {asgn} already exists.')
     exit(1)
+
 for full_name in data['assignments']:
     if full_asgn_name_to_dirname(full_name) == asgn:
         print(f'Existing assignment {full_name} has conflicting name with {asgn}')
@@ -63,7 +64,7 @@ print(f'Gathering data for: {asgn!r}\n')
 print('Will this be graded anonymously? (usually no for projects)')
 opt = opt_prompt(['Anonymous', 'Non-anonymous'], exit_on_ctrl_c=True)
 anonymous = (opt == 1)
-print('')
+print()
 
 print('When is the assignment due?')
 due = date_prompt(exit_on_ctrl_c=True, after=datetime.now(),
@@ -82,7 +83,7 @@ late_due = date_prompt(default=default_late,
                        after_msg='Late deadline must be after due date',
                        enforce_after=True)
 
-print('')
+print()
 
 print('Is this a group assignment?')
 group_asgn = yn_prompt(exit_on_ctrl_c=True)
@@ -98,11 +99,11 @@ if group_asgn:
                                     checker=nonempty,
                                     fail_check_msg='Must be nonempty')
 
-    print('')
+    print()
     print('Is this a multi-part group assignment? (i.e. design check and')
     print('final handin graded separately)')
     if yn_prompt(exit_on_ctrl_c=True):
-        print('')
+        print()
         print('Is this assignment the first part of the project?')
         print('(i.e. this is the design check)')
         if yn_prompt(exit_on_ctrl_c=True):
@@ -119,7 +120,7 @@ if group_asgn:
 else:
     group_data = None
 
-print('')
+print()
 print('Gathering question data...')
 
 qs: List[dict] = []
