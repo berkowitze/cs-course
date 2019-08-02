@@ -67,7 +67,7 @@ class HTA_Assignment(Assignment):
         assert pexists(grade_base_path), \
             f'{grade_base_path} directory does not exist'
 
-        self.sfiles_base_path = pjoin(s_files_base_path, asgn_specific_name)
+        self.sfiles_base_path = pjoin(s_files_base_path, self.mini_name)
 
         # We also use emails_sent as boolean value for whether grading has
         # completed or not (in addition to already sending the emails)

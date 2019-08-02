@@ -1,6 +1,6 @@
-echo "Enter a branch name to use with git";
-read branchName;
-git checkout -b $branchName;
+# echo "Enter a branch name to use with git";
+#read branchName;
+#git checkout -b $branchName;
 basepath=$(realpath `dirname $0`/..);
 
 if [ ! -e $basepath/ta/venv/bin ]; then
