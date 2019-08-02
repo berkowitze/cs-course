@@ -13,30 +13,12 @@ from helpers import locked_file, BASE_PATH
 if TYPE_CHECKING:
     from classes import Question, Assignment
 
+spath = os.path.join(BASE_PATH, 'hta/grading/regrading/settings.json')
+with locked_file(spath) as f:
+    regrade_settings = json.load(f)
 
 emoji_path = os.path.join(BASE_PATH, 'ta/asciianimals')
 emojis = os.listdir(emoji_path)
-
-
-def increasing(lst: list) -> bool:
-    """
-
-    returns whether or not the input list is increasing (non-decreasing)
-    (all numbers larger or equal to than previous numbers)
-
-    :param lst: sequence of numbers
-    :type lst: Sequence[float]
-    :returns: True if lst is non-decreasing, False otherwise
-    :rtype: bool
-
-    """
-    while len(lst) >= 2:
-        fst = lst.pop(0)
-        if fst > lst[0]:
-            return False
-
-    return True
-
 
 def full_asgn_name_to_dirname(asgn_name: str) -> str:
     """
@@ -73,10 +55,11 @@ def get_empty_raw_grade(asgn: Assignment) -> RawGrade:
     {"Functionality": None, "Design": None}
 
     """
-    with locked_file(asgn.bracket_path) as f:
-        bracket: Bracket = json.load(f)
+    empty_grade: RawGrade = {}
+    for q in asgn.questions:
+        q_rub = q.copy_rubric()
+        empty_grade.update({cat: None for cat in q_rub['rubric']})
 
-    empty_grade: RawGrade = {k: None for k in bracket.keys()}
     return empty_grade
 
 
@@ -106,50 +89,16 @@ def determine_grade(raw_grade: RawGrade,
     {"Functionality": "Check Plus", "Design": "Check Minus"}
 
     """
-    def use_bracket(b_item: List[BracketItem],
-                    score: Union[int, float]
-                    ) -> str:
-        bounds = [k['upper_bound_inclusive'] for k in b_item]
-        if not increasing(bounds):
-            raise ValueError('Bounds must increase throughout bracket')
-
-        for i, item in enumerate(b_item):
-            if score <= item['upper_bound_inclusive']:
-                cg = item['grade']
-                if not late:
-                    return cg
-                elif late and i == 0:
-                    # lowest grade anyway...
-                    return cg
-                else:
-                    # go down a grade bracket
-                    ng = b_item[i - 1]['grade']
-                    return f"{cg} -> {ng}"
-
-        g = b_item[-1]['grade']
-        print(f'Warning: grade above uppermost bound. Giving {g}')
-        return g
-
-    # "No Handin" only comes from a None in the grade dictionary
-    with locked_file(asgn.bracket_path) as f:
-        brackets: Bracket = json.load(f)
-
-    assert brackets.keys() == raw_grade.keys(), 'invalid bracket'
-
+    max_grades = asgn.max_grades()  # cat -> max possible grade
     final_grade = {}
-    for cat in brackets:
-        cg = raw_grade[cat]
-        if cg is None:
+    for cat in raw_grade:
+        if raw_grade[cat] is None:
             final_grade[cat] = "No handin"
-        else:
-            if brackets[cat] == "Numeric":
-                if late:
-                    g = f'{cg} -> {cg - 1}'
-                    final_grade[cat] = g
-                else:
-                    final_grade[cat] = str(cg)
-            else:
-                final_grade[cat] = use_bracket(brackets[cat], cg)
+            continue
+
+        max_grade = max_grades[cat]
+        grade_val = max(raw_grade[cat], 0)
+        final_grade[cat] = f"{grade_val} / {max_grade}"
 
     return final_grade
 
@@ -176,19 +125,34 @@ def get_handin_report_str(rubric: Rubric,
         if not comments:
             return ''
 
-        pre_string = '  '
-        s = f'{pre_string}{category}\n'
+        pre_string = '    '
+        s = ''
         for comment in comments:
             comment_lines = fill(comment, 74,
-                                 initial_indent=f'{pre_string}{pre_string}- ',
-                                 subsequent_indent=f'{pre_string * 2}  ')
+                                 initial_indent=f'{pre_string}- ',
+                                 subsequent_indent=f'{pre_string}  ')
             s += f'{comment_lines}\n\n'
 
         return s
 
-    report_str = f'Question {self._qnumb}: {question.code_filename}\n'
+    def grade_section(rc: RubricCategory) -> str:
+        gs = ''
+        for item in rc['rubric_items']:
+            assert item['selected'] is not None, 'unselected rubric item'
+            opt = item['options'][item['selected']]
+            pts = opt['point_val']
+            descr = opt['descr']
+            max_pts = max([opt['point_val'] for opt in item['options']])
+            gs += f'    {pts} / {max_pts} - {item["descr"]}: {descr}\n'
+        
+        gs += '\n'
+        return gs
+
+    report_str = f'Question {question._qnumb}: {question.code_filename}\n'
     for cat in rubric['rubric']:
         given_cs = rubric['rubric'][cat]['comments']['given']
+        report_str += f'  {cat}\n'
+        report_str += grade_section(rubric['rubric'][cat])
         report_str += comment_section(cat, given_cs)
 
     gen_comments = rubric['comments']['given']
@@ -203,7 +167,10 @@ def get_handin_report_str(rubric: Rubric,
         report_str += f'\n{emoji_text}\n\n'
 
     asgn_lnk = urllib.parse.quote(question.assignment.full_name)
-    complaint_lnk = f'https://docs.google.com/forms/d/e/1FAIpQLSetfASPqeG_pc8Jw4CCYIgVpRblxJTIJ36sYPjE55fYHNnM2A/viewform?usp=pp_url&entry.1832652590={asgn_lnk}&entry.1252387205={question._qnumb}'
+    
+    lnk_temp = regrade_settings['request-form-filled-link']
+    complaint_lnk = lnk_temp.format(assignment_name=asgn_lnk,
+                                    indicated_question=question._qnumb)
     report_str += f'Please direct any grade complaint/question to: {complaint_lnk}'
     report_str += f'\n\n{"-" * 74}\n'
     return report_str
