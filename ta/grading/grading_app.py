@@ -507,6 +507,8 @@ def get_max_points(cat):
 
     return max_val
 
+app.jinja_env.globals.update(get_max_points=get_max_points)
+
 if __name__ == '__main__':
     port = os.environ.get('GRADING_APP_PORT', 6924)
     runtime_dir = os.path.dirname(os.path.abspath(__file__))
