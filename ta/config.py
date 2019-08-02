@@ -99,7 +99,7 @@ class CONFIG:
 
     handin = HandinConfig
     regrade = RegradeConfig
-    eupported_test_suites = ['Python', 'Pyret', '']
+    supported_test_suites = ['Python', 'Pyret', '']
 
     error_handler_email = 'eliberkowitz@gmail.com'
     error_handler_name = 'Eli'
