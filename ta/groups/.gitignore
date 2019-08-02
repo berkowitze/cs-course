@@ -1,2 +1,6 @@
 *
 !.gitignore
+!students.txt
+!students.csv
+!tas.txt
+!htas.txt
