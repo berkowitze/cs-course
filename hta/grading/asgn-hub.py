@@ -88,6 +88,7 @@ while True:
 
         generate_gradebook(gradebook_path)
         print(f'Gradebook generated in "{gradebook_path}"')
+        input('Press enter to coninue')
         STATE = State.home
 
     elif STATE == State.summaries:
@@ -171,7 +172,7 @@ while True:
         except OSError as e:
             print("Some error with the json file. Please read error message.")
             print(e.strerror)
-            break
+            raise
 
         try:
             asgn.init_grading()
@@ -295,7 +296,8 @@ while True:
             # send reports to all students
             # TODO : change to those who handed in? careful for group projects
             to_send = student_list()
-            print('After sending reports, deanonymize assignment if needed.')
+            asgn.record_finish()
+            asgn.set_emails_sent()
 
         send_grade_reports(asgn, to_send)
         STATE = State.modify_asgn
