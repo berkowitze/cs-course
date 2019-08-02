@@ -1,6 +1,5 @@
 *
 !.gitignore
-!setup.sh
 !lintfiles
 !ta
 !hta
