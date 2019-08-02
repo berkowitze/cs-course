@@ -18,24 +18,6 @@ if [ ! -e $basepath/ta/venv/bin ]; then
   virtualenv -p $PYTHONPATH "$basepath/ta/venv";
   $basepath/ta/venv/bin/pip install -r $basepath/ta/requirements.txt;
 fi
-function writeIfNotExists() {
-    [ -e $1 ] || echo $2 >> $1;
-}
-writeIfNotExists $basepath/hta/grading/extensions.json "[]"
-writeIfNotExists $basepath/hta/s-t-blocklist.json "{}"
-writeIfNotExists $basepath/ta/t-s-blocklist.json "{}"
-
-writeIfNotExists $basepath/ta/assignments.json '{
-  "aa_README": [
-    "all keys must be the same as the Google Form dropdown option",
-    "dates are mm/dd/yyyy HH:MM_M format (i.e. 11/29/2018 05:00PM)",
-    "format for each assignment in custom_types.py"
-  ],
-  "assignments": {}
-}'
-
-writeIfNotExists $basepath/hta/handin/submission_log.txt "";
-
 echo '
 1. Create handin form (Instructions: <INSERT LINK>)
     a. Get ID of spreadsheet the form dumps into
@@ -54,24 +36,9 @@ echo '
   import yagmail
   yagmail.register(email, password)
 '
-function rename-execs() {
-    cd $1;
-    python -c "import os; [os.rename(f, f.replace('111', '00')) for f in os.listdir('.') if '111' in f]";
-    sed 's/111/00/g' .gitignore > ugh;
-    mv -f ugh .gitignore;
-    cd $basepath;
 
-}
+git update-index --skip-worktree $basepath/ta/groups/students.csv $basepath/ta/groups/tas.txt $basepath/ta/groups/htas.txt $basepath/ta/groups/students.txt $basepath/ta/assignments.json $basepath/ta/t-s-blocklist.json $basepath/hta/s-t-blocklist.json
 
-rename-execs $basepath/tabin;
-rename-execs $basepath/htabin;
-
-function touch-if-dne() {
-    [ -e $1 ] || touch $1;
-}
-
-touch-if-dne $basepath/ta/groups/tas.txt
-touch-if-dne $basepath/ta/groups/htas.txt
-touch-if-dne $basepath/ta/groups/students.txt
-touch-if-dne $basepath/ta/groups/students.csv
+echo "yes" > $basepath/initialized.txt;
+git update-index --skip-worktree $basepath/initialized.txt;
 
