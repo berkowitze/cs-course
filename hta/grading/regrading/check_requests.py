@@ -2,7 +2,6 @@ import yagmail
 import os
 import urllib.parse
 import json
-import subprocess
 import sys
 import logging
 
@@ -11,6 +10,7 @@ from typing import List
 from helpers import locked_file, CONFIG, BASE_PATH
 from googleapi import sheets_api
 from hta_classes import HTA_Assignment
+from handin_helpers import email_to_login
 
 # quiet mode just overwrites print function, it's terrible but it works
 # and logging is annoying
@@ -40,13 +40,13 @@ class FormError(Exception):
 def handle(row: List[str]) -> None:
     # figure out who the student is
     student_email = row[1]
-    em_to_login = [pjoin(BASE_PATH, 'tabin/email-to-login'), student_email]
-    student_login = subprocess.check_output(em_to_login, text=True).strip()
-    if not student_login:
+    try:
+        login = email_to_login(student_email)
+    except ValueError:
         subject = 'Error processing grade complaint'
         body = (
           f'<p>There was an error processing your grade complaint request.</p>'
-          f'<p>There was no account associated with the Brown email '
+          f'<p>There was no account associated with the email '
           f'{student_email}.</p>'
           f'<p>If you believe this is an error, please '
           f'<a href="mailto:{CONFIG.hta_email}">email the HTAs</a>.'
@@ -65,11 +65,11 @@ def handle(row: List[str]) -> None:
         raise FormError(f'Assignment {asgn.full_name!r} is not graded yet')
 
     try:
-        student_ID = asgn.login_to_id(student_login)
+        student_ID = asgn.login_to_id(login)
     except ValueError:
         err = (
                 f'No submission found for {asgn.full_name!r} for student with'
-                f' email {row[2]!r} login {student_login!r}'
+                f' email {row[2]!r} login {login!r}'
               )
         raise FormError(err)
 
@@ -166,7 +166,7 @@ for i, row in enumerate(rows):
 
         Error message: {e.args[0]}
 
-        <a href="mailto:cs0111headtas@lists.brown.edu">Email the htas</a> if
+        <a href="mailto:{CONFIG.hta_email}">Email {CONFIG.hta_name}</a> if
         you have any questions or believe this is an error.
         """
         yag.send(row[1], 'Invalid regrade request', body)

@@ -1,5 +1,5 @@
 #!/bin/bash
-BASE=$(dirname "$0/.." | xargs realpath);
+BASE=`realpath "$(dirname $0)/.."`
 BACKUPPATH=${BASE}/hta/data_backups;
 cd $BASE;
 

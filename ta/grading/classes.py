@@ -17,7 +17,7 @@ from custom_types import (HTMLData, Log, LogItem, Rubric,
                           AssignmentJson, AssignmentData)
 from helpers import (loaded_rubric_check, locked_file, json_edit,
                      require_resource, update_comments, rubric_check,
-                     remove_duplicates, moss_langs, CONFIG)
+                     remove_duplicates, moss_langs, CONFIG, lang_dict)
 
 # READ BEFORE EDITING THIS FILE #
 # do not use the builtin `open` function; instead use the
@@ -279,7 +279,7 @@ class Assignment:
             f'started assignment "{n}" with no blocklist file'
         assert pexists(self.files_path), \
             f'started assignment "{n}" with no student code directory'
-
+        
         if not self.anonymous:
             with locked_file(self.anon_path) as f:
                 data: Dict[str, int] = json.load(f)
@@ -513,7 +513,7 @@ class Question:
         if self._json['ts_lang'] is None:
             self.test_path = None
         else:
-            test_filename = f'q{qn}.{self._json["ts_lang"]}'
+            test_filename = f'q{qn}.{lang_dict[self._json["ts_lang"]]}'
             self.test_path = pjoin(parent_assignment.test_path, test_filename)
 
         self.load_handins()
@@ -1166,7 +1166,7 @@ class Handin:
         grade = {}
         for key in rubric['rubric']:
             # set grade for this category
-            grade[key] = 0
+            grade[key] = rubric['rubric'][key]['fudge_points'][0]
             for rubric_item in rubric['rubric'][key]['rubric_items']:
                 sel_ndx = rubric_item['selected']
                 if sel_ndx is None:
@@ -1178,7 +1178,7 @@ class Handin:
 
                 grade[key] += rubric_item['options'][sel_ndx]['point_val']
 
-        for key in grade:
+        for key in grade:  # ceil all grades to 0
             if grade[key] < 0:
                 grade[key] = 0
 

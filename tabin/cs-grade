@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+
+
 OPTIND=1;  # Reset in case getopts has been used previously in the shell.
 
 PORT=6924;
@@ -21,10 +23,10 @@ done
 shift $((OPTIND -1))
 
 
-#!/usr/bin/env bash
-
 umask 007;
-execDir=$(dirname $0);
-cd "$execDir/../ta/grading";
+baseDir=`realpath "$(dirname $0)/../"`;
+echo $baseDir goddamn
+cd "$baseDir/ta/grading";
 HOST="0.0.0.0"
-"$execDir/../ta/venv/bin/gunicorn" --bind "$HOST:$PORT" --certfile "$execDir/../ta/cert.pem" --keyfile "$execDir/../ta/key.pem" grading_app:app;
+gunicorn="$baseDir/ta/venv/bin/gunicorn"
+`realpath $gunicorn` --bind "$HOST:$PORT" --certfile "$baseDir/ta/cert.pem" --keyfile "$baseDir/ta/key.pem" grading_app:app;

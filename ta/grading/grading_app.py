@@ -1,5 +1,6 @@
 import os
 import logging
+import webbrowser
 import traceback
 import sys
 import random
@@ -17,8 +18,7 @@ from classes import (started_asgns, Assignment, ta_path, hta_path, User,
                      all_asgns, rubric_base_path, locked_file, json_edit,
                      rubric_schema_path, loaded_rubric_check, asgn_data, BASE_PATH)
 from course_customization import full_asgn_name_to_dirname as fatd
-from helpers import green
-
+from helpers import green, open_folder
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -378,7 +378,7 @@ def load_rubric(mini_name, qn):
         return json.dumps({
                 'started': started,
                 'rubric': rubric
-            })
+        })
 
 @logged_in_route('/create_rubric/<mini_name>/<qn>')
 def create_rubric(mini_name, qn):
@@ -499,6 +499,12 @@ def run_updater():
 
     return 'Success'
 
+@logged_in_route('/open_browser')
+def open_browser():
+    hp = workflow['handin'].handin_path
+    open_folder(hp)
+    return 'none'
+
 
 def get_max_points(cat):
     max_val = 0
@@ -506,6 +512,8 @@ def get_max_points(cat):
         max_val += max(map(lambda opt: opt['point_val'], item['options']))
 
     return max_val
+
+app.jinja_env.globals.update(get_max_points=get_max_points)
 
 if __name__ == '__main__':
     port = os.environ.get('GRADING_APP_PORT', 6924)

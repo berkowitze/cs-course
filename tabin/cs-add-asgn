@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from helpers import CONFIG, locked_file, json_edit
 from prompts import opt_prompt, date_prompt, yn_prompt, ez_prompt
 from typing import Dict, List, Optional
+from course_customization import full_asgn_name_to_dirname
 
 data_path = os.path.join(CONFIG.base_path, 'ta/assignments.json')
 with locked_file(data_path) as f:

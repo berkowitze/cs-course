@@ -10,7 +10,6 @@
 !cs-lab-checkoff
 !cs-lab-switch
 !cs-rubric-info
-!cs-update-web
 !custom_types.py
 !email-to-login
 !helpers.py
@@ -23,3 +22,4 @@
 !mossScript
 !config.py
 !mypy
+!course_customization.py

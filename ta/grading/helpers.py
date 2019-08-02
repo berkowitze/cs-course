@@ -4,6 +4,7 @@
 import json
 import os
 import string
+import sys
 from os.path import join as pjoin
 from os.path import exists as pexists
 from contextlib import contextmanager
@@ -24,6 +25,27 @@ moss_langs = ("c", "cc", "java", "ml", "pascal", "ada", "lisp", "scheme",
               "python", "mips", "prolog", "spice", "vb", "csharp",
               "modula2", "a8086", "javascript", "plsql")
 
+
+import subprocess
+import sys
+
+lang_dict = {
+    'Python': 'py',
+    'Pyret': 'arr'
+}
+
+if sys.platform == 'darwin':
+    def open_folder(path):
+        subprocess.check_call(['open', '--', path])
+elif sys.platform == 'linux2':
+    def open_folder(path):
+        subprocess.check_call(['xdg-open', '--', path])
+elif sys.platform == 'win32':
+    def open_folder(path):
+        subprocess.check_call(['explorer', path])
+else:
+    def open_folder(path):
+        raise ValueError(f'{sys.platform} not supported')
 
 @contextmanager
 def locked_file(filename: str, mode: str = 'r') -> Generator:
