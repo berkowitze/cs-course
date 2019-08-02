@@ -22,4 +22,5 @@
 !cs111-check-regrade-responses
 !cs111-give-extension
 !course_customization.py
+!cs111-grading-app-cert
 !setupper.sh

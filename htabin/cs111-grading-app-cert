@@ -1,0 +1,13 @@
+#!/bin/sh
+umask 007
+execDir=$(dirname $0);
+echo "This script generates an ssl certificate for the grading app to"
+echo "run over ssl (therefore using https)"
+echo "press enter to continue..."
+read a
+
+
+certPath=`realpath "$execDir/../ta/cert.pem"`;
+keyPath=`realpath "$execDir/../ta/key.pem"`;
+/bin/openssl req -x509 -newkey rsa:4096 -nodes -out $certPath -keyout $keyPath -days 900
+chmod 660 $certPath $keyPath
