@@ -42,3 +42,5 @@ git update-index --skip-worktree $basepath/ta/groups/students.csv $basepath/ta/g
 echo "yes" > $basepath/initialized.txt;
 git update-index --skip-worktree $basepath/initialized.txt;
 
+cp $basepath/.pre-commit-hook $basepath/.git/hooks/pre-commit
+
