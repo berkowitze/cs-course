@@ -6,6 +6,7 @@ import subprocess
 import sys
 import traceback
 import yagmail
+import socket
 import zipfile
 from contextlib import contextmanager
 from typing import Optional, List
@@ -37,6 +38,9 @@ jinja_env = Environment(loader=FileSystemLoader(template_path))
 jinja_env.trim_blocks = True
 jinja_env.lstrip_blocks = True
 
+dry_run = len(sys.argv) > 1 and sys.argv[1] == '--dry'
+if dry_run:
+    print('Running submission checking in dry mode')
 
 class HState(Enum):
     on_time = auto()  # on time
@@ -183,7 +187,10 @@ class Response:
 
         dt_fmt = '%m/%d/%Y %I:%M%p'
         self.due = datetime.strptime(self.asgn['due'], dt_fmt)
-        self.late_due = datetime.strptime(self.asgn['late_due'], dt_fmt)
+        if HCONFIG.default_late_deadline is None:
+            self.late_due = None
+        else:
+            self.late_due = datetime.strptime(self.asgn['late_due'], dt_fmt)
 
     def get_status(self) -> HState:
         sub_time = self.sub_time
@@ -206,6 +213,8 @@ class Response:
                     return HState.first_deadline_buffer
                 else:
                     return HState.on_time
+            elif late_due is None:
+                return HState.late
             elif sub_time <= late_due:
                 if add_late_day(self.login, self.dir_name):
                     return HState.using_late_day
@@ -256,6 +265,10 @@ class Response:
             self.__download(False)
         elif late:
             pass  # do not download late submissions
+        
+        if dry_run:
+            print(f'Dry process of {self.login} row={self.ident+2} asgn={self.asgn_name}')
+            return
 
         if status == HState.on_time:
             self.__confirm_email(late=False, warn=False)
@@ -382,7 +395,7 @@ class Response:
             c = (
                  f'Student {self.login} submitted {self.asgn_name!r} after '
                  f'grading had started.\nTo grade,'
-                 f'run cs111-grade and extract the handin. Let an HTA know '
+                 f'run cs50-grade and extract the handin. Let an HTA know '
                  f'when you are done so the report can be sent.'
                  )
             yag.send(to=CONFIG.hta_email,
@@ -489,13 +502,19 @@ def fetch_submissions() -> List[Response]:
 
     service = sheets_api()
     spreadsheets = service.spreadsheets().values()
-    result = spreadsheets.get(spreadsheetId=ss_id, range=rng).execute()
+    try:
+        result = spreadsheets.get(spreadsheetId=ss_id, range=rng).execute()
+    except socket.timeout:
+        print('socket timed out in spreadsheet get')
+        sys.exit(1)
+    except OSError as e:
+        print('OSError in spreadsheet get (511 check_submissions)')
+        sys.exit(1)
 
     try:
         vals = result['values']
-    except KeyError as e:
+    except KeyError as e:  # this happens when the handin spreadsheet is empty
         sys.exit(0)
-        raise ValueError('Handin spreadsheet is empty') from e
 
     responses = []
     for i, row in enumerate(vals):

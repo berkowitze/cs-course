@@ -1,5 +1,6 @@
 import json
 import sys
+import httplib2
 
 from apiclient.discovery import Resource, build
 from google.oauth2.credentials import Credentials
@@ -24,12 +25,16 @@ def sheets_api() -> Resource:
         client_id=client_id,
         client_secret=client_secret
     )
-
     try:
-        return build('sheets', 'v4', credentials=credentials)
-    except OSError as e:
-        print(f'Sheets network unreachable with errno {e.errno}')
+        sheets = build('sheets', 'v4', credentials=credentials)
+    except httplib2.ServerNotFoundError:
+        print('httplib2 exception in sheets build')
         sys.exit(1)
+    except Exception as e:
+        print(f'{e} exception in sheets build')
+        sys.exit(1)
+
+    return sheets
 
 
 def drive_api() -> Resource:
@@ -43,9 +48,13 @@ def drive_api() -> Resource:
         client_id=client_id,
         client_secret=client_secret
     )
-
     try:
-        return build('drive', 'v3', credentials=credentials)
-    except OSError as e:
-        print(f'Drive network unreachable with errno {e.errno}')
+        drive = build('drive', 'v3', credentials=credentials)
+    except httplib2.ServerNotFoundError:
+        print('httplib2 exception in drive build')
         sys.exit(1)
+    except Exception as e:
+        print(f'{e} exception in drive build')
+        sys.exit(1)
+
+    return drive

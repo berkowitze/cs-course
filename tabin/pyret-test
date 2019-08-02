@@ -14,5 +14,5 @@ printf '\n'
 # cd $OUTP
 # echo $IMPL $TEST $OUTP | /home/jswrenn/projects/powder-monkey/evaluate/evaluate-many.sh &>/dev/null
 
-# python /course/cs0111/tabin/print_results.py pyret $OUTP
+# python /course/cs0050/tabin/print_results.py pyret $OUTP
 

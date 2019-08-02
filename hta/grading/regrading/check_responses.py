@@ -64,7 +64,7 @@ def handle(row: List[str]) -> None:
     try:
         handin = real_question.get_handin_by_id(sid)
     except ValueError:
-        raise FormError(f'No such handin for question {row[3]}')
+        raise FormError(f'No such handin for question {row[3]} id {row[4]}')
 
     # figure out grader
     grader = handin.grader
@@ -88,6 +88,7 @@ def handle(row: List[str]) -> None:
     <ul>
         <li><strong>Assignment:</strong> {row[2]}</li>
         <li><strong>Question:</strong> {row[3]}</li>
+        <li><strong>Grade updated:</strong> {"Yes" if grade_updated else "No"}</li>
         <li><strong>Instructor's response:</strong><br/>{response}</li>
     </ul>
     <p>If you so desire, please use <a href='{filled_link}'>this Google
@@ -133,8 +134,8 @@ for i, row in enumerate(rows):
 
         Error message: {e.args[0]}
 
-        <a href="mailto:cs0111headtas@lists.brown.edu">Email the htas</a>,
-        or <a href="mailto:eliberkowitz@gmail.com">Eli</a> if you have any
+        <a href="mailto:{CONFIG.hta_email}">Email {CONFIG.hta_name}</a>,
+        or <a href="mailto:{CONFIG.error_handler_email}">{CONFIG.error_handler_name}</a> if you have any
         questions.
         """
         yag.send(row[1], 'Invalid regrade response', body)
@@ -156,7 +157,7 @@ for i, row in enumerate(rows):
                     'setting the handled column to TRUE in the Google Sheet.'
                     f'Manually set the value of cell {cell} to TRUE in this'
                     f'spreadsheet: {ss_url}. Also, forward this email to '
-                    f'Eli at eliberkowitz@gmail.com.'
+                    f'{CONFIG.error_handler_name} at {CONFIG.error_handler_email}.'
                     )
             raise ValueError(err) from e
 
