@@ -494,6 +494,7 @@ def fetch_submissions() -> List[Response]:
     try:
         vals = result['values']
     except KeyError as e:
+        sys.exit(0)
         raise ValueError('Handin spreadsheet is empty') from e
 
     responses = []
