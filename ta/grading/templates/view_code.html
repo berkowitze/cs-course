@@ -11,11 +11,15 @@
         $(x).siblings('input').select();
         document.execCommand('copy');
       }
+
+      function openDir(x) {
+        fetch('/open_browser');
+      }
     </script>
   </head>
   <body>
     <script src="/static/prism.js"></script>
-    <h4>Code directory is: <input style="width: 40%;" type="text" value="{{ code_dir }}"/> <button data-link="{{ code_dir }}" onclick="copyCode(this)">(click here to copy)</button></h4>
+    <h4>Code directory is: <input style="width: 40%;" type="text" id='code-dir' value="{{ code_dir }}"/> <button data-link="{{ code_dir }}" onclick="copyCode(this)">(click here to copy)</button><button onclick='openDir(this)'>(click here to open file browser)</button></h4>
     <button class='btn' data-clipboard-target='#code-content'>Copy code to clipboard</button>
     <a target="_new" href="https://code.pyret.org/editor">Open Pyret Editor</a>
     <button class='btn' data-clipboard-target='#code-with-tests'>Copy code with tests appended to clipboard</button>
