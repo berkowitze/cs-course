@@ -1166,7 +1166,7 @@ class Handin:
         grade = {}
         for key in rubric['rubric']:
             # set grade for this category
-            grade[key] = 0
+            grade[key] = rubric['rubric'][key]['fudge_points'][0]
             for rubric_item in rubric['rubric'][key]['rubric_items']:
                 sel_ndx = rubric_item['selected']
                 if sel_ndx is None:
@@ -1178,7 +1178,7 @@ class Handin:
 
                 grade[key] += rubric_item['options'][sel_ndx]['point_val']
 
-        for key in grade:
+        for key in grade:  # ceil all grades to 0
             if grade[key] < 0:
                 grade[key] = 0
 

@@ -2,7 +2,7 @@ import os
 from oauth2client import client, file, tools
 # this script gets a refresh token using credentials.json
 # you will need to copy the refresh token into ref_tok.txt
-
+os.umask(0o007)
 if os.path.exists('credentials.json'):
     import sys
     print('credentials.json already exists, remove to continue.')

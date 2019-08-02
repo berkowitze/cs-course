@@ -62,7 +62,6 @@ class HTA_Assignment(Assignment):
 
             self.login_handin_list = list(d.keys())
 
-        asgn_specific_name = f'{self.mini_name}'
         self.handin_path = handin_base_path
 
         assert pexists(grade_base_path), \
@@ -151,7 +150,7 @@ class HTA_Assignment(Assignment):
         """
         sub_paths = []
         anon_map: Dict[str, int] = {}
-        print(self.handin_path)
+
         file_sys = os.walk(self.handin_path)
         students = next(file_sys)[1]
         submitted_students = []
@@ -384,7 +383,6 @@ class HTA_Assignment(Assignment):
 
         self._id_to_login_map[ident] = login
         self._login_to_id_map[login] = ident
-        self.login_handin_list.append(login)
 
         self._load_questions()
         for question in self.questions:
@@ -463,7 +461,6 @@ class HTA_Assignment(Assignment):
             with locked_file(q.log_filepath, 'w') as f:
                 json.dump(new_data, f, indent=2, sort_keys=True)
 
-        self.login_handin_list.remove(login)
         self._id_to_login_map.pop(ident, None)
         self._login_to_id_map.pop(login, None)
 

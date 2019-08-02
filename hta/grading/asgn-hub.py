@@ -22,6 +22,9 @@ from helpers import red, moss_langs
 
 asgns: List[HTA_Assignment] = get_hta_asgn_list()
 
+backup_exec = pjoin(BASE_PATH, 'htabin/cs50-data-backup')
+restore_backup = pjoin(BASE_PATH, 'htabin/cs50-restore-backup')
+
 
 @unique
 class State(Enum):
@@ -266,6 +269,8 @@ while True:
     elif STATE == State.email_reports:
         resp11 = opt_prompt(['Send to individual student',
                              'Send to all students'])
+        # whether or not to update assignments.json with emails_sent: True
+        mark_sent = False 
         if resp11 is None:
             break
         elif resp11 == 1:
@@ -296,10 +301,13 @@ while True:
             # send reports to all students
             # TODO : change to those who handed in? careful for group projects
             to_send = student_list()
-            asgn.record_finish()
-            asgn.set_emails_sent()
+            mark_sent = True
+            print('After sending reports, deanonymize assignment if needed.')
 
         send_grade_reports(asgn, to_send)
+        if mark_sent:
+            asgn.set_emails_sent()
+
         STATE = State.modify_asgn
 
     elif STATE == State.view_flagged_handins:
@@ -386,13 +394,11 @@ while True:
             if fn is None:
                 break
 
-            make_backup = pjoin(BASE_PATH, 'htabin/cs111-data-backup')
             print('Creating backup...')
-            subprocess.call([make_backup, fn])
+            subprocess.call([backup_exec, fn])
             print('')
 
         elif resp14 == 2:
-            restore_backup = pjoin(BASE_PATH, 'htabin/cs111-restore-backup')
             subprocess.call(restore_backup)
 
         elif resp14 == 3:
@@ -416,7 +422,7 @@ while True:
                 date_data.append((f, dt))
             except ValueError:
                 continue
-        
+
         try:
             mx_dat = max(date_data, key=lambda dat: dat[1])
         except ValueError:
@@ -460,7 +466,7 @@ while True:
         8. All extension data will be removed.
 
         You should be able to restore all this data using the restore
-        option in cs111-asgn-hub.
+        option in cs-asgn-hub.
 
         Do not ctrl-c once starting; if you want to cancel, restore
         a backup instead. If this script fails, restore the backup then debug.
@@ -475,8 +481,7 @@ while True:
             continue
 
         print('Creating backup...')
-        make_backup = pjoin(BASE_PATH, 'htabin/cs111-data-backup')
-        subprocess.call(make_backup)
+        subprocess.call(backup_exec)
         print('')
 
         for assignment in get_hta_asgn_list():
