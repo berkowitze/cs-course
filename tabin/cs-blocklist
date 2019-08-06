@@ -8,56 +8,53 @@ import prompts
 import re
 import subprocess
 import sys
-from helpers import json_edit, line_read
+from prompts import toggle_prompt
+from helpers import json_edit, line_read, locked_file
 import tabulate
 from config import CONFIG
 from typing import Set, List
 
 os.umask(0o007)
 
-anon_path = os.path.join(CONFIG.base_path, 'ta/t-s-blocklist.json')
+bl_path = os.path.join(CONFIG.base_path, 'ta/t-s-blocklist.json')
 students_path = os.path.join(CONFIG.base_path, 'ta/groups/students.csv')
 
-assert os.path.exists(anon_path), f'anon_path {anon_path} does not exist'
+assert os.path.exists(bl_path), f'blocklist file {bl_path} does not exist'
+assert os.path.exists(students_path), \
+    f'student file {students_path} does not exist'
+
+with locked_file(bl_path) as f:
+    curr_bl = json.load(f)
 
 ta_login = getpass.getuser()
 assert prompts.yn_prompt(f'Confirm your username is {ta_login}')
 
-ls = []
+curr_blocked = set(curr_bl.get(ta_login, []))
+
+student_print = []
 lines: List[List[str]] = line_read(students_path, delim=',')
 students = []
-for i, (login, email, name) in enumerate(lines):
+for login, email, name in lines:
+    if login in curr_blocked:
+        continue
+
     students.append(login)
-    ls.append([i + 1, login, name])
+    student_print.append((login, name))
 
-print(tabulate.tabulate(ls, headers=('#', 'Login', 'Name')))
 
-to_blocklist: Set[str] = set()
-
-print('')
-print('Which user(s) would you like to blocklist?')
+print()
+print('Which student(s) would you like to blocklist?')
 print('Type the number next to their login(s)')
-print('(ctrl-c to stop)')
+print('(red = blocklisted; ctrl-c when you\'re done')
 
-while True:
-    inp = prompts.int_prompt(len(lines), '> ')
-    if inp is None:
-        # exited...
-        break
+if not students:
+    print('No students to blocklist')
+else:
+    to_blocklist = toggle_prompt(students,
+                                 set(),
+                                 [f'{r[0]} ({r[1]})' for r in student_print])
 
-    student = students[inp - 1]
-    if prompts.yn_prompt(f'Confirm you want to blocklist {student}'):
-        to_blocklist.add(student)
-        msg = (
-               f'{student} blocklisted... '
-               f'Enter another number or ctrl-c to end'
-              )
-        print(msg)
+    with json_edit(bl_path) as data:
+        data[ta_login] = list(curr_blocked | to_blocklist)
 
-with json_edit(anon_path) as data:
-    if ta_login not in data:
-        data[ta_login] = []
-
-    data[ta_login] = list(set(data[ta_login]).union(to_blocklist))
-
-print('\nBlocklist updated.')
+    print('\nBlocklist updated.')

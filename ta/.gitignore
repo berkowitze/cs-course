@@ -8,3 +8,5 @@
 !question_extract_resource
 !requirements.txt
 !template_config.py
+!assignments.json
+!t-s-blocklist.json

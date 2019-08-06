@@ -169,14 +169,6 @@ while True:
             elif resp7 == 3 or resp7 == 2:
                 STATE = State.asgn_home
                 continue
-	
-        try:
-            asgn._check_startable()
-        except OSError as e:
-            print("Some error with the json file. Please read error message.")
-            print(e.strerror)
-            raise
-
         try:
             asgn.init_grading()
         except Exception:

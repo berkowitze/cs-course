@@ -1,7 +1,15 @@
 from typing import Optional
 
+# remove this assert after fixing __base_path__
+assert False, 'replace __base_path__!'
 # change to the directory in which the grading app resides
 __base_path__ = '/course/cs00' # '__' just to keep things clean when importing
+
+# check that repo has been initialized
+with open(__base_path__ + '/initialized.txt') as f:
+    dat = f.read().strip()
+if dat != 'yes':
+    raise ValueError('Initialize the repo using `bash hta/setupper.sh`')
 
 class HandinConfig:
     # minutes after submission up to which student won't be
@@ -23,7 +31,10 @@ class HandinConfig:
 
     # allow use of late days on projects (not implemented yet)
     late_days_on_projects = False
-    spreadsheet_id = '1fcYiiVecWeSyMzdHIgtrX5x_TfzVYkV97AIkizFkiHY'
+
+    # remove the assertion once you replace the handin ssid
+    assert False, 'must insert handin ssid'
+    spreadsheet_id = 'SSID HERE'
     sheet_name = 'Handins'
 
     # column that emails are dumped into
@@ -69,6 +80,15 @@ class HandinConfig:
             return cls.test_log_path
 
 
+class RegradeConfig:
+    # remove this assert after adding the 4 links below
+    assert False, 'must configure regrade information (the 4 things below, instructions in ta/config-instructions.txt)'
+    request_ssid = "1q0jC_3WmuF-Anhm4AOzd931wjAHqesAXNtT-gIICqn0"
+    response_ssid = "1b7mDx_xCAIs9R23mSNtJHKuvP9VAPDYWMwaNTc-Q0CA"
+    regrade_instructions = "https://docs.google.com/document/d/1xWOYBp_9_GIg3ON_z2zFUfE8RBGoPLi7ZBQgmplTuqQ"
+    response_form_filled_link = "https://docs.google.com/forms/d/1Hs43pFSoRDhkE7MMfInY6ZCYuX5HpWFJAoqHdYELhfs/viewform?usp=pp_url&entry.2102360043={assignment_name}&entry.1573848516={indicated_question}&entry.660184789={student_ID}"
+    request_form_filled_link = "https://docs.google.com/forms/d/1ePAeYr-f59DT57QjkgjxgKOPDRPgaajnfsKrMqSVCYI/viewform?usp=pp_url&entry.1832652590={assignment_name}&entry.1252387205={indicated_question}"
+
 class CONFIG:
     # this needs a loooot of cleanup
     
@@ -91,10 +111,14 @@ class CONFIG:
     test_mode_emails_to = 'eliberkowitz@gmail.com'
 
     handin = HandinConfig
+    regrade = RegradeConfig
     supported_test_suites = ['Python', 'Pyret', '']
 
     error_handler_email = 'eliberkowitz@gmail.com'
     error_handler_name = 'Eli'
+
+    # remove this assert after replacing the hta_name
+    assert False
     hta_name = 'Will'
     lang_dict = {
         'Python': 'py',

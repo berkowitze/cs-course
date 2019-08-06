@@ -8,14 +8,11 @@ from textwrap import fill
 from typing import Sequence, TYPE_CHECKING
 
 from custom_types import *
+from config import CONFIG
 from helpers import locked_file, BASE_PATH
 
 if TYPE_CHECKING:
     from classes import Question, Assignment
-
-spath = os.path.join(BASE_PATH, 'hta/grading/regrading/settings.json')
-with locked_file(spath) as f:
-    regrade_settings = json.load(f)
 
 emoji_path = os.path.join(BASE_PATH, 'ta/asciianimals')
 emojis = os.listdir(emoji_path)
@@ -168,7 +165,7 @@ def get_handin_report_str(rubric: Rubric,
 
     asgn_lnk = urllib.parse.quote(question.assignment.full_name)
     
-    lnk_temp = regrade_settings['request-form-filled-link']
+    lnk_temp = CONFIG.regrade.request_form_filled_link
     complaint_lnk = lnk_temp.format(assignment_name=asgn_lnk,
                                     indicated_question=question._qnumb)
     report_str += f'Please direct any grade complaint/question to: {complaint_lnk}'

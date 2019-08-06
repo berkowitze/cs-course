@@ -25,7 +25,6 @@ shift $((OPTIND -1))
 
 umask 007;
 baseDir=`realpath "$(dirname $0)/../"`;
-echo $baseDir goddamn
 cd "$baseDir/ta/grading";
 HOST="0.0.0.0"
 gunicorn="$baseDir/ta/venv/bin/gunicorn"

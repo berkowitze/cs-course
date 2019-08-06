@@ -208,7 +208,7 @@ class Assignment:
     :raises KeyError: if key is not in the assignments.json thing
 
     """
-    def __init__(self, key: str, load_if_started: bool = True) -> None:
+    def __init__(self, key: str, load_if_started: bool = True, load=True) -> None:
         """
 
         Create a new assignment based on the key from /ta/assignments.json
@@ -255,14 +255,14 @@ class Assignment:
         self.grading_completed = self._json['grading_completed']
         self.loaded: bool = False
 
-        if not self.anonymous:
+        if not self.anonymous and self.started:
             with locked_file(self.anon_path) as f:
                 data: Dict[str, int] = json.load(f)
 
             self._login_to_id_map: Dict[str, int] = data
             self._id_to_login_map: Dict[int, str] = {data[k]: k for k in data}
 
-        if self.started and load_if_started:
+        if self.started and load_if_started and load:
             self.load()
 
     @is_started

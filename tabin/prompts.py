@@ -107,26 +107,32 @@ def yn_prompt(pre_text: str = None, **kwargs) -> Optional[bool]:
 
 def toggle_prompt(options: List[str],
                   toggled: Optional[Union[List[str], Set[str]]] = None,
+                  print_opts: Optional[List[str]] = None,
                   **kwargs
                   ) -> Optional[Set[str]]:
-    UP = "\033[F"
+    if print_opts is None:
+        print_opts = options[:]
+
+    assert len(options) == len(print_opts), \
+        'toggle_prompt options and print_opts must be same length'
+
     if toggled is None:
         toggled = set()
     else:
         toggled = set(toggled)
 
-    doit = True
+    # doit = True
     while True:  # eli having fun oops
         opts = [red(f) if f in toggled else f for f in options]
-        for i, f in enumerate(options):
-            if f in toggled:
-                print(f'{i + 1}. {red(f)}')
+        for i, (opt, print_opt) in enumerate(zip(options, print_opts)):
+            if opt in toggled:
+                print(f'{i + 1}. {red(print_opt)}')
             else:
-                print(f'{i + 1}. {f}')
+                print(f'{i + 1}. {print_opt}')
 
         row_resp = ez_prompt('> \033[K', **kwargs)
         if row_resp is None:
-            doit = False
+            # doit = False
             break
         if not row_resp:
             break
@@ -142,12 +148,14 @@ def toggle_prompt(options: List[str],
                 toggled.remove(f)
             else:
                 toggled.add(f)
+
             print('\033[F' * (len(options) + 2))
 
-    if not doit:
-        return None
-    else:
-        return toggled
+    return toggled
+    # if not doit:
+    #     return toggled
+    # else:
+    #     return toggled
 
 
 def date_prompt(readable_format: str = 'mm/dd/yyyy hh:mm [a/p]m',

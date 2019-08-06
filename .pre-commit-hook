@@ -1,0 +1,17 @@
+#!/bin/bash
+
+ROOT_DIR="$(pwd)/"
+LIST=$(git diff --cached --name-only --diff-filter=ACRM)
+FORBIDDEN="hta/handin/submission_log.txt hta/s-t-blocklist.json initialized.txt ta/assignments.json ta/groups/htas.txt ta/groups/students.csv ta/groups/students.txt ta/groups/tas.txt ta/t-s-blocklist.json"
+
+for commitFile in $LIST
+do
+    for forbiddenFile in $FORBIDDEN
+    do
+        if [ "$commitFile" == "$forbiddenFile" ]; then
+            echo You cannot commit file $commitFile. Please reset it and try again.
+            exit 1
+        fi
+    done
+done
+exit 0
