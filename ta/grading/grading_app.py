@@ -25,7 +25,7 @@ app.logger.setLevel(logging.DEBUG)
 
 # do not run this directly or file permissions will be messed up
 # and you need to be in a virtualenvironment
-# either run cs111-grade, or reproduce what is done in that script
+# either run cs-grade, or reproduce what is done in that script
 
 # could everything be reorganized into a database? yes.
 # is it worth it? up to whoever's reading this. I didn't do it
@@ -41,6 +41,7 @@ assets.url = app.static_url_path
 
 scss = Bundle('sass/rubric-edit.scss', filters='pyscss', output='gen/rubric-edit.css')
 assets.register('scss_rubric_edit', scss)
+
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 
@@ -91,8 +92,6 @@ def logged_in_route(*args, **kwargs):
         is what this allows
         '''
     def is_logged_in(f: Callable) -> Callable:
-        ''' this decorator ensures that the user is logged in when attempting
-        to access the wrapped route '''
         @wraps(f)
         def wrap(*args, **kwargs):
             if 'logged_in' in session:
@@ -121,23 +120,11 @@ def not_logged_in_route(*args, **kwargs):
     return inner
 
 def doNotUseAppRoute(*args, **kwargs):
-    err = 'Do not use @app.route, use @logged_in_route or @not_logged_in_route'
+    err = 'Use @logged_in_route or @not_logged_in_route instead of @app.route'
     raise ValueError(err)
 
 app.route = doNotUseAppRoute
 
-
-def is_logged_in(f: Callable) -> Callable:
-    ''' this decorator ensures that the user is logged in when attempting
-    to access a route (except /login) '''
-    @wraps(f)
-    def wrap(*args, **kwargs):
-        if 'logged_in' in session:
-            return f(*args, **kwargs)
-        else:
-            return redirect(url_for('login'))
-
-    return wrap
 
 @logged_in_route('/')
 def main():
@@ -207,7 +194,7 @@ def extract_handin():
         return json.dumps(handin.get_rubric_data())
 
 
-@logged_in_route('/load_handin', methods=['GET'])
+@logged_in_route('/load_handin')
 def load_handin():
     sid = int(request.args['sid'])
     handin = workflow['question'].get_handin_by_id(sid)
@@ -243,7 +230,6 @@ def unextract_handin():
 
 @logged_in_route('/save_handin')
 def save_handin():
-    print('saving')
     ident = request.args['id']
     assert workflow['handin'].id == int(ident), \
         'trying to unextract inactive handin'
@@ -255,19 +241,16 @@ def save_handin():
     return 'true'
 
 
-@logged_in_route('/add_global_comment', methods=['GET'])
+@logged_in_route('/add_global_comment')
 def add_global_comment():
-    print('hi')
     category = request.args['category']
     if category == '':
         category = None
 
     comment = request.args['comment']
     if workflow['question'].add_ungiven_comment(category, comment):
-        print('no')
         return 'added'
     else:
-        print('yes')
         return 'not added'
 
 
@@ -312,6 +295,7 @@ def preview_report():
         report = workflow['handin'].generate_report_str()
     except AssertionError as e:
         return f'Report unavailable\nError: {e.args[0]}'
+
     return render_template('preview_report.html', report=report)
 
 

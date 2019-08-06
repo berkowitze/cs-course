@@ -255,6 +255,13 @@ class Assignment:
         self.grading_completed = self._json['grading_completed']
         self.loaded: bool = False
 
+        if not self.anonymous:
+            with locked_file(self.anon_path) as f:
+                data: Dict[str, int] = json.load(f)
+
+            self._login_to_id_map: Dict[str, int] = data
+            self._id_to_login_map: Dict[int, str] = {data[k]: k for k in data}
+
         if self.started and load_if_started:
             self.load()
 
@@ -279,13 +286,6 @@ class Assignment:
             f'started assignment "{n}" with no blocklist file'
         assert pexists(self.files_path), \
             f'started assignment "{n}" with no student code directory'
-        
-        if not self.anonymous:
-            with locked_file(self.anon_path) as f:
-                data: Dict[str, int] = json.load(f)
-
-            self._login_to_id_map: Dict[str, int] = data
-            self._id_to_login_map: Dict[int, str] = {data[k]: k for k in data}
 
         self._load_questions()
         self.loaded = True

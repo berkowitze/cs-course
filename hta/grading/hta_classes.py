@@ -73,19 +73,18 @@ class HTA_Assignment(Assignment):
         # completed or not (in addition to already sending the emails)
         self.emails_sent = self._json['emails_sent']
         self.groups_loaded = False
-
-    def load(self) -> None:
-        super().load()
         if self.anonymous:
             jpath = f'{self.mini_name}.json'
             self.anon_path = pjoin(anon_map_path, jpath)
+            with locked_file(self.anon_path) as f:
+                data: Dict[str, int] = json.load(f)
+
+            self._login_to_id_map: Dict[str, int] = data
+            self._id_to_login_map: Dict[int, str] = {data[k]: k for k in data}
         else:
             assert self.anon_path != '', 'error in anon path tell eli'
-        with locked_file(self.anon_path) as f:
-            data: Dict[str, int] = json.load(f)
-
-        self._login_to_id_map: Dict[str, int] = data
-        self._id_to_login_map: Dict[int, str] = {data[k]: k for k in data}
+            assert hasattr(self, '_login_to_id_map')
+            assert hasattr(self, '_id_to_login_map')
 
     def init_grading(self) -> None:
         """

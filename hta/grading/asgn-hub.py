@@ -307,6 +307,7 @@ while True:
         send_grade_reports(asgn, to_send)
         if mark_sent:
             asgn.set_emails_sent()
+            asgn.record_finish()
 
         STATE = State.modify_asgn
 
