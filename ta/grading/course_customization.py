@@ -144,7 +144,7 @@ def get_handin_report_str(rubric: Rubric,
             descr = opt['descr']
             max_pts = max([opt['point_val'] for opt in item['options']])
             gs += f'    {pts} / {max_pts} - {item["descr"]}: {descr}\n'
-        
+
         gs += '\n'
         return gs
 
@@ -172,5 +172,5 @@ def get_handin_report_str(rubric: Rubric,
     complaint_lnk = lnk_temp.format(assignment_name=asgn_lnk,
                                     indicated_question=question._qnumb)
     report_str += f'Please direct any grade complaint/question to: {complaint_lnk}'
-    report_str += f'\n\n{"-" * 74}\n'
+    report_str += f'\n\n{"-*" * 37}\n'
     return report_str

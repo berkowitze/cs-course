@@ -245,8 +245,14 @@ class Assignment:
         self.grade_path: str = pjoin(grade_base_path, self.mini_name)
         self.files_path: str = pjoin(s_files_base_path, self.mini_name)
         self.test_path: str = pjoin(test_base_path, self.mini_name)
-        self.anon_path: str = pjoin(anon_base_path,
-                                    f'{self.mini_name}.json')
+        self.anon_path: str
+        if self.anonymous:
+            self.anon_path = pjoin(BASE_PATH,
+                                   'hta/grading/anonymization',
+                                   f'{self.mini_name}.json')
+        else:
+            self.anon_path = pjoin(anon_base_path, f'{self.mini_name}.json')
+
         self.blocklist_path: str = pjoin(blocklist_path,
                                          f'{self.mini_name}.json')
         self.bracket_path: str = pjoin(rubric_base_path,
