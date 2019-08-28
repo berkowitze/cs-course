@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <ul>
+        <li><strong>Assignment:</strong> {{ asgn }}</li>
+        <li><strong>Question:</strong> {{ qn }}</li>
+        <li><strong>Grade updated:</strong> {{ 'Yes' if grade_updated else 'No' }}</li>
+        <li><strong>Instructor's response:</strong><br/>{{ response }}</li>
+    </ul>
+    {% if grade_updated %}
+        <p>An updated grade report should have been sent to you. If you do not receive this email within a few minutes, please <a href="mailto:{{ hta_email }}">email {{ hta_descriptor }}</a>.</p>
+    {% endif %}
+    <p>To respond to the instructor, use <a href='{{ filled_link }}'>this Google
+    Form</a>.</p>
+</body>
+</html>

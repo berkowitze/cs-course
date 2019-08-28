@@ -4,3 +4,13 @@
 !check_responses.py
 !settings.json
 !googleapi.py
+!emails
+!config.py
+!course_customization.py
+!custom_types.py
+!googleapi.py
+!classes.py
+!hta_classes.py
+!helpers.py
+!handin_helpers.py
+!hta_helpers.py

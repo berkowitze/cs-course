@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    {% if not to_student %}
+    <p><strong>The following error was sent to a student:</strong></p>
+    {% endif %}
+    <p>There was an error processing your grade complaint request.</p>
+    <p>There was no account associated with the email {{ student_email }}.</p>
+    <p>If you believe this is an error, please <a href="mailto:{{ hta_email }}">email {{ hta_descriptor }}</a>.</p>
+</body>
+</html>

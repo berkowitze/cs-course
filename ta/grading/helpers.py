@@ -3,13 +3,17 @@
 
 import json
 import os
+import logging
 import string
 import sys
 from os.path import join as pjoin
 from os.path import exists as pexists
 from contextlib import contextmanager
 from functools import wraps
-from typing import Generator, Callable, Any, List, Optional, Dict, Mapping
+from jinja2 import make_logging_undefined, StrictUndefined, Environment
+from jinja2.exceptions import UndefinedError
+from typing import (Generator, Callable, Any, List,
+                    Optional, Dict, Mapping, Tuple)
 
 from filelock import FileLock
 
@@ -477,3 +481,113 @@ def check_assignments(data: AssignmentJson):
                      f'is over the end_col "{ecol} (set in assignments.json)'
                      )
                 raise ValueError(e)
+
+def gen_email_body(f, **kwargs) -> str:
+    """
+    
+    given an opened jinja template file and any number of kwargs (key=value),
+    will render the jinja template file and return the resulting string
+
+    :param f: jinja template file, for example request_emails.html (regrading)
+              see https://palletsprojects.com/p/jinja/
+    :type f: file
+    :param **kwargs: variables that will be passed to the jinja renderer
+                     for example if you pass login='eberkowi', you can use
+                     {{ login }} somewhere in `f` to have eberkowi rendered
+                     into the html.
+    :returns: the rendered html template
+    :rtype: str
+    :raises: ValueError if you do not pass in the 
+    """
+    # catch undefined errors using https://stackoverflow.com/questions/46619830
+    content = f.read()
+    LoggingUndefined = make_logging_undefined(base=StrictUndefined)
+
+    templateEnv = Environment(undefined=LoggingUndefined)
+    template = templateEnv.from_string(content)
+    try:
+        return template.render(kwargs)
+    except UndefinedError as err:
+        msg = f'Error rendering template {f.name!r}: {err.args[0]}'
+        raise ValueError(msg)
+
+def gen_email(registry_lookup,
+              subject_vars=None,
+              email_vars=None) -> Tuple[str, str]:
+    """ using the email registry in /ta/email_registry.json,
+    generates a email subject and body.
+
+    registry_lookup: key in email_registry.json to look up
+    subject_vars: optional dictionary of values to be formatted into the
+                  subject line. for example, if
+                    registry[registry_lookup]["subject"] is "Hi {name}",
+                  and you pass subject_vars={'name': 'Eli'}, the returned
+                  subject will be "Hi Eli".
+    email_vars: optional dictionary similar to subject_vars. if the registry
+                entry uses "body", will be formatted into the string in the
+                same way; if the entry uses "template", gen_email_body will be
+                used with these vars
+    return: (subject, body) (str, str) tuple
+    
+    example usage in /hta/grading/regrading/check_requests.py
+    """
+    if subject_vars is None:
+        subject_vars = {}
+
+    if email_vars is None:
+        email_vars = {}
+
+    email_reg_path = pjoin(BASE_PATH, 'ta/email_registry.json')
+    with locked_file(email_reg_path) as f:
+        registry = json.load(f)
+
+    try:
+        email_data = registry[registry_lookup]
+    except KeyError:
+        err = f'Email registry {registry_lookup} not found in {email_reg_path}.'
+        raise KeyError(err)
+
+    assert isinstance(email_data, dict), \
+        f'Invalid email registry {email_data}(must be dict)'
+
+    # generate subject line
+    try:
+        subj_temp = email_data['subject']
+    except KeyError as e:
+        err = f'Email registry {registry_lookup} does not have subject key'
+        raise KeyError(err)
+
+    try:
+        subject = subj_temp.format(**subject_vars)
+    except KeyError:
+        err = (
+               f'Not enough subject_vars to format {registry_lookup}\'s '
+               f'subject: missing {e.args[0]}'
+               )
+        raise ValueError(err)
+
+    # generate email body
+    if not ('template' in email_data or 'body' in email_data):
+        err = f'Email registry {registry_lookup} must have template or body key'
+        raise ValueError(err)
+    if 'template' in email_data and 'body' in email_data:
+        err = (
+               f'Email registry {registry_lookup} has both body '
+                'and template - can only have one.'
+               )
+        raise ValueError(err)
+
+    if 'template' in email_data:
+        temp_path = pjoin(BASE_PATH, email_data['template'])
+        if not os.path.exists(temp_path):
+            err = (f'Email registry {registry_lookup} '
+                   f'template {temp_path} does not exist')
+            raise ValueError(err)
+
+        with locked_file(temp_path) as f:
+            body = gen_email_body(f, **email_vars)
+    else:
+        body = email_data['body'].format(**email_vars)
+
+    return subject, body
+

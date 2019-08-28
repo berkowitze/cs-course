@@ -7,7 +7,7 @@ import logging
 
 from os.path import join as pjoin
 from typing import List
-from helpers import locked_file, CONFIG, BASE_PATH
+from helpers import locked_file, CONFIG, BASE_PATH, gen_email
 from googleapi import sheets_api
 from hta_classes import HTA_Assignment
 from handin_helpers import email_to_login
@@ -43,23 +43,34 @@ def handle(row: List[str]) -> None:
     try:
         login = email_to_login(student_email)
     except ValueError:
-        subject = 'Error processing grade complaint'
-        body = (
-          f'<p>There was an error processing your grade complaint request.</p>'
-          f'<p>There was no account associated with the email '
-          f'{student_email}.</p>'
-          f'<p>If you believe this is an error, please '
-          f'<a href="mailto:{CONFIG.hta_email}">email the HTAs</a>.'
-        ).replace('\n', '')
+        # send error to student
+        subject, body = gen_email('regrade_request_email_not_found',
+                                  email_vars={
+                                      "to_student": True,
+                                      "student_email": student_email,
+                                      "hta_email": CONFIG.hta_email,
+                                      "hta_descriptor": CONFIG.hta_descriptor
+                                  })
         yag.send(student_email, subject, body)
-        hta_head = '<p>POTENTIAL ERROR PROCESSING GRADE CHANGE REQUEST:</p>'
-        yag.send(CONFIG.hta_email, subject, hta_head + body)
+
+        # send error to HTAs
+        subject, body = gen_email('regrade_request_email_not_found',
+                                  email_vars={
+                                      "to_student": False,
+                                      "student_email": student_email,
+                                      "hta_email": CONFIG.hta_email,
+                                      "hta_descriptor": CONFIG.hta_descriptor
+                                  })
+        yag.send(CONFIG.hta_email, subject, body)
+
+        # stop handling this row
         return
 
+    asgn_name = row[2]
     try:
-        asgn = HTA_Assignment(row[2])
+        asgn = HTA_Assignment(asgn_name)
     except KeyError:
-        raise FormError(f'No assignment with name {row[2]!r} was found.')
+        raise FormError(f'No assignment with name {asgn_name!r} was found.')
 
     if not asgn.emails_sent:
         raise FormError(f'Assignment {asgn.full_name!r} is not graded yet')
@@ -69,7 +80,7 @@ def handle(row: List[str]) -> None:
     except ValueError:
         err = (
                 f'No submission found for {asgn.full_name!r} for student with'
-                f' email {row[2]!r} login {login!r}'
+                f' email {asgn_name!r} login {login!r}'
               )
         raise FormError(err)
 
@@ -106,37 +117,34 @@ def handle(row: List[str]) -> None:
     if grader is not None:
         # generate and send email to grader
         email_to = f'{grader}@cs.brown.edu'
-        subject = f'Grade complaint for {row[2]} question {row[3]}'
         complaint = row[4].replace('\n', '<br/>')
-        body = f"""
-        <ul>
-            <li><strong>Assignment:</strong> {row[2]}</li>
-            <li><strong>Question:</strong> {row[3]}</li>
-            <li><strong>Anonymous ID:</strong> {student_ID}</li>
-            <li><strong>Complaint content:</strong><br/>{complaint}</li>
-        </ul>
-        <p>Please use <a href='{filled_link}'>this Google Form</a> to respond
-        to this grade complaint.</p>
-        <p>Please refer to <a href='{instruction_link}'>these Regrade
-        Instructions</a> for more details on how to handle grade requests.</p>
-        """.replace('\n', '')
 
+        subject, body = gen_email('regrade_request',
+                                  subject_vars={
+                                      'asgn_name': asgn_name,
+                                      'qn': row[3]
+                                  },
+                                  email_vars={
+                                      "asgn_name": asgn_name,
+                                      "indicated_question": indicated_question,
+                                      "student_ID": student_ID,
+                                      "complaint": complaint,
+                                      "filled_link": filled_link,
+                                      "instruction_link": instruction_link
+                                  })
         print(f'\tSending grade change request to {email_to}')
         yag.send(email_to, subject, body)
     else:
-        err_subject = 'Error processing grade complaint'
-        err_body = (
-                     'We could not find a grader for your handin. This is '
-                     'likely an issue on our side; the HTAs have also been '
-                     'notified of the issue and will let you know when '
-                     'it is resolved.'
-                    )
-        yag.send(student_email, err_subject, err_body)
+        subject, body = gen_email('regrade_request_no_grader')
+        yag.send(student_email, subject, body)
 
-        hta_err_body = f"""Potential error with regrade request system.
-        A grader was not found for student {student_ID} who requested a
-        regrade on {asgn.full_name} question {indicated_question}."""
-        yag.send(CONFIG.hta_email, err_subject, hta_err_body)
+        subject, body = gen_email('regrade_request_no_grader_hta',
+                                  email_vars={
+                                      'student_ID': student_ID,
+                                      'asgn_name': asgn.full_name,
+                                      'qn': indicated_question
+                                  })
+        yag.send(CONFIG.hta_email, subject, body)
 
 
 print('Checking requests starting...')
@@ -161,16 +169,15 @@ for i, row in enumerate(rows):
         handle(row)
         handled = True
     except FormError as e:
-        body = f"""
-        You submitted an invalid regrade request.
-
-        Error message: {e.args[0]}
-
-        <a href="mailto:{CONFIG.hta_email}">Email {CONFIG.hta_name}</a> if
-        you have any questions or believe this is an error.
-        """
-        yag.send(row[1], 'Invalid regrade request', body)
+        subject, body = gen_email('regrade_request_form_error',
+                                  email_vars={
+                                      'error': e.args[0],
+                                      'hta_email': CONFIG.hta_email,
+                                      'hta_descriptor': CONFIG.hta_descriptor
+                                  })
+        yag.send(row[1], subject, body)
         handled = True
+
     if handled:
         # After successfully handling, update handled on Gsheets
         cell = f'{handle_column}{i+2}'
@@ -182,7 +189,7 @@ for i, row in enumerate(rows):
         except Exception as e:
             ss_url = f'https://docs.google.com/spreadsheets/d/{ssid}'
             err = (
-                    'BAD HANDLE IMMMEDIATELY: Regrade request was '
+                    'BAD - HANDLE IMMMEDIATELY - Regrade request was '
                     'successfully processed but there was an error when '
                     'setting the handled column to TRUE in the Google Sheet.'
                     f'Manually set the value of cell {cell} to TRUE in this'
@@ -190,6 +197,8 @@ for i, row in enumerate(rows):
                     f'Eli at eliberkowitz@gmail.com.'
                     )
             raise ValueError(err) from e
+    else:
+        print(f'Potential error processing row {row}')
 
 
 print('Checking requests complete.')

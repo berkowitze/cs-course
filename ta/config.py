@@ -1,7 +1,7 @@
 from typing import Optional
 
 # change to the directory in which the grading app resides
-__base_path__ = '/course/cs00' # '__' just to keep things clean when importing
+__base_path__ = '/course/cs0111' # '__' just to keep things clean when importing
 
 class HandinConfig:
     # minutes after submission up to which student won't be
@@ -71,7 +71,7 @@ class HandinConfig:
 
 class CONFIG:
     # this needs a loooot of cleanup
-    
+
     base_path = __base_path__
 
     # generally keep False
@@ -81,10 +81,12 @@ class CONFIG:
     # you need the password!
     email_from = 'csci0111@brown.edu'
 
-    email_errors_to = ['eliberkowitz@gmail.com', 'wpatter1@cs.brown.edu']
 
     # email of the HTAs
-    hta_email = 'eliberkowitz@gmail.com'
+    hta_email = 'eliberkowitz@gmail.com'  # keep as single string not list!
+
+    # error messages sent to this email (usually lol)
+    email_errors_to = ['eliberkowitz@gmail.com', hta_email]
 
     # when in test mode, send all emails to this address instead of
     # students/tas
@@ -93,7 +95,5 @@ class CONFIG:
     handin = HandinConfig
     supported_test_suites = ['Python', 'Pyret', '']
 
-    error_handler_email = 'eliberkowitz@gmail.com'
-    error_handler_name = 'Eli'
-    hta_name = 'Will'
+    hta_descriptor = 'the HTAs'
 

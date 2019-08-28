@@ -7,7 +7,7 @@ import urllib.parse
 
 from os.path import join as pjoin
 from typing import List
-from helpers import locked_file, CONFIG, BASE_PATH
+from helpers import locked_file, CONFIG, BASE_PATH, gen_email
 from googleapi import sheets_api
 from hta_classes import HTA_Assignment
 
@@ -77,32 +77,28 @@ def handle(row: List[str]) -> None:
         asgn.send_emails(yag, [student_login])
 
     # Send another email with the instructor's response:
+    # TODO: use login_to_email for this
     email_to = f'{student_login}@cs.brown.edu'
-    subject = f'Grade complaint response for {row[2]} question {row[3]}'
     asgn_link = urllib.parse.quote(asgn.full_name)
     link_template = settings['request-form-filled-link']
     filled_link = link_template.format(assignment_name=asgn_link,
                                        indicated_question=indicated_question)
     response = row[6].replace('\n', '<br/>')
-    body = f"""
-    <ul>
-        <li><strong>Assignment:</strong> {row[2]}</li>
-        <li><strong>Question:</strong> {row[3]}</li>
-        <li><strong>Grade updated:</strong> {"Yes" if grade_updated else "No"}</li>
-        <li><strong>Instructor's response:</strong><br/>{response}</li>
-    </ul>
-    <p>If you so desire, please use <a href='{filled_link}'>this Google
-    Form</a> to respond to the instructor.</p>
-    """.replace('\n', '')
-    if grade_updated:
-        new_rep_msg = (
-                        '<p>An updated grade report should have been sent to '
-                        'you. If you do not receive this email within a few '
-                        f'minutes, please <a href="mailto:{CONFIG.hta_email}'
-                        'email the HTAs</a>.</p>'
-                       )
-        body += new_rep_msg
 
+    subject, body = gen_email('regrade_response',
+                              subject_vars={
+                                'asgn': row[2],
+                                'qn': row[3]
+                              },
+                              email_vars={
+                                'asgn': row[2],
+                                'qn': row[3],
+                                'grade_updated': grade_updated,
+                                'response': response,
+                                'hta_email': CONFIG.hta_email,
+                                'filled_link': filled_link,
+                                'hta_descriptor': CONFIG.hta_descriptor
+                              })
     print(f'Sending grade complaint response to {email_to}')
     yag.send(email_to, subject, body)
 
@@ -129,16 +125,13 @@ for i, row in enumerate(rows):
         handle(row)
         handled = True
     except FormError as e:
-        body = f"""
-        You submitted an invalid regrade response.
-
-        Error message: {e.args[0]}
-
-        <a href="mailto:{CONFIG.hta_email}">Email {CONFIG.hta_name}</a>,
-        or <a href="mailto:{CONFIG.error_handler_email}">{CONFIG.error_handler_name}</a> if you have any
-        questions.
-        """
-        yag.send(row[1], 'Invalid regrade response', body)
+        subject, body = gen_email('regrade_response_form_error',
+                                  email_vars={
+                                    'error': e.args[0],
+                                    'hta_email': CONFIG.hta_email,
+                                    'hta_descriptor': CONFIG.hta_descriptor
+                                  })
+        yag.send(row[1], subject, body)
         handled = True
 
     if handled:
@@ -152,14 +145,16 @@ for i, row in enumerate(rows):
         except Exception as e:
             ss_url = f'https://docs.google.com/spreadsheets/d/{ssid}'
             err = (
-                    'BAD HANDLE IMMMEDIATELY: Regrade request was '
-                    'successfully processed but there was an error when '
-                    'setting the handled column to TRUE in the Google Sheet.'
+                     'BAD HANDLE IMMMEDIATELY: Regrade request was '
+                     'successfully processed but there was an error when '
+                     'setting the handled column to TRUE in the Google Sheet.'
                     f'Manually set the value of cell {cell} to TRUE in this'
                     f'spreadsheet: {ss_url}. Also, forward this email to '
-                    f'{CONFIG.error_handler_name} at {CONFIG.error_handler_email}.'
+                     'Eli at eliberkowitz@gmail.com'
                     )
             raise ValueError(err) from e
+    else:
+        print(f'Possible error handling response row {row}')
 
 
 print('Checking responses complete.')

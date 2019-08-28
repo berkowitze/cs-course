@@ -1,6 +1,4 @@
-# echo "Enter a branch name to use with git";
-#read branchName;
-#git checkout -b $branchName;
+#!/usr/bin/env bash
 basepath=$(realpath `dirname $0`/..);
 
 if [ ! -e $basepath/ta/venv/bin ]; then
@@ -54,17 +52,6 @@ echo '
   import yagmail
   yagmail.register(email, password)
 '
-function rename-execs() {
-    cd $1;
-    python -c "import os; [os.rename(f, f.replace('111', '00')) for f in os.listdir('.') if '111' in f]";
-    sed 's/111/00/g' .gitignore > ugh;
-    mv -f ugh .gitignore;
-    cd $basepath;
-
-}
-
-rename-execs $basepath/tabin;
-rename-execs $basepath/htabin;
 
 function touch-if-dne() {
     [ -e $1 ] || touch $1;
