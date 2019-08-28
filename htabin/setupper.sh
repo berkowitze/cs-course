@@ -62,3 +62,4 @@ touch-if-dne $basepath/ta/groups/htas.txt
 touch-if-dne $basepath/ta/groups/students.txt
 touch-if-dne $basepath/ta/groups/students.csv
 
+$basepath/htabin/cs-grading-app-cert

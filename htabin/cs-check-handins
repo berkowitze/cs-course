@@ -6,4 +6,7 @@ umask 007;
 lockfile -5 -r 3 "$execDir/../hta/handin/handin-lock.lock" || exit 1;
 cd "$execDir/../hta/handin";
 "$pyBin/python" "$execDir/../hta/handin/check_submissions.py"
+res=$?
 rm -f "$execDir/../hta/handin/handin-lock.lock"
+
+exit $res
