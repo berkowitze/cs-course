@@ -17,7 +17,7 @@ from hta_classes import (BASE_PATH, User, get_hta_asgn_list,
                          login_to_email, student_list, HTA_Assignment,
                          json_edit, CONFIG)
 from hub_helpers import *
-from helpers import red, moss_langs
+from helpers import red, moss_langs, green
 
 
 asgns: List[HTA_Assignment] = get_hta_asgn_list()
@@ -255,7 +255,7 @@ while True:
         else:
             overrides = False
 
-        print('Generating grade reports...')
+        print(green('Generating grade reports...'))
         logins = student_list()
         handins = asgn.get_handin_dict(logins)
         for student in handins:
@@ -263,7 +263,7 @@ while True:
                                   login=student,
                                   write_files=True)
 
-        print('Grade reports generated.')
+        print(green('Grade reports generated.'))
         STATE = State.modify_asgn
 
     elif STATE == State.email_reports:
@@ -302,11 +302,11 @@ while True:
             # TODO : change to those who handed in? careful for group projects
             to_send = student_list()
             mark_sent = True
-            print('After sending reports, deanonymize assignment if needed.')
 
         send_grade_reports(asgn, to_send)
         if mark_sent:
             asgn.set_emails_sent()
+            asgn.record_finish()
 
         STATE = State.modify_asgn
 

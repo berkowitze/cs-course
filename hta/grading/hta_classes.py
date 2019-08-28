@@ -170,7 +170,8 @@ class HTA_Assignment(Assignment):
 
         with locked_file(self.anon_path, 'w') as f:
             json.dump(anon_map, f, sort_keys=True, indent=2)
-
+        
+        assert os.path.exists(self.anon_path)
         self._login_to_id_map: Dict[str, int] = anon_map
         self._id_to_login_map: Dict[int, str]
         self._id_to_login_map = {anon_map[k]: k for k in anon_map}
@@ -764,7 +765,7 @@ class HTA_Assignment(Assignment):
                 p_sum = 'Error getting summary'
 
             summary_str += p_sum
-            summary_str += ('-' * 20)
+            summary_str += ('-*' * 10)
 
         # make this more rigorous later
         raw_grade: RawGrade = get_empty_raw_grade(self)
@@ -955,16 +956,17 @@ class HTA_Assignment(Assignment):
 
         """
         with json_edit(asgn_data_path) as data:
-            asgn = asgn_data['assignments'][self.full_name]
+            asgn = data['assignments'][self.full_name]
             asgn['grading_completed'] = True
 
-    @require_resource
+    @require_resource()
     def set_emails_sent(self):
         """
 
         sets emails_sent in assignments.json to true for this assignment
 
         """
+        print('setting emails setn')
         with json_edit(asgn_data_path) as data:
             data['assignments'][self.full_name]['emails_sent'] = True
 

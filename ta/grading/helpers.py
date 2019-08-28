@@ -158,6 +158,7 @@ def require_resource(resource: str = res_path) -> Callable[[Callable], Any]:
             ...
 
     """
+    assert isinstance(resource, str), 'must require path as resource'
     def decorator(f):
         @wraps(f)
         def magic(*args, **kwargs):
@@ -506,7 +507,9 @@ def gen_email_body(f, **kwargs) -> str:
     templateEnv = Environment(undefined=LoggingUndefined)
     template = templateEnv.from_string(content)
     try:
-        return template.render(kwargs)
+        body = template.render(kwargs).replace('\n', '')
+        print(body)
+        return body
     except UndefinedError as err:
         msg = f'Error rendering template {f.name!r}: {err.args[0]}'
         raise ValueError(msg)
