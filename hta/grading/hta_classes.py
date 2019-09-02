@@ -1,6 +1,8 @@
 import csv
 import zipfile
 import yagmail
+import itertools
+import collections
 
 from typing import Set, Iterable
 from classes import *
@@ -101,7 +103,7 @@ class HTA_Assignment(Assignment):
         self._setup_blocklist()
         self._setup_grade_dir()
         self._record_start()
-        print('Grading started.')
+        print(green('Grading started.'))
 
     def _check_startable(self) -> None:
         """
@@ -947,6 +949,63 @@ class HTA_Assignment(Assignment):
             data['assignments'][self.full_name]['grading_started'] = True
 
         self.started = True
+
+    def assign_graders(self,
+                       grading: Iterable[str],
+                       assignments: Optional[Dict[str, List[str]]] = None):
+        """
+        
+        assign graders for this assignemnt.
+            if input is None, all handins will be randomly distributed to TAs.
+            otherwise, it is a map of TA username to list of student usernames
+            that that TA will grade.
+
+            grading is a list/set/collection specifying which TAs grading
+            (i.e. set of logins as strings)
+        """
+
+        if assignments is None:
+            tas = list(grading)
+            # shuffle so same TAs dont always get an extra handin
+            random.shuffle(tas)
+            ta_queue = itertools.cycle(tas)
+
+            given = {}  # qn -> ta -> list of handins
+            for question in self.questions:
+                given_assignments = defaultdict(list)  # ta -> list of handins
+                ungraded = []
+                # if a ta can't grade a handin due to blocklist, this queue
+                # will keep track of them so they are assigned another handin
+                # instead rather than getting one less handin than everyone
+                # else
+                skipped = collections.deque()
+                for handin in question.handins:
+                    if not handin.extracted:
+                        tried = 0
+                        to_skip = set()
+                        while tried < len(tas):
+                            if tried > 1:
+                                print(f'TRIED {tried} GRADERS FOR {handin}')
+
+                            if not skipped:
+                                grader = next(ta_queue)
+                            else:
+                                print(skipped)
+                                grader = skipped.popleft()
+
+                            if not handin.gradeable_by(grader):
+                                to_skip.add(grader)
+                                tried += 1
+                                continue  # try the next grader
+                            else:
+                                skipped.extend(to_skip)
+                                handin.start_grading(grader)
+                                given_assignments[grader].append(handin)
+                                break
+
+                given[str(question)] = given_assignments
+
+            return given
 
     @require_resource()
     def record_finish(self):

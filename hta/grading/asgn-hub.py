@@ -15,9 +15,9 @@ from prompts import (ez_prompt, opt_prompt, table_prompt,
                      toggle_prompt, yn_prompt)
 from hta_classes import (BASE_PATH, User, get_hta_asgn_list,
                          login_to_email, student_list, HTA_Assignment,
-                         json_edit, CONFIG)
+                         json_edit, CONFIG, ta_path, hta_path)
 from hub_helpers import *
-from helpers import red, moss_langs, green
+from helpers import red, moss_langs, green, line_read
 
 
 asgns: List[HTA_Assignment] = get_hta_asgn_list()
@@ -35,6 +35,7 @@ class State(Enum):
     start_grading = auto()
     modify_asgn = auto()
     reset_asgn = auto()
+    assign_grading = auto()
     run_MOSS = auto()
     generate_reports = auto()
     email_reports = auto()
@@ -51,7 +52,7 @@ def send_grade_reports(asgn: HTA_Assignment, logins: List[str]) -> None:
     asgn.send_emails(yag, logins)
 
 
-print('At any time, press ctrl-c to quit')
+print(green('At any time, press ctrl-c to quit'))
 STATE: State = State.home
 while True:
     if STATE == State.home:
@@ -203,6 +204,7 @@ while True:
 
         print('What would you like to do?')
         option = opt_prompt(['Reset Assignment Grading',
+                             'Assign graders',
                              'Generate Grade Reports',
                              'Email Grade Report(s)',
                              'View flagged handins',
@@ -215,19 +217,37 @@ while True:
         elif option == 1:
             STATE = State.reset_asgn
         elif option == 2:
-            STATE = State.generate_reports
+            STATE = State.assign_grading
         elif option == 3:
-            STATE = State.email_reports
+            STATE = State.generate_reports
         elif option == 4:
-            STATE = State.view_flagged_handins
+            STATE = State.email_reports
         elif option == 5:
-            STATE = State.add_handin
+            STATE = State.view_flagged_handins
         elif option == 6:
-            STATE = State.deanonymize
+            STATE = State.add_handin
         elif option == 7:
-            STATE = State.run_MOSS
+            STATE = State.deanonymize
         elif option == 8:
+            STATE = State.run_MOSS
+        elif option == 9:
             STATE = State.asgn_home
+
+    elif STATE == State.assign_grading:
+        tas = set(line_read(ta_path))
+        htas = set(line_read(hta_path))
+        all_tas = sorted(list(tas | htas))
+        print(green('Select TAs that are *not* grading. (red = not grading)'))
+        print(green('Press enter when ready.'))
+        not_grading = toggle_prompt(all_tas)
+        if not_grading is None:
+            print('Not assigning grades')
+            break
+
+        grading = set(all_tas) - not_grading
+        asgn.assign_graders(grading=grading)
+        print(green('Grading assigned successfully.'))
+        STATE = State.modify_asgn
 
     elif STATE == State.reset_asgn:
         print('Resetting the assignment will delete any grades given.')

@@ -16,7 +16,8 @@ from passlib.hash import sha256_crypt
 from typing import Callable, List, Tuple, Any, NewType, Dict, Optional
 from classes import (started_asgns, Assignment, ta_path, hta_path, User, 
                      all_asgns, rubric_base_path, locked_file, json_edit,
-                     rubric_schema_path, loaded_rubric_check, asgn_data, BASE_PATH)
+                     rubric_schema_path, loaded_rubric_check, asgn_data,
+                     BASE_PATH)
 from course_customization import full_asgn_name_to_dirname as fatd
 from helpers import green, open_folder
 
@@ -324,6 +325,17 @@ def login():
     if request.method == 'POST':
         user_passwd = request.form['password']
         # user_passwd = request.args['password']
+        try:
+            with locked_file('passwd_hash.txt') as f:
+                pass_hash = f.read()
+        except OSError:
+            msg = (
+                   'Grading app password does not exist - '
+                   'HTA must run cs-update-password to set it'
+                   )
+            return render_template('login.html',
+                                   msg=msg)
+
         if sha256_crypt.verify(user_passwd, open('passwd_hash.txt').read()):
             session['logged_in'] = True
             return redirect(url_for('main'))

@@ -7,6 +7,8 @@ function loadAsgn(x) {
 
 function asgnLoaded(jProblems) {
     var problems = JSON.parse(jProblems);
+    clearMain();
+    clearSidebar();
     if (problems == "None") {
         $('div#prob-list-div').addClass('hidden');
         $('div#problem-status').addClass('hidden');
@@ -42,6 +44,7 @@ function loadProb(x) {
 }
 
 function probLoaded(x) {
+    clearMain();
     var data = JSON.parse(x);
     d = data;
     if (data == "None") {

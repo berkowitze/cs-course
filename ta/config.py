@@ -23,8 +23,8 @@ class HandinConfig:
 
     # allow use of late days on projects (not implemented yet)
     late_days_on_projects = False
-    spreadsheet_id = '1fcYiiVecWeSyMzdHIgtrX5x_TfzVYkV97AIkizFkiHY'
-    sheet_name = 'Handins'
+    spreadsheet_id = '1P3O3EqgkO4WGoH7N89yTXNuymPSXYdZFiVoikcr_sKE'
+    sheet_name = 'HandIns'
 
     # column that emails are dumped into
     student_email_col = 'B'
