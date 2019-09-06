@@ -952,6 +952,7 @@ class HTA_Assignment(Assignment):
 
     def assign_graders(self,
                        grading: Iterable[str],
+                       questions: Optional[List[Question]] = None,
                        assignments: Optional[Dict[str, List[str]]] = None):
         """
         
@@ -963,7 +964,7 @@ class HTA_Assignment(Assignment):
             grading is a list/set/collection specifying which TAs grading
             (i.e. set of logins as strings)
         """
-
+        qs = questions if questions is not None else self.questions
         if assignments is None:
             tas = list(grading)
             # shuffle so same TAs dont always get an extra handin
@@ -971,7 +972,7 @@ class HTA_Assignment(Assignment):
             ta_queue = itertools.cycle(tas)
 
             given = {}  # qn -> ta -> list of handins
-            for question in self.questions:
+            for question in qs:
                 given_assignments = defaultdict(list)  # ta -> list of handins
                 ungraded = []
                 # if a ta can't grade a handin due to blocklist, this queue

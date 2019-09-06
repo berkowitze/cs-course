@@ -237,15 +237,33 @@ while True:
         tas = set(line_read(ta_path))
         htas = set(line_read(hta_path))
         all_tas = sorted(list(tas | htas))
-        print(green('Select TAs that are *not* grading. (red = not grading)'))
-        print(green('Press enter when ready.'))
+        print(green('Toggle questions you *do* want to assign graders for'))
+        print(green('(red = assigning graders for that question)'))
+        print(green('Press enter when you are done'))
+        assigning = toggle_prompt(asgn.questions)
+        if assigning is None:
+            print(green('Not assigning graders'))
+            break
+
+        print(green(f'Assigning grading for {len(assigning)} questions'))
+        print('-' * 30)
+        print(green('Toggle TAs that are *not* grading. (red = not grading)'))
+        print(green('Press enter when you are done'))
         not_grading = toggle_prompt(all_tas)
         if not_grading is None:
             print('Not assigning grades')
             break
 
         grading = set(all_tas) - not_grading
-        asgn.assign_graders(grading=grading)
+        print(f'Assigning graders for:\n\t{assigning}\n\t{grading}')
+        ress = yn_prompt('y to continue, n to start over, ctrl-c to quit')
+        if ress is None:
+            print(green('Not assigning graders'))
+            break
+        elif not ress:
+            continue
+
+        asgn.assign_graders(grading=grading, questions=assigning)
         print(green('Grading assigned successfully.'))
         STATE = State.modify_asgn
 
