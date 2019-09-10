@@ -1007,6 +1007,9 @@ class HTA_Assignment(Assignment):
                 given[str(question)] = given_assignments
 
             return given
+        else:
+            err = 'assign_graders by assignments dict not written yet'
+            raise NotImplementedError(err)
 
     @require_resource()
     def record_finish(self):
