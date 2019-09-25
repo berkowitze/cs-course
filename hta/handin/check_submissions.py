@@ -27,6 +27,9 @@ from helpers import (BASE_PATH, CONFIG, check_assignments,
 from hta_helpers import latest_submission_path
 from jinja2 import Environment, FileSystemLoader
 
+class SpreadsheetError(Exception):
+    pass
+
 os.umask(0o007)  # set file permissions
 
 HCONFIG = CONFIG.handin

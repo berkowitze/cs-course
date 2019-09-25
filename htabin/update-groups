@@ -6,7 +6,7 @@
 # semester so grading and handin scripts don't get messed up.
 baseDir=$(dirname "$0/.." | xargs realpath);
 BASE_PATH="$baseDir/hta/groups"
-PATH="$PATH:$baseDir/htabin"
+export PATH="$PATH:$baseDir/htabin"
 
 function update-group() {
     P=$BASE_PATH/$3
