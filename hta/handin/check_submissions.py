@@ -219,20 +219,18 @@ class Response:
             elif late_due is None:
                 return HState.late
             elif sub_time <= late_due:
-                return HState.kinda_late
-                # HACK
                 if add_late_day(self.login, self.dir_name):
                     return HState.using_late_day
                 else:
                     return HState.kinda_late
             elif sub_time <= late_due + late_buffer:
-                #if add_late_day(self.login, self.dir_name):
-                #    return HState.using_late_day
-                #else:
-                if HCONFIG.warn_students_in_buffer:
-                    return HState.kinda_late_buffer
+                if add_late_day(self.login, self.dir_name):
+                    return HState.using_late_day
                 else:
-                    return HState.kinda_late
+                    if HCONFIG.warn_students_in_buffer:
+                        return HState.kinda_late_buffer
+                    else:
+                        return HState.kinda_late
             else:
                 return HState.late
         else:
