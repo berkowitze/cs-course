@@ -244,6 +244,9 @@ while True:
         if assigning is None:
             print(green('Not assigning graders'))
             break
+        elif len(assigning) == 0:
+            print(green('No questions to assign graders for.'))
+            break
 
         print(green(f'Assigning grading for {len(assigning)} questions'))
         print('-' * 30)
@@ -255,6 +258,13 @@ while True:
             break
 
         grading = set(all_tas) - not_grading
+
+        if len(assigning) > 1:
+            same = yn_prompt('Do you want TAs to have the same '
+                             'students for each question?')
+        else:
+            same = False
+
         print(f'Assigning graders for:\n\t{assigning}\n\t{grading}')
         ress = yn_prompt('y to continue, n to start over, ctrl-c to quit')
         if ress is None:
@@ -263,7 +273,9 @@ while True:
         elif not ress:
             continue
 
-        asgn.assign_graders(grading=grading, questions=assigning)
+        asgn.assign_graders(grading=grading,
+                            questions=assigning,
+                            give_same_students=same)
         print(green('Grading assigned successfully.'))
         STATE = State.modify_asgn
 

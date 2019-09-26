@@ -4,7 +4,7 @@ import yagmail
 import itertools
 import collections
 
-from typing import Set, Iterable
+from typing import Set, Iterable, Deque
 from classes import *
 from custom_types import *
 from hta_helpers import *
@@ -203,7 +203,6 @@ class HTA_Assignment(Assignment):
                                  f'q{qn}.json')
             for ident in self._id_to_login_map:
                 if not self.__has_handin_for_q(ident, qn):
-                    print(f'skipping for {ident} {qn}')
                     continue
 
                 log_item: LogItem = {'id': ident, 'flag_reason': None,
@@ -970,7 +969,7 @@ class HTA_Assignment(Assignment):
     def assign_graders(self,
                        grading: Iterable[str],
                        questions: Optional[List[Question]] = None,
-                       assignments: Optional[Dict[str, List[str]]] = None):
+                       give_same_students: bool = False):
         """
         
         assign graders for this assignemnt.
@@ -980,53 +979,69 @@ class HTA_Assignment(Assignment):
 
             grading is a list/set/collection specifying which TAs grading
             (i.e. set of logins as strings)
+
+            if give_same_students is True, TAs will get the same students for
+            all questions
         """
         qs = questions if questions is not None else self.questions
-        if assignments is None:
-            tas = list(grading)
-            # shuffle so same TAs dont always get an extra handin
-            random.shuffle(tas)
-            ta_queue = itertools.cycle(tas)
-
-            given = {}  # qn -> ta -> list of handins
-            for question in qs:
-                given_assignments = defaultdict(list)  # ta -> list of handins
-                ungraded = []
-                # if a ta can't grade a handin due to blocklist, this queue
-                # will keep track of them so they are assigned another handin
-                # instead rather than getting one less handin than everyone
-                # else
-                skipped = collections.deque()
-                for handin in question.handins:
-                    if not handin.extracted:
-                        tried = 0
-                        to_skip = set()
-                        while tried < len(tas):
-                            if tried > 1:
-                                print(f'TRIED {tried} GRADERS FOR {handin}')
-
-                            if not skipped:
-                                grader = next(ta_queue)
-                            else:
-                                print(skipped)
-                                grader = skipped.popleft()
-
-                            if not handin.gradeable_by(grader):
-                                to_skip.add(grader)
-                                tried += 1
-                                continue  # try the next grader
-                            else:
-                                skipped.extend(to_skip)
-                                handin.start_grading(grader)
-                                given_assignments[grader].append(handin)
-                                break
-
-                given[str(question)] = given_assignments
-
-            return given
+        if give_same_students and len(qs) > 1:
+            one_question = qs.pop()
+            ta_to_ids = self._randomly_assign_graders(one_question, grading)
+            for q in qs:
+                self._assign_graders_from_map(q, ta_to_ids)
         else:
-            err = 'assign_graders by assignments dict not written yet'
-            raise NotImplementedError(err)
+            for q in qs:
+                self._randomly_assign_graders(q, grading)
+
+    def _randomly_assign_graders(self,
+                                 question: Question,
+                                 grading: Iterable[str]
+                                 ) -> Dict[str, Set[int]]:
+        tas = list(grading)
+        random.shuffle(tas) # so some TAs dont always get an extra handin
+        ta_queue = itertools.cycle(tas) # infinite queue of graders
+
+        # if a ta can't grade a handin due to blocklist, this queue
+        # will keep track of them so they are assigned another handin
+        # instead rather than getting one less handin than everyone else
+        skipped: Deque[str] = collections.deque()
+
+        given_assignments = defaultdict(set)  # ta -> set of extracted ids
+
+        for handin in (h for h in question.handins if not h.extracted):
+            tried = 0
+            to_skip = set()
+            while tried < len(tas):
+                if not skipped:
+                    grader = next(ta_queue)
+                else:
+                    print(skipped)
+                    grader = skipped.popleft()
+
+                if not handin.gradeable_by(grader):
+                    to_skip.add(grader)
+                    tried += 1
+                    continue  # try the next grader
+                else:
+                    # found a grader
+                    skipped.extend(to_skip)
+                    handin.start_grading(grader)
+                    given_assignments[grader].add(handin.id)
+                    break
+            else:  # if while-loop does not break, this executes
+                print(red(f'Could not find grader for '
+                          f'{self.id_to_login(handin.id)}'))
+
+        return given_assignments
+
+    def _assign_graders_from_map(self,
+                                 question: Question,
+                                 ta_to_ids: Dict[str, Set[int]]
+                                 ) -> Dict[str, Set[int]]:
+        for grader in ta_to_ids:
+            for ident in ta_to_ids[grader]:
+                handin = question.get_handin_by_id(ident)
+                handin.start_grading(grader)
 
     @require_resource()
     def record_finish(self):
