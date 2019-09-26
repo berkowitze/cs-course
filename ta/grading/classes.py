@@ -15,7 +15,7 @@ from course_customization import full_asgn_name_to_dirname, \
     get_handin_report_str, get_empty_raw_grade, determine_grade
 from custom_types import (HTMLData, Log, LogItem, Rubric,
                           AssignmentJson, AssignmentData)
-from helpers import (loaded_rubric_check, locked_file, json_edit,
+from helpers import (loaded_rubric_check, locked_file, json_edit, green,
                      require_resource, update_comments, rubric_check,
                      remove_duplicates, moss_langs, CONFIG, lang_dict)
 

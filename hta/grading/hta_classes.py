@@ -195,20 +195,37 @@ class HTA_Assignment(Assignment):
             os.makedirs(self.log_path)
 
         # create a log file for each question in the assignment
-        log_data = []
-        for ident in self._id_to_login_map:
-            log_item: LogItem = {'id': ident, 'flag_reason': None,
-                                 'complete': False, 'grader': None}
-            log_data.append(log_item)
 
-        logs = []
         for i, q in enumerate(self._json['questions']):
+            log_data: List[LogItem] = []
             qn = i + 1
             log_filepath = pjoin(self.log_path,
                                  f'q{qn}.json')
+            for ident in self._id_to_login_map:
+                if not self.__has_handin_for_q(ident, qn):
+                    print(f'skipping for {ident} {qn}')
+                    continue
+
+                log_item: LogItem = {'id': ident, 'flag_reason': None,
+                                     'complete': False, 'grader': None}
+                log_data.append(log_item)
 
             with locked_file(log_filepath, 'w') as f:
-                json.dump(log_data, f)
+                json.dump(log_data, f, indent=2, sort_keys=True)
+
+    def __has_handin_for_q(self, anon_id: int, qn: int) -> bool:
+        """ returns whether or not the student with anon_id has a submission
+        for question qn on this assignment. takes 1-indexed qn. """
+        assert qn > 0 and qn <= len(self._json['questions']), \
+            'qn must be between 1 and # questions'
+
+        login = self.id_to_login(anon_id)
+        q_data = self._json['questions'][qn - 1]
+        expected_file = q_data['filename']
+        sub_dir = latest_submission_path(self.handin_path, login,
+                                         self.mini_name)
+        return expected_file in os.listdir(sub_dir)
+
 
     def _setup_blocklist(self) -> None:
         """
