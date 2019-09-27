@@ -1040,7 +1040,11 @@ class HTA_Assignment(Assignment):
                                  ) -> Dict[str, Set[int]]:
         for grader in ta_to_ids:
             for ident in ta_to_ids[grader]:
-                handin = question.get_handin_by_id(ident)
+                try:
+                    handin = question.get_handin_by_id(ident)
+                except ValueError:  # student didnt hand in this question
+                    pass
+
                 handin.start_grading(grader)
 
     @require_resource()
