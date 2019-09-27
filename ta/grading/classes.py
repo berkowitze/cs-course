@@ -403,7 +403,7 @@ class Assignment:
         moss_path = pjoin(BASE_PATH, 'tabin/mossScript')
 
         if extension is None:
-            find_cmd = ['find', self.files_path, '-name', '*.*']
+            find_cmd = ['find', self.files_path, '-type', 'f']
         else:
             find_cmd = ['find', self.files_path, '-name',
                         f'*.{extension.lstrip(".")}']
@@ -422,6 +422,7 @@ class Assignment:
 
         print(f'Finding files: {" ".join(find_cmd)}')
         print(f'Mossing: {" ".join(moss_cmd)}')
+
         find = subprocess.Popen(find_cmd, stdout=subprocess.PIPE)
         subprocess.call(moss_cmd, stdin=find.stdout)
 
