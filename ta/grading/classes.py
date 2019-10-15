@@ -777,6 +777,15 @@ class Question:
             func(d)
             handin.write_grade(d)
 
+    @require_resource()
+    def set_all_incomplete(self):
+        """ used to mark all handins previously reported as "complete" as
+        "incomplete", typically to use after adding new items to the question
+        rubric """
+        with json_edit(self.log_filepath) as data:
+            for log_item in data:
+                log_item['complete'] = False
+
     def __repr__(self):
         return f'Question(file={self.code_filename})'
 
