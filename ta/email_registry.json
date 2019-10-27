@@ -1,0 +1,30 @@
+{
+    "regrade_request_email_not_found": {
+        "subject": "Error processing grade complaint",
+        "template": "hta/grading/regrading/emails/request_email_not_found.html"
+    },
+    "regrade_request": {
+        "subject": "Grade complaint for {asgn_name} question {qn}",
+        "template": "hta/grading/regrading/emails/request.html"
+    },
+    "regrade_request_form_error": {
+        "subject": "Invalid regrade request",
+        "template": "hta/grading/regrading/emails/request_form_error.html"
+    },
+    "regrade_request_no_grader": {
+        "subject": "Error processing grade complaint",
+        "body": "We could not find a grader for your handin. This is likely an issue on our side; the HTAs have also been notified of the issue and will let you know when it is resolved."
+    },
+    "regrade_request_no_grader_hta": {
+        "subject": "Error processing grade complaint",
+        "body": "Potential error with regrade request system. A grader was not found for student {student_ID} who requested a regrade on {asgn_name} question {qn}."
+    },
+    "regrade_response": {
+        "subject": "Grade complaint response for {asgn} question {qn}",
+        "template": "hta/grading/regrading/emails/response.html"
+    },
+    "regrade_response_form_error": {
+        "subject": "Invalid regrade response",
+        "template": "hta/grading/regrading/emails/response_form_error.html"
+    }
+}

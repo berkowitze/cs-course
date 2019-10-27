@@ -509,6 +509,8 @@ class Question:
         self._qnumb: int
         self._qnumb = qn = q_ndx + 1
         self.grade_path: str = pjoin(parent_assignment.grade_path, f'q{qn}')
+        self.qname = f'Question {self._qnumb}'
+
         self.rubric_filepath: str = pjoin(parent_assignment.rubric_path,
                                           f'q{qn}.json')
         self.log_filepath: str = pjoin(parent_assignment.log_path,

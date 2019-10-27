@@ -4,6 +4,7 @@
 import json
 import os
 import logging
+import inspect
 import string
 import sys
 from os.path import join as pjoin
@@ -52,7 +53,7 @@ else:
         raise ValueError(f'{sys.platform} not supported')
 
 @contextmanager
-def locked_file(filename: str, mode: str = 'r') -> Generator:
+def locked_file(filename: str, mode: str = 'r', lvl=1) -> Generator:
     """
     Yield a locked file to be used for safe, one at a time reading/writing
 
@@ -69,6 +70,13 @@ def locked_file(filename: str, mode: str = 'r') -> Generator:
             text = f.read()
 
     """
+    debug = (f'Calling function: {inspect.stack()[2].function}, '
+            f'from file: {inspect.stack()[2].filename}, '
+             f'opening: {filename}\n'
+             )
+    with open(os.path.join(BASE_PATH, 'filelockdebug.txt'), 'a') as f:
+        f.write(debug)
+
     if CONFIG.test_mode and False:
         print(f'locked_file({filename!r}, {mode!r})')
 
@@ -594,3 +602,25 @@ def gen_email(registry_lookup,
 
     return subject, body
 
+def make_empty_files():
+    print('running make_empty_files')
+    files = {
+        'hta/grading/regrading/regrade_log.json': '{}',
+        'ta/groups/tas.txt': '',
+        'ta/groups/htas.txt': '',
+        'ta/groups/students.txt': '',
+        'ta/groups/students.csv': '',
+        'hta/grading/extensions.json': '[]',
+        'hta/s-t-blocklist.json': '{}',
+        'ta/t-s-blocklist.json': '{}',
+        'hta/handin/submission_log.txt': ''
+    }
+
+    for fname in files:
+        fpath = os.path.join(BASE_PATH, fname)
+        if not os.path.exists(fpath):
+            with locked_file(fpath, 'w') as f:
+                print(f'{fname} didn\'t exist, making it...')
+                f.write(files[fname])
+
+make_empty_files()

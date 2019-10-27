@@ -1,0 +1,14 @@
+{
+    "regrade_request_emails_not_found": {
+        "subject": "Error processing grade complaint",
+        "template": "hta/grading/regrading/emails/request_emails_not_found.html"
+    },
+    "regrade_request": {
+        "subject": "Grade complaint for {asgn_name} question {qn}",
+        "template": "hta/grading/regrading/emails/request.html"
+    },
+    "regrade_request_form_error": {
+        "subject": "Invalid regrade request",
+        "template": "hta/grading/regrading/emails/request_form_error.html"
+    }
+}

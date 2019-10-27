@@ -12,6 +12,8 @@ from googleapi import sheets_api
 from hta_classes import HTA_Assignment
 from handin_helpers import email_to_login
 
+regrade_log = os.path.join(BASE_PATH, 'hta/grading/regrading/regrade_log.json')
+
 # quiet mode just overwrites print function, it's terrible but it works
 # and logging is annoying
 if len(sys.argv) > 1 and (sys.argv[1] == '--quiet' or sys.argv[1] == '-q'):
@@ -20,10 +22,6 @@ if len(sys.argv) > 1 and (sys.argv[1] == '--quiet' or sys.argv[1] == '-q'):
 
 os.umask(0o007)  # set file permissions
 yag = yagmail.SMTP(CONFIG.email_from)
-
-data_file = pjoin(BASE_PATH, 'ta/assignments.json')
-with locked_file(data_file) as f:
-    data = json.load(f)
 
 settings_path = pjoin(BASE_PATH, 'hta/grading/regrading/settings.json')
 with locked_file(settings_path) as f:
@@ -134,6 +132,23 @@ def handle(row: List[str]) -> None:
                                   })
         print(f'\tSending grade change request to {email_to}')
         yag.send(email_to, subject, body)
+        msg_data = {
+            'from': login,
+            'to': grader,
+            'message': complaint
+        }
+        with json_edit(regrade_log) as data:
+            if asgn.full_name not in data:
+                data[asgn.full_name] = {}
+
+            if real_question.qname not in data[asgn.full_name]:
+                data[asgn.full_name][real_question.qname] = {}
+
+            qlog = data[asgn.full_name][real_question.qname]
+            if login not in qlog:
+                qlog[login] = []
+
+            qlog[login].append(msg_data)
     else:
         subject, body = gen_email('regrade_request_no_grader')
         yag.send(student_email, subject, body)
