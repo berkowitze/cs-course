@@ -57,7 +57,7 @@ app.secret_key = '815tu28g78h8934tgju2893t0j83u2tfjt'
 workflow = {'asgns': started_asgns()}
 
 # get logged in username
-user_override = os.environ.get('GRADING_APP_USER', None)
+user_override = os.environ.get('USEROVERRIDE')
 username = getpass.getuser()
 user = User(username)
 if user.hta and user_override is not None:
