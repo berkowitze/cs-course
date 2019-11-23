@@ -1,0 +1,42 @@
+#!/bin/sh
+"exec" "`dirname $0`/../venv/bin/python" "$0" "$@"
+
+import getpass
+import argparse
+from grading_app import app
+from classes import User
+from helpers import green
+
+parser = argparse.ArgumentParser(description='Run grading app.')
+
+parser.add_argument('--port', '-p', type=int, default=6924,
+                    help='Port to run appp on.')
+parser.add_argument('--user', '-u', default=None,
+                    help='User to run the grading app for (HTAs only)')
+
+args = parser.parse_args()
+# I am aware that this is insecure. It does not seem like a particularly
+# large security risk to allow TAs to run the app as other TAs.
+# Fix: Each TA creates their own password the first time they use the app.
+# the hash is stored in a file only they can read
+# then, only they can run the app as themself (because they can only read their
+# hash), and only they can login as only they know their password (hopefully)
+# ALSO note:
+# a no permission user can still do pretty much everything a TA can
+# once they've logged into the app. since getpass is insecure, anyone malicious
+# can easily spoof to get ta or hta level, so right now the main security on
+# the app is the password to grade.
+uname = getpass.getuser()
+logged_in_user = User(uname)
+if args.user is not None and logged_in_user.hta:
+    user = args.user
+elif args.user is not None:
+    print('Only HTAs can run app as other user')
+    user = uname
+else:
+    user = uname
+
+print(green(User(user)))
+app.config['uname'] = user
+
+app.run(host='0.0.0.0', ssl_context='adhoc', port=args.port, debug=False)

@@ -1,33 +1,3 @@
 #!/usr/bin/env bash
 
-
-
-OPTIND=1;  # Reset in case getopts has been used previously in the shell.
-
-PORT=6924;
-while getopts ":p:u:" opt; do
-  case ${opt} in
-    p )
-      PORT=$OPTARG
-      ;;
-    u )
-      export USEROVERRIDE=$OPTARG
-      ;;
-    \? )
-      echo "Invalid option: $OPTARG" 1>&2;
-      exit 1;
-      ;;
-    : )
-      echo "Invalid option: $OPTARG requires an argument" 1>&2;
-      exit 1;
-      ;;
-  esac
-done
-shift $((OPTIND -1))
-
-umask 007;
-baseDir=`realpath "$(dirname $0)/../"`;
-cd "$baseDir/ta/grading";
-HOST="0.0.0.0";
-gunicorn="$baseDir/ta/venv/bin/gunicorn";
-`realpath $gunicorn` --bind "$HOST:$PORT" --certfile "$baseDir/ta/cert.pem" --keyfile "$baseDir/ta/key.pem" grading_app:app;
+../ta/grading/cs-grade

@@ -54,16 +54,17 @@ app.secret_key = '815tu28g78h8934tgju2893t0j83u2tfjt'
 # it's reset if you edit grading_app.py or classes.py while grading
 # so you need to refresh the page
 # todo: make this better. a lot better. if it's a problem.
+#(global vars is terrible in web)
 workflow = {'asgns': started_asgns()}
 
 # get logged in username
-user_override = os.environ.get('USEROVERRIDE')
-username = getpass.getuser()
-user = User(username)
-if user.hta and user_override is not None:
-    user = User(user_override)
+# user_override = os.environ.get('USEROVERRIDE')
+# username = getpass.getuser()
+# user = User(username)
+# if user.hta and user_override is not None:
+#     user = User(user_override)
 
-print(user)
+# print(user)
 
 __router = app.route # plz don't use this unless needed
 
@@ -144,7 +145,7 @@ def is_logged_in(f: Callable) -> Callable:
 def main():
     return render_template('index.html',
                            asgns=workflow['asgns'],
-                           user=user.uname)
+                           user=app.config['uname'])
 
 
 @logged_in_route('/load_asgn')
@@ -183,12 +184,13 @@ def load_prob():
         assert asgn.started, 'grading unstarted assignment %s' % asgn.full_name
         question = asgn.get_question(q_ndx)
         workflow['question'] = question
-        d = question.html_data(user)
+        d = question.html_data(User(app.config['uname']))
         return json.dumps(d)
 
 
 @logged_in_route('/extract_handin')
 def extract_handin():
+    user = User(app.config['uname'])
     if 'handin_login' in request.args:
         asgn = workflow['assignment']
         if not user.hta and asgn.anonymous:
@@ -527,12 +529,12 @@ def get_max_points(cat):
 
 app.jinja_env.globals.update(get_max_points=get_max_points)
 
-if __name__ == '__main__':
-    port = os.environ.get('GRADING_APP_PORT', 6924)
-    runtime_dir = os.path.dirname(os.path.abspath(__file__))
-    app.run(host='0.0.0.0',
-            ssl_context='adhoc',
-            port=port,
-            debug=False)
-else:
-    print(green('Open app in browser at https://localhost:6924'))
+# just import app. you need to set app.config['uname'] to be the login of the
+# person using the app though.
+# if __name__ == '__main__':
+#     port = os.environ.get('GRADING_APP_PORT', 6924)
+#     runtime_dir = os.path.dirname(os.path.abspath(__file__))
+#     app.run(host='0.0.0.0',
+#             ssl_context='adhoc',
+#             port=port,
+#             debug=False)
